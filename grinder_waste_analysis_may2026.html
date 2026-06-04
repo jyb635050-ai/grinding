@@ -5,731 +5,540 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>磨工废品分析报告 — 2026年5月</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0e1a;
-    --surface: #111827;
-    --surface2: #1a2236;
-    --border: rgba(99,179,237,0.12);
-    --accent: #38bdf8;
-    --accent2: #f59e0b;
-    --accent3: #ef4444;
-    --accent4: #10b981;
-    --text: #e2e8f0;
-    --text-muted: #64748b;
-    --text-dim: #94a3b8;
-    --glow: rgba(56,189,248,0.15);
+    --bg:      #f2f5fc;
+    --surface: #ffffff;
+    --surface2:#eef2fa;
+    --border:  #dde3f0;
+    --accent:  #2563eb;
+    --text:    #1e2a45;
+    --text-sub:#4b5a7a;
+    --text-muted:#8a98b8;
+    --shadow:  0 1px 4px rgba(30,42,69,0.07),0 4px 16px rgba(30,42,69,0.05);
+    --shadow-md:0 2px 8px rgba(30,42,69,0.09),0 8px 28px rgba(30,42,69,0.07);
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans SC', sans-serif;
-    font-size: 14px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Grid noise background */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;font-size:14px;}
 
   /* ── HEADER ── */
-  header {
-    position: relative;
-    padding: 48px 48px 32px;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(56,189,248,0.06) 0%, transparent 100%);
-    overflow: hidden;
-  }
+  header{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#60a5fa 100%);padding:44px 52px 36px;position:relative;overflow:hidden;}
+  header::before{content:'';position:absolute;right:-60px;top:-60px;width:340px;height:340px;border-radius:50%;background:rgba(255,255,255,0.06);}
+  header::after{content:'';position:absolute;right:100px;bottom:-90px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.05);}
+  .header-tag{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+  header h1{font-size:clamp(22px,3.5vw,36px);font-weight:900;color:#fff;line-height:1.15;letter-spacing:-0.5px;}
+  header h1 span{color:#93c5fd;}
+  .header-meta{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;}
+  .meta-pill{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);padding:5px 13px;border-radius:20px;}
+  .meta-pill .dot{width:6px;height:6px;border-radius:50%;background:#86efac;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  header::after {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 320px; height: 320px;
-    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
-    border-radius: 50%;
-  }
-
-  .header-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    opacity: 0.8;
-  }
-
-  header h1 {
-    font-size: clamp(24px, 4vw, 40px);
-    font-weight: 900;
-    letter-spacing: -1px;
-    line-height: 1.1;
-    color: #f0f9ff;
-  }
-
-  header h1 span {
-    color: var(--accent);
-  }
-
-  .header-meta {
-    margin-top: 16px;
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-
-  .meta-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    padding: 6px 14px;
-    border-radius: 20px;
-  }
-
-  .meta-pill .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
+  /* ── NAV TABS ── */
+  .tab-nav{background:var(--surface);border-bottom:2px solid var(--border);padding:0 52px;display:flex;gap:0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(30,42,69,0.06);}
+  .tab-btn{font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:500;color:var(--text-muted);padding:14px 22px;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;white-space:nowrap;}
+  .tab-btn:hover{color:var(--accent);}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
 
   /* ── LAYOUT ── */
-  main {
-    padding: 0 48px 64px;
-    position: relative;
-    z-index: 1;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
+  main{padding:0 52px 64px;max-width:1400px;margin:0 auto;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  section{margin-top:40px;}
+  .section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:4px;opacity:.7;}
+  .section-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--border);}
 
-  section {
-    margin-top: 48px;
-  }
-
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 6px;
-    opacity: 0.7;
-  }
-
-  .section-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #f0f9ff;
-    margin-bottom: 24px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* ── KPI CARDS ── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 0;
-  }
-
-  .kpi-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 20px 16px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s, transform 0.2s;
-  }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--kpi-color, var(--accent));
-    opacity: 0.7;
-  }
-
-  .kpi-card:hover {
-    border-color: rgba(99,179,237,0.3);
-    transform: translateY(-2px);
-  }
-
-  .kpi-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-
-  .kpi-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--kpi-color, var(--accent));
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-
-  .kpi-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-  }
+  /* ── KPI GRID ── */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 18px 14px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;}
+  .kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-color,var(--accent));}
+  .kpi-icon{font-size:20px;margin-bottom:8px;display:block;}
+  .kpi-label{font-size:11px;color:var(--text-muted);margin-bottom:5px;font-weight:500;}
+  .kpi-value{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--kpi-color,var(--accent));line-height:1;margin-bottom:4px;}
+  .kpi-sub{font-size:11px;color:var(--text-muted);line-height:1.4;}
 
   /* ── CHART CARDS ── */
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .charts-grid.wide{grid-template-columns:2fr 1fr;}
+  .charts-grid.three{grid-template-columns:1fr 1fr 1fr;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow);}
+  .chart-card.full{grid-column:1/-1;}
+  .chart-title{font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .chart-title::before{content:'';width:3px;height:14px;background:var(--ct-color,var(--accent));border-radius:2px;flex-shrink:0;}
+  .chart-wrap{position:relative;height:260px;}
+  .chart-wrap.tall{height:320px;}
+  .chart-wrap.short{height:200px;}
+  .chart-wrap.xs{height:160px;}
 
-  .charts-grid.wide {
-    grid-template-columns: 2fr 1fr;
-  }
+  /* ── PROCESS DETAIL CARDS ── */
+  .proc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:20px;}
+  .proc-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--pc-color,var(--accent));border-radius:12px;padding:18px 20px;box-shadow:var(--shadow);}
+  .proc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+  .proc-name{font-size:16px;font-weight:800;color:var(--pc-color,var(--accent));letter-spacing:.5px;}
+  .proc-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+  .proc-kpi-row{display:flex;gap:16px;margin-bottom:14px;}
+  .proc-kpi{text-align:center;}
+  .proc-kpi-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--text);}
+  .proc-kpi-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+  .defect-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .defect-label{font-size:11px;color:var(--text-sub);width:130px;flex-shrink:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
+  .defect-bar-bg{flex:1;height:7px;background:#eef1f8;border-radius:4px;overflow:hidden;}
+  .defect-bar-fill{height:100%;border-radius:4px;background:var(--db-color,var(--accent));}
+  .defect-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);width:36px;text-align:right;flex-shrink:0;}
+  .proc-section-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 6px;}
 
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
+  /* ── TABLES ── */
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{background:#f0f4ff;color:var(--accent);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;padding:11px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid #f0f2f8;transition:background .12s;}
+  tbody tr:hover{background:#f7f9ff;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:9px 14px;color:var(--text-sub);}
+  tbody td:first-child{color:var(--text);font-weight:500;}
+  .num{font-family:'DM Mono',monospace;font-size:12px;color:var(--text);}
+  .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-family:'DM Mono',monospace;font-size:10px;font-weight:500;}
+  .badge-red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+  .badge-amber{background:#fffbeb;color:#b45309;border:1px solid #fde68a;}
+  .badge-green{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
+  .badge-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
 
-  .chart-card.full {
-    grid-column: 1 / -1;
-  }
+  /* ── INSIGHTS ── */
+  .insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
+  .insight-card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--ic-color,var(--accent));border-radius:12px;padding:16px 18px;box-shadow:var(--shadow);}
+  .insight-head{font-size:12px;font-weight:700;color:var(--ic-color,var(--accent));margin-bottom:7px;}
+  .insight-body{font-size:13px;color:var(--text-sub);line-height:1.65;}
+  .insight-body strong{color:var(--text);font-weight:700;}
 
-  .chart-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-dim);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  /* ── MINI BAR ── */
+  .mini-bar-section{margin-bottom:18px;}
+  .mini-bar-section-title{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+  .mini-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .mini-bar-label{width:110px;font-size:11px;color:var(--text-sub);flex-shrink:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
+  .mini-bar-bg{flex:1;height:8px;background:#eef1f8;border-radius:4px;overflow:hidden;}
+  .mini-bar-fill{height:100%;border-radius:4px;background:var(--mb-color,var(--accent));}
+  .mini-bar-val{width:44px;text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-sub);flex-shrink:0;}
 
-  .chart-title::before {
-    content: '';
-    width: 3px;
-    height: 14px;
-    background: var(--accent);
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
+  /* ── STACKED LEGEND ── */
+  .legend-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:12px;color:var(--text-sub);}
+  .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 
-  .chart-wrap {
-    position: relative;
-    height: 260px;
-  }
+  /* ── HEATMAP ── */
+  .heatmap-wrap{overflow-x:auto;}
+  .heatmap-table{border-collapse:collapse;font-size:11px;white-space:nowrap;}
+  .heatmap-table th{background:#f0f4ff;color:var(--accent);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:8px 10px;border:1px solid var(--border);}
+  .heatmap-table td{padding:6px 10px;border:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;transition:filter .2s;}
+  .heatmap-table td:first-child{text-align:left;font-family:'Noto Sans SC',sans-serif;font-weight:600;color:var(--text);background:#f8f9ff;}
 
-  .chart-wrap.tall {
-    height: 320px;
-  }
+  footer{margin-top:48px;padding:18px 52px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);}
 
-  .chart-wrap.short {
-    height: 200px;
-  }
-
-  /* ── TABLE ── */
-  .table-wrap {
-    overflow-x: auto;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12.5px;
-  }
-
-  thead th {
-    background: rgba(56,189,248,0.06);
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 12px 16px;
-    text-align: left;
-    white-space: nowrap;
-    border-bottom: 1px solid var(--border);
-  }
-
-  tbody tr {
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    transition: background 0.15s;
-  }
-
-  tbody tr:hover {
-    background: rgba(56,189,248,0.04);
-  }
-
-  tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  tbody td {
-    padding: 11px 16px;
-    color: var(--text-dim);
-  }
-
-  tbody td:first-child {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text);
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-  }
-
-  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
-  .badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
-  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
-  .badge-blue { background: rgba(56,189,248,0.15); color: var(--accent); }
-
-  /* ── INSIGHT BOX ── */
-  .insights {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-    margin-top: 20px;
-  }
-
-  .insight-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-    border-left: 3px solid var(--insight-color, var(--accent));
-  }
-
-  .insight-head {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--insight-color, var(--accent));
-    margin-bottom: 8px;
-  }
-
-  .insight-body {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.6;
-  }
-
-  .insight-body strong {
-    color: var(--text);
-  }
-
-  /* ── BAR MINI ── */
-  .mini-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-
-  .mini-bar-label {
-    width: 100px;
-    font-size: 11px;
-    color: var(--text-dim);
-    flex-shrink: 0;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .mini-bar-bg {
-    flex: 1;
-    height: 8px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .mini-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: var(--bar-color, var(--accent));
-    transition: width 1s ease;
-  }
-
-  .mini-bar-val {
-    width: 40px;
-    text-align: right;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-    flex-shrink: 0;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    margin-top: 64px;
-    padding: 24px 48px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-  }
-
-  /* ── DIVIDER ── */
-  .divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--border), transparent);
-    margin: 40px 0;
-  }
-
-  @media (max-width: 768px) {
-    main, header, footer { padding-left: 20px; padding-right: 20px; }
-    .charts-grid, .charts-grid.wide { grid-template-columns: 1fr; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  @media(max-width:768px){
+    main,header,footer,.tab-nav{padding-left:16px;padding-right:16px;}
+    .charts-grid,.charts-grid.wide,.charts-grid.three{grid-template-columns:1fr;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-tag">质量分析报告 / Quality Analysis Report</div>
+  <div class="header-tag">Quality Analysis Report / 质量分析报告</div>
   <h1>磨工废品<span>月度分析</span></h1>
   <div class="header-meta">
-    <div class="meta-pill"><span class="dot"></span> 2026年5月 — MAY 2026</div>
-    <div class="meta-pill">数据来源: Grinder_waste_MAY_2026.xlsx</div>
-    <div class="meta-pill">前磨 + 后磨 双工序</div>
+    <div class="meta-pill"><span class="dot"></span>2026年5月 MAY 2026</div>
+    <div class="meta-pill">Grinder_waste_MAY_2026.xlsx</div>
+    <div class="meta-pill">前磨 Before Grinding</div>
+    <div class="meta-pill">后磨 After Grinding</div>
     <div class="meta-pill">Line 9 &amp; Line 10</div>
   </div>
 </header>
 
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('overview',this)">📊 总览</button>
+  <button class="tab-btn" onclick="switchTab('before',this)">🔧 前磨工序分析</button>
+  <button class="tab-btn" onclick="switchTab('after',this)">⚙️ 后磨工序分析</button>
+  <button class="tab-btn" onclick="switchTab('operator',this)">👷 操作员分析</button>
+  <button class="tab-btn" onclick="switchTab('detail',this)">📋 明细表</button>
+</div>
+
 <main>
 
-  <!-- ── Section 1: KPIs ── -->
+<!-- ══════════ TAB: 总览 ══════════ -->
+<div class="tab-panel active" id="tab-overview">
+
   <section>
     <div class="section-label">SECTION 01</div>
     <div class="section-title">关键指标概览 / Key Performance Indicators</div>
-
     <div class="kpi-grid">
-      <div class="kpi-card" style="--kpi-color: #38bdf8;">
-        <div class="kpi-label">后磨责任废品合计</div>
-        <div class="kpi-value">4,944</div>
-        <div class="kpi-sub">After Grinding — Responsibility Waste (pcs)</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #f59e0b;">
-        <div class="kpi-label">后磨料废合计</div>
-        <div class="kpi-value">1,752</div>
-        <div class="kpi-sub">After Grinding — Material Waste (pcs)</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #10b981;">
-        <div class="kpi-label">前磨责任废品合计</div>
-        <div class="kpi-value">234</div>
-        <div class="kpi-sub">Before Grinding — Responsibility Waste (pcs)</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #a78bfa;">
-        <div class="kpi-label">前磨料废合计</div>
-        <div class="kpi-value">31</div>
-        <div class="kpi-sub">Before Grinding — Material Waste (pcs)</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #ef4444;">
-        <div class="kpi-label">综合废品总量</div>
-        <div class="kpi-value">6,961</div>
-        <div class="kpi-sub">Total All Waste (pcs)</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #f97316;">
-        <div class="kpi-label">后磨废品记录天数</div>
-        <div class="kpi-value">28</div>
-        <div class="kpi-sub">Working days with records</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #06b6d4;">
-        <div class="kpi-label">日均后磨责任废</div>
-        <div class="kpi-value">177</div>
-        <div class="kpi-sub">Avg daily responsibility waste (pcs)</div>
-      </div>
-      <div class="kpi-card" style="--kpi-color: #8b5cf6;">
-        <div class="kpi-label">后磨操作人员</div>
-        <div class="kpi-value">14</div>
-        <div class="kpi-sub">Operators tracked</div>
-      </div>
+      <div class="kpi-card" style="--kpi-color:#2563eb;"><span class="kpi-icon">⚙️</span><div class="kpi-label">后磨责任废品</div><div class="kpi-value">4,944</div><div class="kpi-sub">After Grinding Resp. Waste (pcs)</div></div>
+      <div class="kpi-card" style="--kpi-color:#d97706;"><span class="kpi-icon">📦</span><div class="kpi-label">后磨料废</div><div class="kpi-value">1,752</div><div class="kpi-sub">After Grinding Material Waste (pcs)</div></div>
+      <div class="kpi-card" style="--kpi-color:#059669;"><span class="kpi-icon">🔧</span><div class="kpi-label">前磨责任废品</div><div class="kpi-value">234</div><div class="kpi-sub">Before Grinding Resp. Waste (pcs)</div></div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;"><span class="kpi-icon">🏷️</span><div class="kpi-label">前磨料废</div><div class="kpi-value">31</div><div class="kpi-sub">Before Grinding Material Waste (pcs)</div></div>
+      <div class="kpi-card" style="--kpi-color:#dc2626;"><span class="kpi-icon">📊</span><div class="kpi-label">综合废品总量</div><div class="kpi-value">6,961</div><div class="kpi-sub">Total All Waste (pcs)</div></div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;"><span class="kpi-icon">📅</span><div class="kpi-label">记录天数</div><div class="kpi-value">28</div><div class="kpi-sub">Working days with records</div></div>
+      <div class="kpi-card" style="--kpi-color:#e85d04;"><span class="kpi-icon">📈</span><div class="kpi-label">日均后磨责任废</div><div class="kpi-value">177</div><div class="kpi-sub">Avg daily resp. waste (pcs)</div></div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;"><span class="kpi-icon">👷</span><div class="kpi-label">后磨操作人员</div><div class="kpi-value">14</div><div class="kpi-sub">Operators tracked</div></div>
     </div>
   </section>
 
-  <!-- ── Section 2: Daily Trend ── -->
   <section>
     <div class="section-label">SECTION 02</div>
     <div class="section-title">每日废品趋势 / Daily Waste Trend (After Grinding)</div>
     <div class="chart-card">
-      <div class="chart-title">后磨每日责任废品 &amp; 料废数量（May 2026）</div>
-      <div class="chart-wrap tall">
-        <canvas id="dailyChart"></canvas>
-      </div>
+      <div class="chart-title">后磨每日责任废品 &amp; 料废数量（五月逐日）</div>
+      <div class="chart-wrap tall"><canvas id="dailyChart"></canvas></div>
     </div>
   </section>
 
-  <!-- ── Section 3: By Model & Process ── -->
   <section>
     <div class="section-label">SECTION 03</div>
-    <div class="section-title">型号与工序分布 / By Model &amp; Process</div>
-    <div class="charts-grid">
+    <div class="section-title">工序废品总览对比</div>
+    <div class="charts-grid three">
       <div class="chart-card">
-        <div class="chart-title">后磨废品 — TOP 10 型号（责任废）</div>
-        <div class="chart-wrap">
-          <canvas id="modelChartAfter"></canvas>
-        </div>
+        <div class="chart-title" style="--ct-color:#2563eb;">后磨工序责任废品分布</div>
+        <div class="chart-wrap"><canvas id="afterProcPie"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">后磨废品 — 工序分布</div>
-        <div class="chart-wrap">
-          <canvas id="processChartAfter"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;" class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title">前磨废品 — 型号分布（责任废）</div>
-        <div class="chart-wrap short">
-          <canvas id="modelChartBefore"></canvas>
-        </div>
+        <div class="chart-title" style="--ct-color:#059669;">前磨工序责任废品分布</div>
+        <div class="chart-wrap"><canvas id="beforeProcPie"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">前磨废品 — 工序对比</div>
-        <div class="chart-wrap short">
-          <canvas id="processChartBefore"></canvas>
-        </div>
+        <div class="chart-title" style="--ct-color:#dc2626;">后磨料废 — 工序来源</div>
+        <div class="chart-wrap"><canvas id="matWasteProcPie"></canvas></div>
       </div>
     </div>
   </section>
 
-  <!-- ── Section 4: Lines & Operators ── -->
   <section>
     <div class="section-label">SECTION 04</div>
-    <div class="section-title">生产线 &amp; 操作人员分析 / Line &amp; Operator Analysis</div>
+    <div class="section-title">关键洞察 / Key Insights</div>
+    <div class="insights">
+      <div class="insight-card" style="--ic-color:#dc2626;"><div class="insight-head">⚡ 高优先级 — 型号619/22</div><div class="insight-body">619/22.01 &amp; 619/22.02 合计占后磨责任废品 <strong>41.8%</strong>（2,064件），以 Bore（内径）和 ORSF/OR 工序为主。619/22.01料废占比高达 <strong>45.8%</strong>，需排查来料与参数。</div></div>
+      <div class="insight-card" style="--ic-color:#dc2626;"><div class="insight-head">⚡ 高优先级 — 料废异常</div><div class="insight-body">6202K/01 料废 <strong>77.6%</strong>（497件），6202K/02 <strong>49.2%</strong>（231件），集中在 OR/ORSF 工序，生锈是主因（占料废68%）。</div></div>
+      <div class="insight-card" style="--ic-color:#d97706;"><div class="insight-head">⚠ 关注 — Line 10 料废</div><div class="insight-body">Line 10 料废 <strong>1,599件</strong>，占双线料废总量 <strong>91.6%</strong>；其中 OR（456件）和 ORSF（629件）工序最突出，系统性问题明显。</div></div>
+      <div class="insight-card" style="--ic-color:#d97706;"><div class="insight-head">⚠ 关注 — 月末废品激增</div><div class="insight-body">5月23～25日及30日连续出现高峰（最高428件/天），均以 Bore 工序为主。需核查月末产量冲刺与设备状态。</div></div>
+      <div class="insight-card" style="--ic-color:#2563eb;"><div class="insight-head">📌 Bore工序主导</div><div class="insight-body">Bore（内径磨）责任废品 <strong>2,662件</strong>，占后磨总量 <strong>53.9%</strong>，但料废仅233件（8.7%），说明以加工质量问题为主而非来料问题。</div></div>
+      <div class="insight-card" style="--ic-color:#7c3aed;"><div class="insight-head">📌 ORSF料废双高</div><div class="insight-body">ORSF（外径超精）责任废901件+料废670件，料废占比 <strong>42.6%</strong>；其中生锈516件、污渍124件，提示防锈与储存管理问题。</div></div>
+      <div class="insight-card" style="--ic-color:#059669;"><div class="insight-head">✅ 前磨控制良好</div><div class="insight-body">前磨总废品仅 <strong>265件</strong>，尺寸超差（Size）是主因占 <strong>91%</strong>，两道工序（端面/无心）整体稳定可控。</div></div>
+      <div class="insight-card" style="--ic-color:#0891b2;"><div class="insight-head">🔍 生锈是料废第一因</div><div class="insight-body">后磨料废中生锈（Rust）达 <strong>1,197件</strong>，占 <strong>68.3%</strong>，在OR、ORSF、IRSF三道工序均有大量出现，防锈管控需系统性改善。</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ TAB: 前磨 ══════════ -->
+<div class="tab-panel" id="tab-before">
+  <section>
+    <div class="section-label">BEFORE GRINDING</div>
+    <div class="section-title">前磨工序废品详细分析</div>
+
+    <!-- Process Cards -->
+    <div class="proc-grid">
+      <!-- End face -->
+      <div class="proc-card" style="--pc-color:#2563eb;">
+        <div class="proc-header">
+          <div>
+            <div class="proc-name">End Face</div>
+            <div class="proc-sub">端面磨 · 27条记录</div>
+          </div>
+          <span class="badge badge-blue">工序一</span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#2563eb;">124</div><div class="proc-kpi-lbl">责任废 pcs</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">8</div><div class="proc-kpi-lbl">料废 pcs</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#6b7280;">6.1%</div><div class="proc-kpi-lbl">料废占比</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">Size 尺寸超差</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:89.5%;--db-color:#2563eb;"></div></div><span class="defect-val">111</span></div>
+        <div class="defect-row"><span class="defect-label">Abrassion 磨损</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:7.3%;--db-color:#7c3aed;"></div></div><span class="defect-val">9</span></div>
+        <div class="defect-row"><span class="defect-label">Other 其他</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:3.2%;--db-color:#9ca3af;"></div></div><span class="defect-val">4</span></div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">8</span></div>
+      </div>
+
+      <!-- Centerless -->
+      <div class="proc-card" style="--pc-color:#059669;">
+        <div class="proc-header">
+          <div>
+            <div class="proc-name">Centerless</div>
+            <div class="proc-sub">无心磨 · 15条记录</div>
+          </div>
+          <span class="badge badge-green">工序二</span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;">110</div><div class="proc-kpi-lbl">责任废 pcs</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">23</div><div class="proc-kpi-lbl">料废 pcs</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#6b7280;">17.3%</div><div class="proc-kpi-lbl">料废占比</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">Size 尺寸超差</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:99.1%;--db-color:#059669;"></div></div><span class="defect-val">109</span></div>
+        <div class="defect-row"><span class="defect-label">Other 其他</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:0.9%;--db-color:#9ca3af;"></div></div><span class="defect-val">1</span></div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">其它 Other</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:91.3%;--db-color:#d97706;"></div></div><span class="defect-val">21</span></div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:39.1%;--db-color:#dc2626;"></div></div><span class="defect-val">9</span></div>
+      </div>
+
+      <!-- Summary insight -->
+      <div class="proc-card" style="--pc-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#ede9fe);">
+        <div class="proc-header"><div><div class="proc-name" style="color:#7c3aed;">工序对比小结</div><div class="proc-sub">End Face vs Centerless</div></div></div>
+        <div style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;">
+          两道工序废品量相近（124 vs 110件），但性质不同：<br>
+          • <strong>End Face</strong>：以磨损（Abrassion）为特有缺陷，需检查端面砂轮精度。<br>
+          • <strong>Centerless</strong>：料废占比更高（17.3%），料废原因分散，其他类偏高，建议细化料废分类登记。<br>
+          • 两道工序尺寸超差均超 <strong>90%</strong>，加工参数控制是核心改善方向。
+        </div>
+        <div class="mini-bar-section">
+          <div class="mini-bar-section-title">责任废按型号（前磨合计 Top 6）</div>
+          <div class="mini-bar-row"><span class="mini-bar-label">6202/01</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:100%;--mb-color:#2563eb;"></div></div><span class="mini-bar-val">55</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">619/22.01</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:83.6%;--mb-color:#d97706;"></div></div><span class="mini-bar-val">46</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">619/22.02</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:65.5%;--mb-color:#059669;"></div></div><span class="mini-bar-val">36</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">6203K/01</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:52.7%;--mb-color:#7c3aed;"></div></div><span class="mini-bar-val">29</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">6203/02</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:45.5%;--mb-color:#dc2626;"></div></div><span class="mini-bar-val">25</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">6203/01</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:32.7%;--mb-color:#0891b2;"></div></div><span class="mini-bar-val">18</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid" style="margin-top:20px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;">前磨 — 工序 × 型号废品分布</div>
+        <div class="chart-wrap"><canvas id="beforeProcModel"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;">前磨 — 操作员 × 工序废品</div>
+        <div class="chart-wrap"><canvas id="beforeOperProc"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ TAB: 后磨 ══════════ -->
+<div class="tab-panel" id="tab-after">
+  <section>
+    <div class="section-label">AFTER GRINDING</div>
+    <div class="section-title">后磨工序废品详细分析</div>
+
+    <!-- 5 process detail cards -->
+    <div class="proc-grid">
+
+      <!-- BORE -->
+      <div class="proc-card" style="--pc-color:#2563eb;">
+        <div class="proc-header"><div><div class="proc-name">Bore</div><div class="proc-sub">内径磨 · 117条记录</div></div><span class="badge badge-red">⚠ 最高</span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#2563eb;">2,662</div><div class="proc-kpi-lbl">责任废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">233</div><div class="proc-kpi-lbl">料废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#6b7280;">8.0%</div><div class="proc-kpi-lbl">料废率</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废主因（尺寸缺陷记录较少，主要为综合废）</div>
+        <div style="font-size:12px;color:var(--text-sub);line-height:1.6;margin-bottom:8px;">责任废以内径尺寸超差为主，具体缺陷类型记录在综合废品列，619/22.02（1,117件）和6203/02（854件）是主要型号。</div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">混料撞车</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:35.6%;--db-color:#dc2626;"></div></div><span class="defect-val">83</span></div>
+        <div class="defect-row"><span class="defect-label">其它 Other</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:60.9%;--db-color:#d97706;"></div></div><span class="defect-val">142</span></div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:3.4%;--db-color:#7c3aed;"></div></div><span class="defect-val">8</span></div>
+        <div class="proc-section-lbl">主要型号</div>
+        <div class="defect-row"><span class="defect-label">619/22.02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#2563eb;"></div></div><span class="defect-val">1,117</span></div>
+        <div class="defect-row"><span class="defect-label">6203/02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:76.5%;--db-color:#60a5fa;"></div></div><span class="defect-val">854</span></div>
+        <div class="defect-row"><span class="defect-label">DC 6203/02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:26.2%;--db-color:#93c5fd;"></div></div><span class="defect-val">293</span></div>
+      </div>
+
+      <!-- ORSF -->
+      <div class="proc-card" style="--pc-color:#7c3aed;">
+        <div class="proc-header"><div><div class="proc-name">ORSF</div><div class="proc-sub">外径超精 · 108条记录</div></div><span class="badge badge-red">⚠ 双高</span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#7c3aed;">901</div><div class="proc-kpi-lbl">责任废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">670</div><div class="proc-kpi-lbl">料废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">42.6%</div><div class="proc-kpi-lbl">料废率</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">OD SCRATCH 外径划伤</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#7c3aed;"></div></div><span class="defect-val">746</span></div>
+        <div class="defect-row"><span class="defect-label">CHAMFER SCRATCH</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:0.5%;--db-color:#c4b5fd;"></div></div><span class="defect-val">4</span></div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:77.0%;--db-color:#dc2626;"></div></div><span class="defect-val">516</span></div>
+        <div class="defect-row"><span class="defect-label">污渍 Stain</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:18.5%;--db-color:#f97316;"></div></div><span class="defect-val">124</span></div>
+        <div class="defect-row"><span class="defect-label">其它 Other</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:4.2%;--db-color:#9ca3af;"></div></div><span class="defect-val">28</span></div>
+        <div class="proc-section-lbl">主要型号</div>
+        <div class="defect-row"><span class="defect-label">619/22.01</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#7c3aed;"></div></div><span class="defect-val">436</span></div>
+        <div class="defect-row"><span class="defect-label">6203K/01</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:35.3%;--db-color:#c4b5fd;"></div></div><span class="defect-val">154</span></div>
+      </div>
+
+      <!-- IR -->
+      <div class="proc-card" style="--pc-color:#059669;">
+        <div class="proc-header"><div><div class="proc-name">IR</div><div class="proc-sub">内沟磨 · 64条记录</div></div><span class="badge badge-amber">中等</span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;">700</div><div class="proc-kpi-lbl">责任废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">17</div><div class="proc-kpi-lbl">料废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#6b7280;">2.4%</div><div class="proc-kpi-lbl">料废率</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">Roundness 圆度</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#059669;"></div></div><span class="defect-val">27</span></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">（其余责任废记录在综合废品列）</div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">其它 Other</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:58.8%;--db-color:#d97706;"></div></div><span class="defect-val">10</span></div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:41.2%;--db-color:#dc2626;"></div></div><span class="defect-val">7</span></div>
+        <div class="proc-section-lbl">主要型号</div>
+        <div class="defect-row"><span class="defect-label">6203/02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#059669;"></div></div><span class="defect-val">237</span></div>
+        <div class="defect-row"><span class="defect-label">DC 6203/02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:75.1%;--db-color:#6ee7b7;"></div></div><span class="defect-val">178</span></div>
+        <div class="defect-row"><span class="defect-label">619/22.02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:74.4%;--db-color:#10b981;"></div></div><span class="defect-val">176</span></div>
+      </div>
+
+      <!-- OR -->
+      <div class="proc-card" style="--pc-color:#d97706;">
+        <div class="proc-header"><div><div class="proc-name">OR</div><div class="proc-sub">外沟磨 · 91条记录</div></div><span class="badge badge-red">⚠ 料废高</span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">482</div><div class="proc-kpi-lbl">责任废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">490</div><div class="proc-kpi-lbl">料废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">50.4%</div><div class="proc-kpi-lbl">料废率</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">OD SCRATCH</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#d97706;"></div></div><span class="defect-val">13</span></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">（其余记录在综合废品列）</div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:94.7%;--db-color:#dc2626;"></div></div><span class="defect-val">464</span></div>
+        <div class="defect-row"><span class="defect-label">污渍 Stain</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:5.1%;--db-color:#f97316;"></div></div><span class="defect-val">25</span></div>
+        <div class="proc-section-lbl">主要型号</div>
+        <div class="defect-row"><span class="defect-label">619/22.01</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#d97706;"></div></div><span class="defect-val">260</span></div>
+        <div class="defect-row"><span class="defect-label">6203K/01</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:31.2%;--db-color:#fbbf24;"></div></div><span class="defect-val">81</span></div>
+      </div>
+
+      <!-- IRSF -->
+      <div class="proc-card" style="--pc-color:#dc2626;">
+        <div class="proc-header"><div><div class="proc-name">IRSF</div><div class="proc-sub">内径超精 · 46条记录</div></div><span class="badge badge-red">⚠ 料废极高</span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">199</div><div class="proc-kpi-lbl">责任废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">335</div><div class="proc-kpi-lbl">料废</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">62.7%</div><div class="proc-kpi-lbl">料废率</div></div>
+        </div>
+        <div class="proc-section-lbl">责任废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">ID SCRATCH 内径划伤</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">70</span></div>
+        <div class="proc-section-lbl">料废缺陷分布</div>
+        <div class="defect-row"><span class="defect-label">生锈 Rust</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:60.3%;--db-color:#dc2626;"></div></div><span class="defect-val">202</span></div>
+        <div class="defect-row"><span class="defect-label">其它 Other</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:34.6%;--db-color:#d97706;"></div></div><span class="defect-val">116</span></div>
+        <div class="defect-row"><span class="defect-label">污渍 Stain</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:5.1%;--db-color:#f97316;"></div></div><span class="defect-val">17</span></div>
+        <div class="proc-section-lbl">主要型号</div>
+        <div class="defect-row"><span class="defect-label">6203/02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">80</span></div>
+        <div class="defect-row"><span class="defect-label">619/22.02</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:93.8%;--db-color:#fca5a5;"></div></div><span class="defect-val">75</span></div>
+      </div>
+
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid" style="margin-top:20px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;">后磨工序 × 责任废 &amp; 料废对比</div>
+        <div class="chart-wrap"><canvas id="afterProcBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;">各工序料废类型堆叠</div>
+        <div class="chart-wrap"><canvas id="afterMatByProc"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;">后磨工序 × 生产线废品分布</div>
+        <div class="chart-wrap"><canvas id="afterProcLine"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;">后磨每日工序堆叠趋势</div>
+        <div class="chart-wrap"><canvas id="dailyProcStack"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ TAB: 操作员 ══════════ -->
+<div class="tab-panel" id="tab-operator">
+  <section>
+    <div class="section-label">OPERATOR ANALYSIS</div>
+    <div class="section-title">操作员 × 工序废品交叉分析</div>
+
     <div class="charts-grid wide">
       <div class="chart-card">
-        <div class="chart-title">后磨操作员废品排名（责任废 + 料废）</div>
-        <div class="chart-wrap tall">
-          <canvas id="operatorChart"></canvas>
+        <div class="chart-title" style="--ct-color:#2563eb;">后磨操作员 × 工序废品热力图（责任废 pcs）</div>
+        <div class="heatmap-wrap">
+          <table class="heatmap-table" id="heatmapTable"></table>
         </div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">生产线废品对比（Line 9 vs Line 10）</div>
-        <div style="padding: 12px 0;">
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">后磨 — 责任废品</p>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">Line 10</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:51.2%;--bar-color:#38bdf8;"></div></div>
-            <span class="mini-bar-val">2,529</span>
-          </div>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">Line 9</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:48.8%;--bar-color:#f59e0b;"></div></div>
-            <span class="mini-bar-val">2,415</span>
-          </div>
+        <div class="chart-title" style="--ct-color:#dc2626;">操作员总废品（责任+料废）</div>
+        <div class="chart-wrap tall"><canvas id="operTotalBar"></canvas></div>
+      </div>
+    </div>
 
-          <p style="font-size:12px;color:var(--text-muted);margin:20px 0 14px;">后磨 — 料废</p>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">Line 10</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:91.6%;--bar-color:#ef4444;"></div></div>
-            <span class="mini-bar-val">1,599</span>
-          </div>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">Line 9</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:8.4%;--bar-color:#f59e0b;"></div></div>
-            <span class="mini-bar-val">146</span>
-          </div>
-
-          <p style="font-size:12px;color:var(--text-muted);margin:20px 0 14px;">前磨 — 操作员对比</p>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">Dominic</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:63.7%;--bar-color:#a78bfa;"></div></div>
-            <span class="mini-bar-val">149</span>
-          </div>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">Reymond</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:36.3%;--bar-color:#06b6d4;"></div></div>
-            <span class="mini-bar-val">85</span>
-          </div>
-
-          <p style="font-size:12px;color:var(--text-muted);margin:20px 0 14px;">后磨 — 班次对比</p>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">A班（Morning）</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:59.6%;--bar-color:#10b981;"></div></div>
-            <span class="mini-bar-val">2,937</span>
-          </div>
-          <div class="mini-bar-row">
-            <span class="mini-bar-label">B班（Night）</span>
-            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:40.4%;--bar-color:#f97316;"></div></div>
-            <span class="mini-bar-val">1,993</span>
-          </div>
-        </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;">后磨操作员 — 料废占比排名</div>
+        <div class="chart-wrap"><canvas id="operMatRatio"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;">前磨操作员对比（责任废 + 料废）</div>
+        <div class="chart-wrap"><canvas id="beforeOperBar"></canvas></div>
       </div>
     </div>
   </section>
+</div>
 
-  <!-- ── Section 5: Defect Type ── -->
+<!-- ══════════ TAB: 明细表 ══════════ -->
+<div class="tab-panel" id="tab-detail">
   <section>
-    <div class="section-label">SECTION 05</div>
-    <div class="section-title">废品类型细分 / Defect &amp; Material Waste Breakdown</div>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title">后磨 — 料废类型分布</div>
-        <div class="chart-wrap">
-          <canvas id="matWasteAfter"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">后磨 — 尺寸缺陷类型（有效记录）</div>
-        <div class="chart-wrap">
-          <canvas id="defectTypeAfter"></canvas>
-        </div>
-      </div>
-    </div>
-  </section>
+    <div class="section-label">DETAIL TABLES</div>
+    <div class="section-title">数据明细表</div>
 
-  <!-- ── Section 6: Detail Tables ── -->
-  <section>
-    <div class="section-label">SECTION 06</div>
-    <div class="section-title">数据明细表 / Detail Tables</div>
-
-    <p style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:12px;">后磨废品 — 操作员明细</p>
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;">后磨 — 工序汇总</p>
     <div class="table-wrap" style="margin-bottom:28px;">
       <table>
-        <thead>
-          <tr>
-            <th>操作员 Operator</th>
-            <th>责任废 (pcs)</th>
-            <th>料废 (pcs)</th>
-            <th>合计 Total</th>
-            <th>料废占比</th>
-            <th>级别评估</th>
-          </tr>
-        </thead>
+        <thead><tr><th>工序 Process</th><th>全称</th><th>责任废 (pcs)</th><th>料废 (pcs)</th><th>料废率</th><th>主要责任废类型</th><th>主要料废类型</th><th>最高废品型号</th></tr></thead>
         <tbody>
-          <tr><td>JEYLOAD</td><td class="num">1,168</td><td class="num">103</td><td class="num">1,271</td><td class="num">8.1%</td><td><span class="badge badge-red">⚠ 最高</span></td></tr>
-          <tr><td>NICOL</td><td class="num">967</td><td class="num">134</td><td class="num">1,101</td><td class="num">12.2%</td><td><span class="badge badge-red">⚠ 高</span></td></tr>
-          <tr><td>Hagrid</td><td class="num">846</td><td class="num">14</td><td class="num">860</td><td class="num">1.6%</td><td><span class="badge badge-amber">注意</span></td></tr>
-          <tr><td>JEBERT</td><td class="num">358</td><td class="num">252</td><td class="num">610</td><td class="num">41.3%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
-          <tr><td>Harris</td><td class="num">314</td><td class="num">268</td><td class="num">582</td><td class="num">46.0%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
-          <tr><td>RUSSEL</td><td class="num">302</td><td class="num">229</td><td class="num">531</td><td class="num">43.1%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
-          <tr><td>NICKO</td><td class="num">253</td><td class="num">363</td><td class="num">616</td><td class="num">58.9%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
-          <tr><td>JEMRIL</td><td class="num">242</td><td class="num">185</td><td class="num">427</td><td class="num">43.3%</td><td><span class="badge badge-amber">注意</span></td></tr>
-          <tr><td>Glendie</td><td class="num">226</td><td class="num">196</td><td class="num">422</td><td class="num">46.5%</td><td><span class="badge badge-amber">注意</span></td></tr>
-          <tr><td>JACOB</td><td class="num">170</td><td class="num">6</td><td class="num">176</td><td class="num">3.4%</td><td><span class="badge badge-green">正常</span></td></tr>
-          <tr><td>Rency</td><td class="num">38</td><td class="num">1</td><td class="num">39</td><td class="num">2.6%</td><td><span class="badge badge-green">正常</span></td></tr>
+          <tr><td>Bore</td><td>内径磨</td><td class="num">2,662</td><td class="num">233</td><td class="num">8.0%</td><td>内径综合超差</td><td>其他/混料撞车</td><td>619/22.02 (1,117)</td></tr>
+          <tr><td>ORSF</td><td>外径超精</td><td class="num">901</td><td class="num">670</td><td class="num" style="color:#dc2626;">42.6%</td><td>OD SCRATCH (746)</td><td>生锈 (516)</td><td>619/22.01 (436)</td></tr>
+          <tr><td>IR</td><td>内沟磨</td><td class="num">700</td><td class="num">17</td><td class="num">2.4%</td><td>Roundness (27)</td><td>其他/生锈</td><td>6203/02 (237)</td></tr>
+          <tr><td>OR</td><td>外沟磨</td><td class="num">482</td><td class="num">490</td><td class="num" style="color:#dc2626;">50.4%</td><td>OD SCRATCH (13)</td><td>生锈 (464)</td><td>619/22.01 (260)</td></tr>
+          <tr><td>IRSF</td><td>内径超精</td><td class="num">199</td><td class="num">335</td><td class="num" style="color:#dc2626;">62.7%</td><td>ID SCRATCH (70)</td><td>生锈 (202)</td><td>6203/02 (80)</td></tr>
         </tbody>
       </table>
     </div>
 
-    <p style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:12px;">后磨废品 — TOP 10 型号明细</p>
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;">后磨 — 操作员明细</p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr><th>操作员</th><th>主要工序</th><th>责任废</th><th>料废</th><th>合计</th><th>料废率</th><th>评估</th></tr></thead>
+        <tbody>
+          <tr><td>JEYLOAD</td><td>Bore</td><td class="num">1,168</td><td class="num">103</td><td class="num">1,271</td><td class="num">8.1%</td><td><span class="badge badge-red">⚠ 最高</span></td></tr>
+          <tr><td>NICOL</td><td>Bore</td><td class="num">967</td><td class="num">134</td><td class="num">1,101</td><td class="num">12.2%</td><td><span class="badge badge-red">⚠ 高</span></td></tr>
+          <tr><td>Hagrid</td><td>IR</td><td class="num">846</td><td class="num">14</td><td class="num">860</td><td class="num">1.6%</td><td><span class="badge badge-amber">注意</span></td></tr>
+          <tr><td>JEBERT</td><td>OR</td><td class="num">358</td><td class="num">252</td><td class="num">610</td><td class="num" style="color:#dc2626;">41.3%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
+          <tr><td>Harris</td><td>ORSF</td><td class="num">314</td><td class="num">268</td><td class="num">582</td><td class="num" style="color:#dc2626;">46.0%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
+          <tr><td>RUSSEL</td><td>Bore/OR</td><td class="num">302</td><td class="num">229</td><td class="num">531</td><td class="num" style="color:#dc2626;">43.1%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
+          <tr><td>NICKO</td><td>IRSF/ORSF</td><td class="num">253</td><td class="num">363</td><td class="num">616</td><td class="num" style="color:#dc2626;">58.9%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
+          <tr><td>JEMRIL</td><td>ORSF</td><td class="num">242</td><td class="num">185</td><td class="num">427</td><td class="num" style="color:#dc2626;">43.3%</td><td><span class="badge badge-amber">注意</span></td></tr>
+          <tr><td>Glendie</td><td>ORSF</td><td class="num">226</td><td class="num">196</td><td class="num">422</td><td class="num" style="color:#dc2626;">46.5%</td><td><span class="badge badge-amber">注意</span></td></tr>
+          <tr><td>JACOB</td><td>IR</td><td class="num">170</td><td class="num">6</td><td class="num">176</td><td class="num">3.4%</td><td><span class="badge badge-green">正常</span></td></tr>
+          <tr><td>Rency</td><td>Bore</td><td class="num">38</td><td class="num">1</td><td class="num">39</td><td class="num">2.6%</td><td><span class="badge badge-green">正常</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;">后磨 — TOP 10 型号</p>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>型号 Model</th>
-            <th>责任废 (pcs)</th>
-            <th>料废 (pcs)</th>
-            <th>占总责任废比</th>
-            <th>料废占比</th>
-            <th>状态</th>
-          </tr>
-        </thead>
+        <thead><tr><th>型号</th><th>责任废</th><th>料废</th><th>占总责任废</th><th>料废率</th><th>主要工序</th><th>状态</th></tr></thead>
         <tbody>
-          <tr><td>619/22.02</td><td class="num">1,368</td><td class="num">171</td><td class="num">27.7%</td><td class="num">11.1%</td><td><span class="badge badge-red">⚠ 重点</span></td></tr>
-          <tr><td>6203/02</td><td class="num">1,233</td><td class="num">35</td><td class="num">24.9%</td><td class="num">2.8%</td><td><span class="badge badge-red">⚠ 重点</span></td></tr>
-          <tr><td>619/22.01</td><td class="num">696</td><td class="num">588</td><td class="num">14.1%</td><td class="num">45.8%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
-          <tr><td>DC 6203/02</td><td class="num">483</td><td class="num">20</td><td class="num">9.8%</td><td class="num">4.0%</td><td><span class="badge badge-amber">关注</span></td></tr>
-          <tr><td>6203K/02</td><td class="num">244</td><td class="num">24</td><td class="num">4.9%</td><td class="num">9.0%</td><td><span class="badge badge-amber">关注</span></td></tr>
-          <tr><td>6202K/02</td><td class="num">239</td><td class="num">231</td><td class="num">4.8%</td><td class="num">49.2%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
-          <tr><td>6203K/01</td><td class="num">237</td><td class="num">44</td><td class="num">4.8%</td><td class="num">15.7%</td><td><span class="badge badge-amber">关注</span></td></tr>
-          <tr><td>6202K/01</td><td class="num">143</td><td class="num">497</td><td class="num">2.9%</td><td class="num">77.6%</td><td><span class="badge badge-red">⚠ 料废异常</span></td></tr>
-          <tr><td>DC 6203/01</td><td class="num">140</td><td class="num">4</td><td class="num">2.8%</td><td class="num">2.8%</td><td><span class="badge badge-green">正常</span></td></tr>
-          <tr><td>6203/01</td><td class="num">102</td><td class="num">27</td><td class="num">2.1%</td><td class="num">20.9%</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>619/22.02</td><td class="num">1,368</td><td class="num">171</td><td class="num">27.7%</td><td class="num">11.1%</td><td>Bore, IR, IRSF</td><td><span class="badge badge-red">⚠ 重点</span></td></tr>
+          <tr><td>6203/02</td><td class="num">1,233</td><td class="num">35</td><td class="num">24.9%</td><td class="num">2.8%</td><td>Bore, IR, IRSF</td><td><span class="badge badge-red">⚠ 重点</span></td></tr>
+          <tr><td>619/22.01</td><td class="num">696</td><td class="num">588</td><td class="num">14.1%</td><td class="num" style="color:#dc2626;">45.8%</td><td>OR, ORSF</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
+          <tr><td>DC 6203/02</td><td class="num">483</td><td class="num">20</td><td class="num">9.8%</td><td class="num">4.0%</td><td>Bore, IR</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>6203K/02</td><td class="num">244</td><td class="num">24</td><td class="num">4.9%</td><td class="num">9.0%</td><td>Bore, IR</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>6202K/02</td><td class="num">239</td><td class="num">231</td><td class="num">4.8%</td><td class="num" style="color:#dc2626;">49.2%</td><td>Bore</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
+          <tr><td>6203K/01</td><td class="num">237</td><td class="num">44</td><td class="num">4.8%</td><td class="num">15.7%</td><td>OR, ORSF</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>6202K/01</td><td class="num">143</td><td class="num">497</td><td class="num">2.9%</td><td class="num" style="color:#dc2626;">77.6%</td><td>ORSF</td><td><span class="badge badge-red">⚠ 料废异常</span></td></tr>
+          <tr><td>DC 6203/01</td><td class="num">140</td><td class="num">4</td><td class="num">2.8%</td><td class="num">2.8%</td><td>OR, ORSF</td><td><span class="badge badge-green">正常</span></td></tr>
+          <tr><td>6203/01</td><td class="num">102</td><td class="num">27</td><td class="num">2.1%</td><td class="num">20.9%</td><td>OR, ORSF</td><td><span class="badge badge-amber">关注</span></td></tr>
         </tbody>
       </table>
     </div>
   </section>
-
-  <!-- ── Section 7: Insights ── -->
-  <section>
-    <div class="section-label">SECTION 07</div>
-    <div class="section-title">分析洞察 &amp; 建议 / Key Insights &amp; Recommendations</div>
-    <div class="insights">
-      <div class="insight-card" style="--insight-color: #ef4444;">
-        <div class="insight-head">⚡ 高优先级 — 型号619/22</div>
-        <div class="insight-body">619/22.01 &amp; 619/22.02 合计占后磨责任废品 <strong>41.8%</strong>（2,064件），且619/22.01料废占比高达 <strong>45.8%</strong>。需立即排查该型号的原材料质量与加工参数。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #ef4444;">
-        <div class="insight-head">⚡ 高优先级 — 料废异常</div>
-        <div class="insight-body">6202K/01 料废占比达 <strong>77.6%</strong>（497件料废 vs 143件责任废），6202K/02 料废占比 <strong>49.2%</strong>。建议检查该批次原材料来料质量。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #f59e0b;">
-        <div class="insight-head">⚠ 关注 — Line 10 料废</div>
-        <div class="insight-body">Line 10 料废达 <strong>1,599件</strong>，占两条线料废总量的 <strong>91.6%</strong>，远高于Line 9（146件）。Line 10 存在系统性的来料或流程问题。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #f59e0b;">
-        <div class="insight-head">⚠ 关注 — 操作员NICKO</div>
-        <div class="insight-body">NICKO料废363件超过责任废253件，料废占比 <strong>58.9%</strong>，是所有操作员中料废比最高的。建议审查其操作规范与来料确认流程。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #38bdf8;">
-        <div class="insight-head">📊 趋势 — 月末废品激增</div>
-        <div class="insight-body">5月23日（369件）、5月24日（428件）、5月25日（352件）、5月30日（350件）出现集中高峰，月末连续多日超日均 <strong>2倍</strong>。需调查是否因产量冲刺、人员疲劳或设备状态变化所致。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #10b981;">
-        <div class="insight-head">✅ 亮点 — 前磨控制良好</div>
-        <div class="insight-body">前磨总废品仅 <strong>265件</strong>（责任废234 + 料废31），相比后磨6,696件规模极小。前磨工序整体质量控制稳定，建议维持现有管控措施。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #a78bfa;">
-        <div class="insight-head">🔍 建议 — OD SCRATCH主因</div>
-        <div class="insight-body">后磨尺寸缺陷中 OD SCRATCH（外径划伤）占 <strong>759件</strong>，占有效记录缺陷总量的 <strong>88.5%</strong>。建议重点检查磨削砂轮状态、切削液供应与工件装夹方式。</div>
-      </div>
-      <div class="insight-card" style="--insight-color: #06b6d4;">
-        <div class="insight-head">📌 建议 — 生锈料废</div>
-        <div class="insight-body">后磨料废中生锈（Rust）高达 <strong>1,197件</strong>，占料废总量 <strong>68.3%</strong>。需排查防锈油使用情况、在制品存放环境及转序等待时间过长问题。</div>
-      </div>
-    </div>
-  </section>
+</div>
 
 </main>
 
@@ -739,196 +548,197 @@
 </footer>
 
 <script>
-// ── Chart defaults ──
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = 'rgba(99,179,237,0.1)';
-Chart.defaults.font.family = "'JetBrains Mono', monospace";
-Chart.defaults.font.size = 11;
-
-const COLORS = ['#38bdf8','#f59e0b','#10b981','#ef4444','#a78bfa','#f97316','#06b6d4','#8b5cf6','#ec4899','#84cc16'];
-
-function mkChart(id, type, data, opts={}) {
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
-  return new Chart(ctx, { type, data, options: { responsive: true, maintainAspectRatio: false, ...opts } });
+// ── Tab switching ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
 }
 
-// ── 1. Daily Trend ──
-mkChart('dailyChart', 'bar', {
-  labels: ['5/3','5/4','5/5','5/6','5/7','5/8','5/9','5/10','5/11','5/12','5/13','5/14','5/15','5/16','5/17','5/18','5/19','5/20','5/21','5/22','5/23','5/24','5/25','5/26','5/27','5/28','5/29','5/30'],
-  datasets: [
-    {
-      label: '责任废 (pcs)',
-      data: [135,221,108,112,116,291,171,55,150,120,88,178,55,68,28,112,85,78,218,231,369,428,352,220,243,234,128,350],
-      backgroundColor: 'rgba(56,189,248,0.75)',
-      borderColor: '#38bdf8',
-      borderWidth: 1,
-      borderRadius: 3,
-    },
-    {
-      label: '料废 (pcs)',
-      data: [0,108,67,41,90,6,114,219,240,129,57,2,24,45,25,3,16,32,87,96,3,31,16,257,12,0,5,20],
-      backgroundColor: 'rgba(245,158,11,0.65)',
-      borderColor: '#f59e0b',
-      borderWidth: 1,
-      borderRadius: 3,
-    }
+// ── Chart defaults ──
+Chart.defaults.color = '#4b5a7a';
+Chart.defaults.borderColor = '#e8ecf5';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+
+const PROC_COLORS = { Bore:'#2563eb', ORSF:'#7c3aed', IR:'#059669', OR:'#d97706', IRSF:'#dc2626' };
+const LIGHT_COLORS = ['#2563eb','#d97706','#059669','#dc2626','#7c3aed','#e85d04','#0891b2','#4f46e5','#be185d','#65a30d'];
+
+function mk(id, type, data, opts={}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  return new Chart(ctx, { type, data, options:{ responsive:true, maintainAspectRatio:false, ...opts } });
+}
+
+// ── 1. Daily trend ──
+mk('dailyChart','bar',{
+  labels:['5/3','5/4','5/5','5/6','5/7','5/8','5/9','5/10','5/11','5/12','5/13','5/14','5/15','5/16','5/17','5/18','5/19','5/20','5/21','5/22','5/23','5/24','5/25','5/26','5/27','5/28','5/29','5/30'],
+  datasets:[
+    {label:'责任废',data:[135,221,108,112,116,291,171,55,150,120,88,178,55,68,28,112,85,78,218,231,369,428,352,220,243,234,128,350],backgroundColor:'rgba(37,99,235,0.75)',borderColor:'#2563eb',borderWidth:1,borderRadius:4},
+    {label:'料废',data:[0,108,67,41,90,6,114,219,240,129,57,2,24,45,25,3,16,32,87,96,3,31,16,257,12,0,5,20],backgroundColor:'rgba(217,119,6,0.65)',borderColor:'#d97706',borderWidth:1,borderRadius:4}
   ]
-}, {
-  plugins: {
-    legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } },
-    tooltip: { mode: 'index', intersect: false }
-  },
-  scales: {
-    x: { stacked: false, grid: { display: false }, ticks: { maxRotation: 0 } },
-    y: { stacked: false, grid: { color: 'rgba(255,255,255,0.04)' } }
-  }
-});
+},{plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0}},y:{grid:{color:'#eef1f8'}}}});
 
-// ── 2. After Grinding by Model ──
-mkChart('modelChartAfter', 'bar', {
-  labels: ['619/22.02','6203/02','619/22.01','DC6203/02','6203K/02','6202K/02','6203K/01','6202K/01','DC6203/01','6203/01'],
-  datasets: [{
-    label: '责任废 (pcs)',
-    data: [1368,1233,696,483,244,239,237,143,140,102],
-    backgroundColor: COLORS.map(c => c + 'cc'),
-    borderColor: COLORS,
-    borderWidth: 1,
-    borderRadius: 4,
-  }]
-}, {
-  indexAxis: 'y',
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)' } },
-    y: { grid: { display: false } }
-  }
-});
+// ── 2. After Grinding Process Pie ──
+mk('afterProcPie','doughnut',{
+  labels:['Bore (内径)','ORSF (外超)','IR (内沟)','OR (外沟)','IRSF (内超)'],
+  datasets:[{data:[2662,901,700,482,199],backgroundColor:['#2563eb','#7c3aed','#059669','#d97706','#dc2626'],borderColor:'#fff',borderWidth:3}]
+},{plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:10}}},cutout:'58%'});
 
-// ── 3. After Grinding by Process ──
-mkChart('processChartAfter', 'doughnut', {
-  labels: ['Bore (内径)', 'ORSF (大超)', 'IR (小沟)', 'OR (大沟)', 'IRSF (小超)'],
-  datasets: [{
-    data: [2662, 901, 700, 482, 199],
-    backgroundColor: ['rgba(56,189,248,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)','rgba(239,68,68,0.8)','rgba(167,139,250,0.8)'],
-    borderColor: '#111827',
-    borderWidth: 2,
-  }]
-}, {
-  plugins: {
-    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
-  },
-  cutout: '60%'
-});
+// ── 3. Before Grinding Process Pie ──
+mk('beforeProcPie','doughnut',{
+  labels:['End Face (端面)','Centerless (无心)'],
+  datasets:[{data:[124,110],backgroundColor:['#2563eb','#059669'],borderColor:'#fff',borderWidth:3}]
+},{plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:10}}},cutout:'58%'});
 
-// ── 4. Before Grinding by Model ──
-mkChart('modelChartBefore', 'bar', {
-  labels: ['6202/01','619/22.01','619/22.02','6203K/01','6203/02','6203/01','6203K/02'],
-  datasets: [{
-    label: '责任废 (pcs)',
-    data: [55,46,36,29,25,18,17],
-    backgroundColor: ['rgba(167,139,250,0.8)','rgba(56,189,248,0.8)','rgba(6,182,212,0.8)','rgba(16,185,129,0.8)','rgba(249,115,22,0.8)','rgba(245,158,11,0.8)','rgba(139,92,246,0.8)'],
-    borderWidth: 1,
-    borderRadius: 3,
-  }]
-}, {
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' } }
-  }
-});
+// ── 4. Material Waste by Process Pie ──
+mk('matWasteProcPie','doughnut',{
+  labels:['ORSF (670)','OR (490)','IRSF (335)','Bore (233)','IR (17)'],
+  datasets:[{data:[670,490,335,233,17],backgroundColor:['#7c3aed','#d97706','#dc2626','#2563eb','#059669'],borderColor:'#fff',borderWidth:3}]
+},{plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:10,font:{size:10}}}},cutout:'58%'});
 
-// ── 5. Before Grinding by Process ──
-mkChart('processChartBefore', 'bar', {
-  labels: ['End face (端面)', 'Centerless (无心)'],
-  datasets: [
-    {
-      label: '责任废',
-      data: [124, 110],
-      backgroundColor: 'rgba(56,189,248,0.75)',
-      borderColor: '#38bdf8',
-      borderWidth: 1, borderRadius: 4,
-    },
-    {
-      label: '料废',
-      data: [8, 23],
-      backgroundColor: 'rgba(167,139,250,0.65)',
-      borderColor: '#a78bfa',
-      borderWidth: 1, borderRadius: 4,
-    }
+// ── 5. Before - Process × Model ──
+mk('beforeProcModel','bar',{
+  labels:['6202/01','619/22.01','619/22.02','6203K/01','6203/02','6203/01','6203K/02','6202/02'],
+  datasets:[
+    {label:'End Face',data:[11,6,36,6,25,15,23,2],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:3,borderWidth:1},
+    {label:'Centerless',data:[44,40,0,23,0,3,0,0],backgroundColor:'rgba(5,150,105,0.8)',borderRadius:3,borderWidth:1}
   ]
-}, {
-  plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 12 } } },
-  scales: {
-    x: { grid: { display: false } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' } }
-  }
-});
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12}},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#eef1f8'}}}});
 
-// ── 6. Operator Chart ──
-mkChart('operatorChart', 'bar', {
-  labels: ['JEYLOAD','NICOL','Hagrid','JEBERT','Harris','RUSSEL','NICKO','JEMRIL','Glendie','JACOB'],
-  datasets: [
-    {
-      label: '责任废',
-      data: [1168,967,846,358,314,302,253,242,226,170],
-      backgroundColor: 'rgba(56,189,248,0.75)',
-      borderColor: '#38bdf8',
-      borderWidth: 1, borderRadius: 3,
-    },
-    {
-      label: '料废',
-      data: [103,134,14,252,268,229,363,185,196,6],
-      backgroundColor: 'rgba(239,68,68,0.65)',
-      borderColor: '#ef4444',
-      borderWidth: 1, borderRadius: 3,
-    }
+// ── 6. Before - Operator × Process ──
+mk('beforeOperProc','bar',{
+  labels:['Dominic','Reymond'],
+  datasets:[
+    {label:'End Face 责任废',data:[0,85],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:3},
+    {label:'End Face 料废',data:[0,8],backgroundColor:'rgba(37,99,235,0.3)',borderRadius:3},
+    {label:'Centerless 责任废',data:[110,0],backgroundColor:'rgba(5,150,105,0.8)',borderRadius:3},
+    {label:'Centerless 料废',data:[23,0],backgroundColor:'rgba(5,150,105,0.3)',borderRadius:3},
   ]
-}, {
-  plugins: {
-    legend: { position: 'top', labels: { boxWidth: 10, padding: 12 } },
-    tooltip: { mode: 'index', intersect: false }
-  },
-  scales: {
-    x: { grid: { display: false }, ticks: { maxRotation: 30, minRotation: 30 } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' }, stacked: false }
-  }
-});
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:8,font:{size:10}}},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#eef1f8'}}}});
 
-// ── 7. Material Waste After ──
-mkChart('matWasteAfter', 'doughnut', {
-  labels: ['生锈 Rust (1,197)','其它 Other (297)','污渍 Stain (166)','混料/撞车 (83)','凹陷 Dents (2)'],
-  datasets: [{
-    data: [1197,297,166,83,2],
-    backgroundColor: ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(167,139,250,0.8)','rgba(6,182,212,0.8)','rgba(16,185,129,0.8)'],
-    borderColor: '#111827',
-    borderWidth: 2,
-  }]
-}, {
-  plugins: {
-    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 10 } } },
-  },
-  cutout: '55%'
-});
+// ── 7. After - Process Bar (resp + material) ──
+mk('afterProcBar','bar',{
+  labels:['Bore','ORSF','IR','OR','IRSF'],
+  datasets:[
+    {label:'责任废',data:[2662,901,700,482,199],backgroundColor:['rgba(37,99,235,0.8)','rgba(124,58,237,0.8)','rgba(5,150,105,0.8)','rgba(217,119,6,0.8)','rgba(220,38,38,0.8)'],borderRadius:4,borderWidth:1},
+    {label:'料废',data:[233,670,17,490,335],backgroundColor:['rgba(37,99,235,0.3)','rgba(124,58,237,0.3)','rgba(5,150,105,0.3)','rgba(217,119,6,0.3)','rgba(220,38,38,0.3)'],borderRadius:4,borderWidth:1}
+  ]
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#eef1f8'}}}});
 
-// ── 8. Defect Type After ──
-mkChart('defectTypeAfter', 'bar', {
-  labels: ['OD SCRATCH\n(外径划伤)','ID SCRATCH\n(内径划伤)','Roundness\n(圆度)','CHAMFER\n(倒角划伤)'],
-  datasets: [{
-    label: '件数 (pcs)',
-    data: [759,70,27,4],
-    backgroundColor: ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(56,189,248,0.8)','rgba(16,185,129,0.8)'],
-    borderWidth: 1,
-    borderRadius: 4,
-  }]
-}, {
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { display: false }, ticks: { maxRotation: 0 } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' } }
+// ── 8. Material waste stacked by process ──
+mk('afterMatByProc','bar',{
+  labels:['Bore','ORSF','IR','OR','IRSF'],
+  datasets:[
+    {label:'生锈 Rust',data:[8,516,7,464,202],backgroundColor:'rgba(220,38,38,0.85)',borderRadius:2},
+    {label:'污渍 Stain',data:[0,124,0,25,17],backgroundColor:'rgba(249,115,22,0.85)',borderRadius:2},
+    {label:'混料撞车',data:[83,0,0,0,0],backgroundColor:'rgba(124,58,237,0.85)',borderRadius:2},
+    {label:'其它 Other',data:[142,28,10,1,116],backgroundColor:'rgba(156,163,175,0.85)',borderRadius:2},
+  ]
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10,font:{size:10}}}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#eef1f8'}}}});
+
+// ── 9. Process × Line ──
+mk('afterProcLine','bar',{
+  labels:['Bore','ORSF','IR','OR','IRSF'],
+  datasets:[
+    {label:'Line 9 责任废',data:[1279,343,488,187,118],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:3},
+    {label:'Line 10 责任废',data:[1383,558,212,295,81],backgroundColor:'rgba(96,165,250,0.8)',borderRadius:3},
+    {label:'Line 9 料废',data:[3,41,3,34,65],backgroundColor:'rgba(217,119,6,0.8)',borderRadius:3},
+    {label:'Line 10 料废',data:[230,629,14,456,270],backgroundColor:'rgba(251,191,36,0.8)',borderRadius:3},
+  ]
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:8,font:{size:10}}}},scales:{x:{stacked:false,grid:{display:false}},y:{grid:{color:'#eef1f8'}}}});
+
+// ── 10. Daily process stack ──
+mk('dailyProcStack','bar',{
+  labels:['5/3','5/4','5/5','5/6','5/7','5/8','5/9','5/10','5/11','5/12','5/13','5/14','5/15','5/16','5/17','5/18','5/19','5/20','5/21','5/22','5/23','5/24','5/25','5/26','5/27','5/28','5/29','5/30'],
+  datasets:[
+    {label:'Bore',data:[87,99,7,23,73,170,76,13,8,14,18,51,22,42,2,8,44,49,126,87,254,367,239,187,228,114,67,187],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:2},
+    {label:'ORSF',data:[32,66,43,46,8,13,78,17,90,30,25,78,0,9,12,42,13,15,81,138,34,18,0,2,0,0,3,8],backgroundColor:'rgba(124,58,237,0.8)',borderRadius:2},
+    {label:'IR',data:[12,39,55,26,15,75,0,17,32,55,37,10,12,6,0,0,14,12,7,4,21,31,69,14,11,50,57,19],backgroundColor:'rgba(5,150,105,0.8)',borderRadius:2},
+    {label:'OR',data:[4,17,3,11,9,32,17,7,8,4,8,39,17,8,14,33,14,2,2,2,6,12,13,7,3,55,1,134],backgroundColor:'rgba(217,119,6,0.8)',borderRadius:2},
+    {label:'IRSF',data:[0,0,0,6,11,1,0,1,12,17,0,0,4,3,0,29,0,0,2,0,54,0,31,10,1,15,0,2],backgroundColor:'rgba(220,38,38,0.8)',borderRadius:2},
+  ]
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:8,font:{size:10}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,font:{size:9}}},y:{stacked:true,grid:{color:'#eef1f8'}}}});
+
+// ── 11. Heatmap (Operator × Process) ──
+(function(){
+  const data = {
+    JEYLOAD:{Bore:1144,IR:0,IRSF:0,OR:24,ORSF:0},
+    NICOL:{Bore:903,IR:0,IRSF:0,OR:2,ORSF:62},
+    Hagrid:{Bore:315,IR:531,IRSF:0,OR:0,ORSF:0},
+    JEBERT:{Bore:15,IR:0,IRSF:0,OR:343,ORSF:0},
+    Harris:{Bore:0,IR:0,IRSF:58,OR:0,ORSF:256},
+    RUSSEL:{Bore:202,IR:0,IRSF:0,OR:100,ORSF:0},
+    NICKO:{Bore:0,IR:0,IRSF:130,OR:0,ORSF:123},
+    JEMRIL:{Bore:40,IR:0,IRSF:4,OR:0,ORSF:198},
+    Glendie:{Bore:0,IR:0,IRSF:7,OR:0,ORSF:219},
+    JACOB:{Bore:0,IR:169,IRSF:0,OR:1,ORSF:0},
+    Rency:{Bore:38,IR:0,IRSF:0,OR:0,ORSF:0},
+  };
+  const procs=['Bore','ORSF','IR','OR','IRSF'];
+  const maxVal=1144;
+  const colors=['#eff6ff','#bfdbfe','#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8'];
+  function getColor(v){
+    if(v===0)return '#f8f9fc';
+    const pct=v/maxVal;
+    if(pct<0.05)return colors[1];
+    if(pct<0.15)return colors[2];
+    if(pct<0.3)return colors[3];
+    if(pct<0.5)return colors[4];
+    if(pct<0.75)return colors[5];
+    return colors[6];
   }
-});
+  function textColor(v){return v/maxVal>0.4?'#fff':'#1e2a45';}
+  const tbl=document.getElementById('heatmapTable');
+  let html='<thead><tr><th>操作员</th>';
+  procs.forEach(p=>html+=`<th>${p}</th>`);
+  html+='<th>合计</th></tr></thead><tbody>';
+  Object.keys(data).forEach(op=>{
+    html+=`<tr><td>${op}</td>`;
+    let tot=0;
+    procs.forEach(p=>{
+      const v=data[op][p]||0; tot+=v;
+      const bg=getColor(v);const tc=textColor(v);
+      html+=`<td style="background:${bg};color:${tc};">${v||''}</td>`;
+    });
+    const bg=getColor(tot);const tc=textColor(tot);
+    html+=`<td style="background:${bg};color:${tc};font-weight:700;">${tot}</td></tr>`;
+  });
+  html+='</tbody>';
+  tbl.innerHTML=html;
+})();
+
+// ── 12. Operator total bar ──
+mk('operTotalBar','bar',{
+  labels:['JEYLOAD','NICOL','Hagrid','JEBERT','Harris','RUSSEL','NICKO','JEMRIL','Glendie','JACOB'],
+  datasets:[
+    {label:'责任废',data:[1168,967,846,358,314,302,253,242,226,170],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:3},
+    {label:'料废',data:[103,134,14,252,268,229,363,185,196,6],backgroundColor:'rgba(220,38,38,0.65)',borderRadius:3}
+  ]
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:30,minRotation:30}},y:{grid:{color:'#eef1f8'}}}});
+
+// ── 13. Operator material ratio ──
+const operNames=['NICKO','Harris','Glendie','JEMRIL','RUSSEL','JEBERT','NICOL','JEYLOAD','JACOB','Rency'];
+const matRatios=[58.9,46.0,46.5,43.3,43.1,41.3,12.2,8.1,3.4,2.6];
+mk('operMatRatio','bar',{
+  labels:operNames,
+  datasets:[{
+    label:'料废占比 %',
+    data:matRatios,
+    backgroundColor:matRatios.map(v=>v>40?'rgba(220,38,38,0.8)':v>15?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.8)'),
+    borderRadius:4,borderWidth:1
+  }]
+},{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'#eef1f8'},max:70},y:{grid:{display:false}}}});
+
+// ── 14. Before Grinding Operator ──
+mk('beforeOperBar','bar',{
+  labels:['Dominic','Reymond'],
+  datasets:[
+    {label:'责任废',data:[149,85],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:4},
+    {label:'料废',data:[31,0],backgroundColor:'rgba(217,119,6,0.7)',borderRadius:4}
+  ]
+},{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#eef1f8'}}}});
 </script>
 </body>
 </html>
