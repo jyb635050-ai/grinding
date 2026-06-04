@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>磨工废品分析报告 — 2026年5月</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: rgba(99,179,237,0.12);
+    --accent: #38bdf8;
+    --accent2: #f59e0b;
+    --accent3: #ef4444;
+    --accent4: #10b981;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --glow: rgba(56,189,248,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 48px 48px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(56,189,248,0.06) 0%, transparent 100%);
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .header-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  header h1 {
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: #f0f9ff;
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  .header-meta {
+    margin-top: 16px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .meta-pill .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── LAYOUT ── */
+  main {
+    padding: 0 48px 64px;
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  section {
+    margin-top: 48px;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+    opacity: 0.7;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f0f9ff;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 0;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--kpi-color, var(--accent));
+    opacity: 0.7;
+  }
+
+  .kpi-card:hover {
+    border-color: rgba(99,179,237,0.3);
+    transform: translateY(-2px);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--kpi-color, var(--accent));
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ── CHART CARDS ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .charts-grid.wide {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .chart-card.full {
+    grid-column: 1 / -1;
+  }
+
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 260px;
+  }
+
+  .chart-wrap.tall {
+    height: 320px;
+  }
+
+  .chart-wrap.short {
+    height: 200px;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  thead th {
+    background: rgba(56,189,248,0.06);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover {
+    background: rgba(56,189,248,0.04);
+  }
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  tbody td {
+    padding: 11px 16px;
+    color: var(--text-dim);
+  }
+
+  tbody td:first-child {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .badge-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .badge-blue { background: rgba(56,189,248,0.15); color: var(--accent); }
+
+  /* ── INSIGHT BOX ── */
+  .insights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .insight-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 3px solid var(--insight-color, var(--accent));
+  }
+
+  .insight-head {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--insight-color, var(--accent));
+    margin-bottom: 8px;
+  }
+
+  .insight-body {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .insight-body strong {
+    color: var(--text);
+  }
+
+  /* ── BAR MINI ── */
+  .mini-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .mini-bar-label {
+    width: 100px;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .mini-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .mini-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--bar-color, var(--accent));
+    transition: width 1s ease;
+  }
+
+  .mini-bar-val {
+    width: 40px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 64px;
+    padding: 24px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 40px 0;
+  }
+
+  @media (max-width: 768px) {
+    main, header, footer { padding-left: 20px; padding-right: 20px; }
+    .charts-grid, .charts-grid.wide { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">质量分析报告 / Quality Analysis Report</div>
+  <h1>磨工废品<span>月度分析</span></h1>
+  <div class="header-meta">
+    <div class="meta-pill"><span class="dot"></span> 2026年5月 — MAY 2026</div>
+    <div class="meta-pill">数据来源: Grinder_waste_MAY_2026.xlsx</div>
+    <div class="meta-pill">前磨 + 后磨 双工序</div>
+    <div class="meta-pill">Line 9 &amp; Line 10</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Section 1: KPIs ── -->
+  <section>
+    <div class="section-label">SECTION 01</div>
+    <div class="section-title">关键指标概览 / Key Performance Indicators</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color: #38bdf8;">
+        <div class="kpi-label">后磨责任废品合计</div>
+        <div class="kpi-value">4,944</div>
+        <div class="kpi-sub">After Grinding — Responsibility Waste (pcs)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #f59e0b;">
+        <div class="kpi-label">后磨料废合计</div>
+        <div class="kpi-value">1,752</div>
+        <div class="kpi-sub">After Grinding — Material Waste (pcs)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #10b981;">
+        <div class="kpi-label">前磨责任废品合计</div>
+        <div class="kpi-value">234</div>
+        <div class="kpi-sub">Before Grinding — Responsibility Waste (pcs)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #a78bfa;">
+        <div class="kpi-label">前磨料废合计</div>
+        <div class="kpi-value">31</div>
+        <div class="kpi-sub">Before Grinding — Material Waste (pcs)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #ef4444;">
+        <div class="kpi-label">综合废品总量</div>
+        <div class="kpi-value">6,961</div>
+        <div class="kpi-sub">Total All Waste (pcs)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #f97316;">
+        <div class="kpi-label">后磨废品记录天数</div>
+        <div class="kpi-value">28</div>
+        <div class="kpi-sub">Working days with records</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #06b6d4;">
+        <div class="kpi-label">日均后磨责任废</div>
+        <div class="kpi-value">177</div>
+        <div class="kpi-sub">Avg daily responsibility waste (pcs)</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color: #8b5cf6;">
+        <div class="kpi-label">后磨操作人员</div>
+        <div class="kpi-value">14</div>
+        <div class="kpi-sub">Operators tracked</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 2: Daily Trend ── -->
+  <section>
+    <div class="section-label">SECTION 02</div>
+    <div class="section-title">每日废品趋势 / Daily Waste Trend (After Grinding)</div>
+    <div class="chart-card">
+      <div class="chart-title">后磨每日责任废品 &amp; 料废数量（May 2026）</div>
+      <div class="chart-wrap tall">
+        <canvas id="dailyChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 3: By Model & Process ── -->
+  <section>
+    <div class="section-label">SECTION 03</div>
+    <div class="section-title">型号与工序分布 / By Model &amp; Process</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">后磨废品 — TOP 10 型号（责任废）</div>
+        <div class="chart-wrap">
+          <canvas id="modelChartAfter"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">后磨废品 — 工序分布</div>
+        <div class="chart-wrap">
+          <canvas id="processChartAfter"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;" class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">前磨废品 — 型号分布（责任废）</div>
+        <div class="chart-wrap short">
+          <canvas id="modelChartBefore"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">前磨废品 — 工序对比</div>
+        <div class="chart-wrap short">
+          <canvas id="processChartBefore"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 4: Lines & Operators ── -->
+  <section>
+    <div class="section-label">SECTION 04</div>
+    <div class="section-title">生产线 &amp; 操作人员分析 / Line &amp; Operator Analysis</div>
+    <div class="charts-grid wide">
+      <div class="chart-card">
+        <div class="chart-title">后磨操作员废品排名（责任废 + 料废）</div>
+        <div class="chart-wrap tall">
+          <canvas id="operatorChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">生产线废品对比（Line 9 vs Line 10）</div>
+        <div style="padding: 12px 0;">
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px;">后磨 — 责任废品</p>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Line 10</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:51.2%;--bar-color:#38bdf8;"></div></div>
+            <span class="mini-bar-val">2,529</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Line 9</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:48.8%;--bar-color:#f59e0b;"></div></div>
+            <span class="mini-bar-val">2,415</span>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin:20px 0 14px;">后磨 — 料废</p>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Line 10</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:91.6%;--bar-color:#ef4444;"></div></div>
+            <span class="mini-bar-val">1,599</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Line 9</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:8.4%;--bar-color:#f59e0b;"></div></div>
+            <span class="mini-bar-val">146</span>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin:20px 0 14px;">前磨 — 操作员对比</p>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Dominic</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:63.7%;--bar-color:#a78bfa;"></div></div>
+            <span class="mini-bar-val">149</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">Reymond</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:36.3%;--bar-color:#06b6d4;"></div></div>
+            <span class="mini-bar-val">85</span>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin:20px 0 14px;">后磨 — 班次对比</p>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">A班（Morning）</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:59.6%;--bar-color:#10b981;"></div></div>
+            <span class="mini-bar-val">2,937</span>
+          </div>
+          <div class="mini-bar-row">
+            <span class="mini-bar-label">B班（Night）</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:40.4%;--bar-color:#f97316;"></div></div>
+            <span class="mini-bar-val">1,993</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 5: Defect Type ── -->
+  <section>
+    <div class="section-label">SECTION 05</div>
+    <div class="section-title">废品类型细分 / Defect &amp; Material Waste Breakdown</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">后磨 — 料废类型分布</div>
+        <div class="chart-wrap">
+          <canvas id="matWasteAfter"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">后磨 — 尺寸缺陷类型（有效记录）</div>
+        <div class="chart-wrap">
+          <canvas id="defectTypeAfter"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 6: Detail Tables ── -->
+  <section>
+    <div class="section-label">SECTION 06</div>
+    <div class="section-title">数据明细表 / Detail Tables</div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:12px;">后磨废品 — 操作员明细</p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead>
+          <tr>
+            <th>操作员 Operator</th>
+            <th>责任废 (pcs)</th>
+            <th>料废 (pcs)</th>
+            <th>合计 Total</th>
+            <th>料废占比</th>
+            <th>级别评估</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>JEYLOAD</td><td class="num">1,168</td><td class="num">103</td><td class="num">1,271</td><td class="num">8.1%</td><td><span class="badge badge-red">⚠ 最高</span></td></tr>
+          <tr><td>NICOL</td><td class="num">967</td><td class="num">134</td><td class="num">1,101</td><td class="num">12.2%</td><td><span class="badge badge-red">⚠ 高</span></td></tr>
+          <tr><td>Hagrid</td><td class="num">846</td><td class="num">14</td><td class="num">860</td><td class="num">1.6%</td><td><span class="badge badge-amber">注意</span></td></tr>
+          <tr><td>JEBERT</td><td class="num">358</td><td class="num">252</td><td class="num">610</td><td class="num">41.3%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
+          <tr><td>Harris</td><td class="num">314</td><td class="num">268</td><td class="num">582</td><td class="num">46.0%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
+          <tr><td>RUSSEL</td><td class="num">302</td><td class="num">229</td><td class="num">531</td><td class="num">43.1%</td><td><span class="badge badge-red">⚠ 料废高</span></td></tr>
+          <tr><td>NICKO</td><td class="num">253</td><td class="num">363</td><td class="num">616</td><td class="num">58.9%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
+          <tr><td>JEMRIL</td><td class="num">242</td><td class="num">185</td><td class="num">427</td><td class="num">43.3%</td><td><span class="badge badge-amber">注意</span></td></tr>
+          <tr><td>Glendie</td><td class="num">226</td><td class="num">196</td><td class="num">422</td><td class="num">46.5%</td><td><span class="badge badge-amber">注意</span></td></tr>
+          <tr><td>JACOB</td><td class="num">170</td><td class="num">6</td><td class="num">176</td><td class="num">3.4%</td><td><span class="badge badge-green">正常</span></td></tr>
+          <tr><td>Rency</td><td class="num">38</td><td class="num">1</td><td class="num">39</td><td class="num">2.6%</td><td><span class="badge badge-green">正常</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:12px;">后磨废品 — TOP 10 型号明细</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>型号 Model</th>
+            <th>责任废 (pcs)</th>
+            <th>料废 (pcs)</th>
+            <th>占总责任废比</th>
+            <th>料废占比</th>
+            <th>状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>619/22.02</td><td class="num">1,368</td><td class="num">171</td><td class="num">27.7%</td><td class="num">11.1%</td><td><span class="badge badge-red">⚠ 重点</span></td></tr>
+          <tr><td>6203/02</td><td class="num">1,233</td><td class="num">35</td><td class="num">24.9%</td><td class="num">2.8%</td><td><span class="badge badge-red">⚠ 重点</span></td></tr>
+          <tr><td>619/22.01</td><td class="num">696</td><td class="num">588</td><td class="num">14.1%</td><td class="num">45.8%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
+          <tr><td>DC 6203/02</td><td class="num">483</td><td class="num">20</td><td class="num">9.8%</td><td class="num">4.0%</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>6203K/02</td><td class="num">244</td><td class="num">24</td><td class="num">4.9%</td><td class="num">9.0%</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>6202K/02</td><td class="num">239</td><td class="num">231</td><td class="num">4.8%</td><td class="num">49.2%</td><td><span class="badge badge-red">⚠ 料废极高</span></td></tr>
+          <tr><td>6203K/01</td><td class="num">237</td><td class="num">44</td><td class="num">4.8%</td><td class="num">15.7%</td><td><span class="badge badge-amber">关注</span></td></tr>
+          <tr><td>6202K/01</td><td class="num">143</td><td class="num">497</td><td class="num">2.9%</td><td class="num">77.6%</td><td><span class="badge badge-red">⚠ 料废异常</span></td></tr>
+          <tr><td>DC 6203/01</td><td class="num">140</td><td class="num">4</td><td class="num">2.8%</td><td class="num">2.8%</td><td><span class="badge badge-green">正常</span></td></tr>
+          <tr><td>6203/01</td><td class="num">102</td><td class="num">27</td><td class="num">2.1%</td><td class="num">20.9%</td><td><span class="badge badge-amber">关注</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Section 7: Insights ── -->
+  <section>
+    <div class="section-label">SECTION 07</div>
+    <div class="section-title">分析洞察 &amp; 建议 / Key Insights &amp; Recommendations</div>
+    <div class="insights">
+      <div class="insight-card" style="--insight-color: #ef4444;">
+        <div class="insight-head">⚡ 高优先级 — 型号619/22</div>
+        <div class="insight-body">619/22.01 &amp; 619/22.02 合计占后磨责任废品 <strong>41.8%</strong>（2,064件），且619/22.01料废占比高达 <strong>45.8%</strong>。需立即排查该型号的原材料质量与加工参数。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #ef4444;">
+        <div class="insight-head">⚡ 高优先级 — 料废异常</div>
+        <div class="insight-body">6202K/01 料废占比达 <strong>77.6%</strong>（497件料废 vs 143件责任废），6202K/02 料废占比 <strong>49.2%</strong>。建议检查该批次原材料来料质量。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #f59e0b;">
+        <div class="insight-head">⚠ 关注 — Line 10 料废</div>
+        <div class="insight-body">Line 10 料废达 <strong>1,599件</strong>，占两条线料废总量的 <strong>91.6%</strong>，远高于Line 9（146件）。Line 10 存在系统性的来料或流程问题。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #f59e0b;">
+        <div class="insight-head">⚠ 关注 — 操作员NICKO</div>
+        <div class="insight-body">NICKO料废363件超过责任废253件，料废占比 <strong>58.9%</strong>，是所有操作员中料废比最高的。建议审查其操作规范与来料确认流程。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #38bdf8;">
+        <div class="insight-head">📊 趋势 — 月末废品激增</div>
+        <div class="insight-body">5月23日（369件）、5月24日（428件）、5月25日（352件）、5月30日（350件）出现集中高峰，月末连续多日超日均 <strong>2倍</strong>。需调查是否因产量冲刺、人员疲劳或设备状态变化所致。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #10b981;">
+        <div class="insight-head">✅ 亮点 — 前磨控制良好</div>
+        <div class="insight-body">前磨总废品仅 <strong>265件</strong>（责任废234 + 料废31），相比后磨6,696件规模极小。前磨工序整体质量控制稳定，建议维持现有管控措施。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #a78bfa;">
+        <div class="insight-head">🔍 建议 — OD SCRATCH主因</div>
+        <div class="insight-body">后磨尺寸缺陷中 OD SCRATCH（外径划伤）占 <strong>759件</strong>，占有效记录缺陷总量的 <strong>88.5%</strong>。建议重点检查磨削砂轮状态、切削液供应与工件装夹方式。</div>
+      </div>
+      <div class="insight-card" style="--insight-color: #06b6d4;">
+        <div class="insight-head">📌 建议 — 生锈料废</div>
+        <div class="insight-body">后磨料废中生锈（Rust）高达 <strong>1,197件</strong>，占料废总量 <strong>68.3%</strong>。需排查防锈油使用情况、在制品存放环境及转序等待时间过长问题。</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>磨工废品分析报告 — 2026年5月 / Grinder Waste Analysis Report</span>
+  <span>生成时间 Generated: 2026-06-04</span>
+</footer>
+
+<script>
+// ── Chart defaults ──
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = 'rgba(99,179,237,0.1)';
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 11;
+
+const COLORS = ['#38bdf8','#f59e0b','#10b981','#ef4444','#a78bfa','#f97316','#06b6d4','#8b5cf6','#ec4899','#84cc16'];
+
+function mkChart(id, type, data, opts={}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  return new Chart(ctx, { type, data, options: { responsive: true, maintainAspectRatio: false, ...opts } });
+}
+
+// ── 1. Daily Trend ──
+mkChart('dailyChart', 'bar', {
+  labels: ['5/3','5/4','5/5','5/6','5/7','5/8','5/9','5/10','5/11','5/12','5/13','5/14','5/15','5/16','5/17','5/18','5/19','5/20','5/21','5/22','5/23','5/24','5/25','5/26','5/27','5/28','5/29','5/30'],
+  datasets: [
+    {
+      label: '责任废 (pcs)',
+      data: [135,221,108,112,116,291,171,55,150,120,88,178,55,68,28,112,85,78,218,231,369,428,352,220,243,234,128,350],
+      backgroundColor: 'rgba(56,189,248,0.75)',
+      borderColor: '#38bdf8',
+      borderWidth: 1,
+      borderRadius: 3,
+    },
+    {
+      label: '料废 (pcs)',
+      data: [0,108,67,41,90,6,114,219,240,129,57,2,24,45,25,3,16,32,87,96,3,31,16,257,12,0,5,20],
+      backgroundColor: 'rgba(245,158,11,0.65)',
+      borderColor: '#f59e0b',
+      borderWidth: 1,
+      borderRadius: 3,
+    }
+  ]
+}, {
+  plugins: {
+    legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } },
+    tooltip: { mode: 'index', intersect: false }
+  },
+  scales: {
+    x: { stacked: false, grid: { display: false }, ticks: { maxRotation: 0 } },
+    y: { stacked: false, grid: { color: 'rgba(255,255,255,0.04)' } }
+  }
+});
+
+// ── 2. After Grinding by Model ──
+mkChart('modelChartAfter', 'bar', {
+  labels: ['619/22.02','6203/02','619/22.01','DC6203/02','6203K/02','6202K/02','6203K/01','6202K/01','DC6203/01','6203/01'],
+  datasets: [{
+    label: '责任废 (pcs)',
+    data: [1368,1233,696,483,244,239,237,143,140,102],
+    backgroundColor: COLORS.map(c => c + 'cc'),
+    borderColor: COLORS,
+    borderWidth: 1,
+    borderRadius: 4,
+  }]
+}, {
+  indexAxis: 'y',
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.04)' } },
+    y: { grid: { display: false } }
+  }
+});
+
+// ── 3. After Grinding by Process ──
+mkChart('processChartAfter', 'doughnut', {
+  labels: ['Bore (内径)', 'ORSF (大超)', 'IR (小沟)', 'OR (大沟)', 'IRSF (小超)'],
+  datasets: [{
+    data: [2662, 901, 700, 482, 199],
+    backgroundColor: ['rgba(56,189,248,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)','rgba(239,68,68,0.8)','rgba(167,139,250,0.8)'],
+    borderColor: '#111827',
+    borderWidth: 2,
+  }]
+}, {
+  plugins: {
+    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
+  },
+  cutout: '60%'
+});
+
+// ── 4. Before Grinding by Model ──
+mkChart('modelChartBefore', 'bar', {
+  labels: ['6202/01','619/22.01','619/22.02','6203K/01','6203/02','6203/01','6203K/02'],
+  datasets: [{
+    label: '责任废 (pcs)',
+    data: [55,46,36,29,25,18,17],
+    backgroundColor: ['rgba(167,139,250,0.8)','rgba(56,189,248,0.8)','rgba(6,182,212,0.8)','rgba(16,185,129,0.8)','rgba(249,115,22,0.8)','rgba(245,158,11,0.8)','rgba(139,92,246,0.8)'],
+    borderWidth: 1,
+    borderRadius: 3,
+  }]
+}, {
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: { display: false } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' } }
+  }
+});
+
+// ── 5. Before Grinding by Process ──
+mkChart('processChartBefore', 'bar', {
+  labels: ['End face (端面)', 'Centerless (无心)'],
+  datasets: [
+    {
+      label: '责任废',
+      data: [124, 110],
+      backgroundColor: 'rgba(56,189,248,0.75)',
+      borderColor: '#38bdf8',
+      borderWidth: 1, borderRadius: 4,
+    },
+    {
+      label: '料废',
+      data: [8, 23],
+      backgroundColor: 'rgba(167,139,250,0.65)',
+      borderColor: '#a78bfa',
+      borderWidth: 1, borderRadius: 4,
+    }
+  ]
+}, {
+  plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 12 } } },
+  scales: {
+    x: { grid: { display: false } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' } }
+  }
+});
+
+// ── 6. Operator Chart ──
+mkChart('operatorChart', 'bar', {
+  labels: ['JEYLOAD','NICOL','Hagrid','JEBERT','Harris','RUSSEL','NICKO','JEMRIL','Glendie','JACOB'],
+  datasets: [
+    {
+      label: '责任废',
+      data: [1168,967,846,358,314,302,253,242,226,170],
+      backgroundColor: 'rgba(56,189,248,0.75)',
+      borderColor: '#38bdf8',
+      borderWidth: 1, borderRadius: 3,
+    },
+    {
+      label: '料废',
+      data: [103,134,14,252,268,229,363,185,196,6],
+      backgroundColor: 'rgba(239,68,68,0.65)',
+      borderColor: '#ef4444',
+      borderWidth: 1, borderRadius: 3,
+    }
+  ]
+}, {
+  plugins: {
+    legend: { position: 'top', labels: { boxWidth: 10, padding: 12 } },
+    tooltip: { mode: 'index', intersect: false }
+  },
+  scales: {
+    x: { grid: { display: false }, ticks: { maxRotation: 30, minRotation: 30 } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' }, stacked: false }
+  }
+});
+
+// ── 7. Material Waste After ──
+mkChart('matWasteAfter', 'doughnut', {
+  labels: ['生锈 Rust (1,197)','其它 Other (297)','污渍 Stain (166)','混料/撞车 (83)','凹陷 Dents (2)'],
+  datasets: [{
+    data: [1197,297,166,83,2],
+    backgroundColor: ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(167,139,250,0.8)','rgba(6,182,212,0.8)','rgba(16,185,129,0.8)'],
+    borderColor: '#111827',
+    borderWidth: 2,
+  }]
+}, {
+  plugins: {
+    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 10 } } },
+  },
+  cutout: '55%'
+});
+
+// ── 8. Defect Type After ──
+mkChart('defectTypeAfter', 'bar', {
+  labels: ['OD SCRATCH\n(外径划伤)','ID SCRATCH\n(内径划伤)','Roundness\n(圆度)','CHAMFER\n(倒角划伤)'],
+  datasets: [{
+    label: '件数 (pcs)',
+    data: [759,70,27,4],
+    backgroundColor: ['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(56,189,248,0.8)','rgba(16,185,129,0.8)'],
+    borderWidth: 1,
+    borderRadius: 4,
+  }]
+}, {
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: { display: false }, ticks: { maxRotation: 0 } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' } }
+  }
+});
+</script>
+</body>
+</html>
