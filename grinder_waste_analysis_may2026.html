@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grinder Waste Analysis — May 2026</title>
+<title>Quality Analysis Report — May 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -30,21 +30,20 @@
     --heatmap-cell:#1c2030;--proc-summary:linear-gradient(135deg,#1a1630,#221a38);
     --chart-grid:#2a2f48;--chart-text:#8a96b8;
   }
-  /* ── COLOR THEMES ── */
-  body.theme-blue  { --accent:#2563eb; }
-  body.theme-violet{ --accent:#7c3aed; }
-  body.theme-teal  { --accent:#0891b2; }
-  body.theme-rose  { --accent:#e11d48; }
-
-  *{box-sizing:border-box;margin:0;padding:0;}
+  /* ── BASE ── */
   body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;font-size:14px;transition:background .25s,color .25s;}
 
-  /* LANG SWITCHER */
-  .lang-bar{background:rgba(255,255,255,0.1);padding:8px 52px;display:flex;justify-content:flex-end;align-items:center;gap:6px;}
-  .lang-btn{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;padding:4px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.35);background:transparent;color:rgba(255,255,255,0.75);cursor:pointer;transition:all .2s;letter-spacing:1px;}
-  .lang-btn.active{background:rgba(255,255,255,0.22);color:#fff;border-color:rgba(255,255,255,0.6);}
-  .lang-btn:hover:not(.active){background:rgba(255,255,255,0.12);color:#fff;}
-  .lang-sep{color:rgba(255,255,255,0.3);font-size:12px;}
+
+  /* CONTROL BAR BUTTONS */
+  .ctrl-btn{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;padding:4px 13px;border-radius:20px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.7);cursor:pointer;transition:all .2s;letter-spacing:1px;line-height:1.4;}
+  .ctrl-btn.active{background:rgba(255,255,255,0.22);color:#fff;border-color:rgba(255,255,255,0.65);font-weight:700;}
+  .ctrl-btn:hover:not(.active){background:rgba(255,255,255,0.12);color:#fff;}
+  .mode-btn{font-size:13px;padding:3px 10px;}
+
+
+  /* Dark mode: update ctrl-bar gradient */
+  body.dark #ctrl-bar{background:linear-gradient(135deg,#0f1f4a 0%,#1a2e6b 55%,#1e3a8a 100%) !important;}
+  body.dark #ctrl-bar > div{background:none !important;}
 
   /* HEADER */
   header{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#60a5fa 100%);padding:36px 52px 32px;position:relative;overflow:hidden;}
@@ -106,7 +105,7 @@
   .proc-kpi-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
   .defect-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
   .defect-label{font-size:11px;color:var(--text-sub);width:140px;flex-shrink:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
-  .defect-bar-bg{flex:1;height:7px;background:#eef1f8;border-radius:4px;overflow:hidden;}
+  .defect-bar-bg{flex:1;height:7px;background:var(--defect-bar-bg);border-radius:4px;overflow:hidden;}
   .defect-bar-fill{height:100%;border-radius:4px;background:var(--db-color,var(--accent));}
   .defect-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);width:36px;text-align:right;flex-shrink:0;}
   .proc-section-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:10px 0 6px;}
@@ -144,16 +143,16 @@
   .mini-bar-section-title{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
   .mini-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
   .mini-bar-label{width:110px;font-size:11px;color:var(--text-sub);flex-shrink:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
-  .mini-bar-bg{flex:1;height:8px;background:#eef1f8;border-radius:4px;overflow:hidden;}
+  .mini-bar-bg{flex:1;height:8px;background:var(--mini-bar-bg);border-radius:4px;overflow:hidden;}
   .mini-bar-fill{height:100%;border-radius:4px;background:var(--mb-color,var(--accent));}
   .mini-bar-val{width:44px;text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-sub);flex-shrink:0;}
 
   /* HEATMAP */
   .heatmap-wrap{overflow-x:auto;}
   .heatmap-table{border-collapse:collapse;font-size:11px;white-space:nowrap;width:100%;}
-  .heatmap-table th{background:#f0f4ff;color:var(--accent);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:8px 10px;border:1px solid var(--border);}
+  .heatmap-table th{background:var(--thead-bg);color:var(--accent);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:8px 10px;border:1px solid var(--border);}
   .heatmap-table td{padding:6px 10px;border:1px solid var(--border);text-align:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
-  .heatmap-table td:first-child{text-align:left;font-family:'Noto Sans SC',sans-serif;font-weight:600;color:var(--text);background:#f8f9ff;}
+  .heatmap-table td:first-child{text-align:left;font-family:'Noto Sans SC',sans-serif;font-weight:600;color:var(--text);background:var(--heatmap-cell);}
 
   footer{margin-top:48px;padding:18px 52px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);}
 
@@ -169,8 +168,17 @@
   .lang-zh div[data-zh], .lang-zh p[data-zh] { display: block !important; }
   .lang-en div[data-en], .lang-en p[data-en] { display: block !important; }
 
+  /* ── MODULE SWITCHER ── */
+  .module-bar{background:#0f1e4a;padding:10px 52px;display:flex;align-items:center;gap:0;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .module-btn{font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:600;padding:8px 24px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;letter-spacing:.3px;white-space:nowrap;}
+  .module-btn.active{color:#fff;border-bottom-color:#60a5fa;background:rgba(255,255,255,0.07);}
+  .module-btn:hover:not(.active){color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04);}
+  .module-panel{display:none;}
+  .module-panel.active{display:block;}
+
   @media(max-width:768px){
-    main,header,footer,.tab-nav,.lang-bar{padding-left:16px;padding-right:16px;}
+    main,header,footer,.tab-nav,.module-bar{padding-left:16px;padding-right:16px;}
+    #ctrl-bar > div{padding-left:16px !important;padding-right:16px !important;flex-wrap:wrap;gap:10px !important;}
     .charts-grid,.charts-grid.wide,.charts-grid.three{grid-template-columns:1fr;}
     .kpi-grid{grid-template-columns:repeat(2,1fr);}
   }
@@ -178,15 +186,43 @@
 </head>
 <body class="lang-zh">
 
-<!-- LANG BAR inside header gradient area -->
-<div style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#60a5fa 100%);">
-  <div class="lang-bar">
-    <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:1px;margin-right:4px;">LANGUAGE</span>
-    <button class="lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
-    <span class="lang-sep">/</span>
-    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+<!-- CONTROL BAR: Language + Dark Mode + Color Theme -->
+<div id="ctrl-bar" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#60a5fa 100%);">
+  <div style="padding:8px 52px;display:flex;justify-content:flex-end;align-items:center;gap:16px;flex-wrap:wrap;">
+
+    <!-- Language -->
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;">LANG</span>
+      <button class="ctrl-btn lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
+      <span style="color:rgba(255,255,255,0.25);font-size:11px;">|</span>
+      <button class="ctrl-btn lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+
+    <span style="width:1px;height:18px;background:rgba(255,255,255,0.2);"></span>
+
+    <!-- Dark Mode -->
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;">MODE</span>
+      <button class="ctrl-btn mode-btn active" id="btn-light" onclick="setMode('light')" title="浅色 / Light">☀️</button>
+      <button class="ctrl-btn mode-btn" id="btn-dark" onclick="setMode('dark')" title="深色 / Dark">🌙</button>
+    </div>
+
+
   </div>
 </div>
+
+<!-- MODULE SWITCHER -->
+<div class="module-bar">
+  <button class="module-btn active" id="mod-grinder" onclick="switchModule('grinder',this)">
+    ⚙️ <span data-zh>磨工分析</span><span data-en>Grinding Analysis</span>
+  </button>
+  <button class="module-btn" id="mod-assembly" onclick="switchModule('assembly',this)">
+    🔩 <span data-zh>装配分析</span><span data-en>Assembly Analysis</span>
+  </button>
+</div>
+
+<!-- ══════ MODULE: GRINDER ══════ -->
+<div class="module-panel active" id="module-grinder">
 
 <header>
   <div class="header-tag">
@@ -428,7 +464,7 @@
       </div>
 
       <!-- Summary -->
-      <div class="proc-card" style="--pc-color:#7c3aed;background:linear-gradient(135deg,#faf5ff,#ede9fe);">
+      <div class="proc-card" style="--pc-color:#7c3aed;background:var(--proc-summary);">
         <div class="proc-header"><div>
           <div class="proc-name" style="color:#7c3aed;"><span data-zh>工序对比小结</span><span data-en>Process Comparison</span></div>
           <div class="proc-sub">End Face vs Centerless</div>
@@ -731,19 +767,475 @@
 
 </main>
 
+</div><!-- end module-grinder -->
+
+<!-- ══════ MODULE: ASSEMBLY ══════ -->
+<div class="module-panel" id="module-assembly">
+
+<header>
+  <div class="header-tag">
+    <span data-zh>质量分析报告 · 装配工序</span>
+    <span data-en>Quality Analysis Report · Assembly Process</span>
+  </div>
+  <h1>
+    <span data-zh>装配废品<span>月度分析</span></span>
+    <span data-en>Assembly Waste <span>Monthly Report</span></span>
+  </h1>
+  <div class="header-meta">
+    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年5月</span><span data-en>MAY 2026</span></div>
+    <div class="meta-pill">ASSEMBLY_WASTE_RECORD-MAY.xlsx</div>
+    <div class="meta-pill"><span data-zh>成品装配工序</span><span data-en>Finished Product Assembly</span></div>
+    <div class="meta-pill">Line 9 &amp; Line 10</div>
+  </div>
+</header>
+
+<!-- ASSEMBLY TAB NAV -->
+<div class="tab-nav" id="asm-tab-nav">
+  <button class="tab-btn active" onclick="switchAsmTab('asm-overview',this)">📊 <span data-zh>总览</span><span data-en>Overview</span></button>
+  <button class="tab-btn" onclick="switchAsmTab('asm-model',this)">🏷️ <span data-zh>型号分析</span><span data-en>Model Analysis</span></button>
+  <button class="tab-btn" onclick="switchAsmTab('asm-defect',this)">🔍 <span data-zh>缺陷分析</span><span data-en>Defect Analysis</span></button>
+  <button class="tab-btn" onclick="switchAsmTab('asm-operator',this)">👷 <span data-zh>操作员分析</span><span data-en>Operator Analysis</span></button>
+  <button class="tab-btn" onclick="switchAsmTab('asm-detail',this)">📋 <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
+</div>
+
+<main>
+
+<!-- ── ASM TAB: OVERVIEW ── -->
+<div class="tab-panel active" id="tab-asm-overview">
+  <section>
+    <div class="section-label"><span data-zh>第一节</span><span data-en>SECTION 01</span></div>
+    <div class="section-title"><span data-zh>装配关键指标概览</span><span data-en>Assembly Key Performance Indicators</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#dc2626;">
+        <span class="kpi-icon">❌</span>
+        <div class="kpi-label"><span data-zh>总NG数量</span><span data-en>Total NG</span></div>
+        <div class="kpi-value">8,959</div>
+        <div class="kpi-sub"><span data-zh>装配NG件数合计</span><span data-en>Total assembly NG parts (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#d97706;">
+        <span class="kpi-icon">🔄</span>
+        <div class="kpi-label"><span data-zh>返工数量</span><span data-en>Rework</span></div>
+        <div class="kpi-value">17,587</div>
+        <div class="kpi-sub"><span data-zh>返工件数合计 (pcs)</span><span data-en>Total rework quantity (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;">
+        <span class="kpi-icon">🗑️</span>
+        <div class="kpi-label"><span data-zh>料废数量</span><span data-en>Material Waste</span></div>
+        <div class="kpi-value">11,250</div>
+        <div class="kpi-sub"><span data-zh>料废件数合计 (pcs)</span><span data-en>Total material waste (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#2563eb;">
+        <span class="kpi-icon">📦</span>
+        <div class="kpi-label"><span data-zh>总产出</span><span data-en>Total Output</span></div>
+        <div class="kpi-value">417,606</div>
+        <div class="kpi-sub"><span data-zh>装配总产出 (pcs)</span><span data-en>Total assembly output (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#059669;">
+        <span class="kpi-icon">📊</span>
+        <div class="kpi-label"><span data-zh>整体NG率</span><span data-en>Overall NG Rate</span></div>
+        <div class="kpi-value">2.1%</div>
+        <div class="kpi-sub"><span data-zh>NG / 总产出</span><span data-en>NG / Total Output</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;">
+        <span class="kpi-icon">🏭</span>
+        <div class="kpi-label"><span data-zh>型号数量</span><span data-en>Models</span></div>
+        <div class="kpi-value">6</div>
+        <div class="kpi-sub"><span data-zh>统计型号数</span><span data-en>Models tracked</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#e85d04;">
+        <span class="kpi-icon">👷</span>
+        <div class="kpi-label"><span data-zh>操作员</span><span data-en>Operators</span></div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-sub"><span data-zh>统计操作员人数</span><span data-en>Operators tracked</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;">
+        <span class="kpi-icon">📋</span>
+        <div class="kpi-label"><span data-zh>记录条数</span><span data-en>Records</span></div>
+        <div class="kpi-value">102</div>
+        <div class="kpi-sub"><span data-zh>有效记录条数</span><span data-en>Valid data records</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
+    <div class="section-title"><span data-zh>型号 &amp; 生产线分布</span><span data-en>NG by Model &amp; Production Line</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各型号NG数量对比</span><span data-en>NG Quantity by Model</span></div>
+        <div class="chart-wrap"><canvas id="asmModelBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>生产线NG &amp; 料废对比（Line 9 vs Line 10）</span><span data-en>NG &amp; Material Waste by Line</span></div>
+        <div class="chart-wrap"><canvas id="asmLineBar"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
+    <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights &amp; Recommendations</span></div>
+    <div class="insights">
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⚡ 高优先级 — 6202K/C5-10 NG率异常</span><span data-en>⚡ High Priority — 6202K/C5-10 NG Rate</span></div>
+        <div class="insight-body">
+          <span data-zh>6202K/C5-10 NG率高达 <strong>19.58%</strong>，远超其他型号（次高为DC6203的2.43%），产量仅15,600件却产生3,054件NG。需立即排查工艺参数与来料质量。</span>
+          <span data-en>6202K/C5-10 has an NG rate of <strong>19.58%</strong> — far above the next highest (DC6203 at 2.43%). Only 15,600 pcs output but 3,054 NG. Immediate review of process parameters and incoming material quality is required.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⚡ 高优先级 — 生锈是最大缺陷</span><span data-en>⚡ High Priority — Rust Dominates Defects</span></div>
+        <div class="insight-body">
+          <span data-zh>生锈（Rust）缺陷 <strong>3,676件</strong>，占所有外观缺陷总量的 <strong>28.5%</strong>，在6个型号中均排名前三，系统性防锈管理需全面改善。</span>
+          <span data-en>Rust defects account for <strong>3,676 pcs</strong> — <strong>28.5%</strong> of all appearance defects — ranking in the top 3 across all 6 models. Systematic anti-rust management needs a comprehensive overhaul.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#d97706;">
+        <div class="insight-head"><span data-zh>⚠ 关注 — Line 10 料废远超Line 9</span><span data-en>⚠ Watch — Line 10 Material Waste vs Line 9</span></div>
+        <div class="insight-body">
+          <span data-zh>Line 10 料废 <strong>9,728件</strong> vs Line 9 的 <strong>1,522件</strong>，差距达6.4倍。619/22（8,813件）和6202K（915件）是Line 10料废主要来源。</span>
+          <span data-en>Line 10 material waste is <strong>9,728 pcs</strong> vs Line 9's <strong>1,522 pcs</strong> — a 6.4× difference. Models 619/22 (8,813 pcs) and 6202K (915 pcs) are the main contributors on Line 10.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#d97706;">
+        <div class="insight-head"><span data-zh>⚠ 关注 — OR来自超精&amp;倒角划伤高发</span><span data-en>⚠ Watch — OR/SF &amp; Chamfer Scratch High</span></div>
+        <div class="insight-body">
+          <span data-zh>OR Scratch from Superfinish（<strong>1,865件</strong>）和Chamfer Scratch（<strong>1,655件</strong>）是第二、三大缺陷，提示超精工序与倒角加工的质量稳定性问题。</span>
+          <span data-en>OR Scratch from Superfinish (<strong>1,865 pcs</strong>) and Chamfer Scratch (<strong>1,655 pcs</strong>) are the 2nd and 3rd largest defects, pointing to quality instability in the superfinish and chamfer processes.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#2563eb;">
+        <div class="insight-head"><span data-zh>📊 班次对比 — 夜班NG更高</span><span data-en>📊 Shift Comparison — Night Higher NG</span></div>
+        <div class="insight-body">
+          <span data-zh>夜班NG <strong>5,031件</strong>高于早班 <strong>3,928件</strong>（+28%），在Line 9尤为明显。建议加强夜班质量巡检频率与操作监督。</span>
+          <span data-en>Night shift NG (<strong>5,031 pcs</strong>) exceeds morning shift (<strong>3,928 pcs</strong>) by 28%, especially on Line 9. Recommend increasing quality inspection frequency and supervision during night shifts.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>✅ 亮点 — 619/22 NG率极低</span><span data-en>✅ Highlight — 619/22 Very Low NG Rate</span></div>
+        <div class="insight-body">
+          <span data-zh>619/22/C10.5-15 NG率仅 <strong>0.04%</strong>（产出91,028件，NG仅33件），装配质量优秀，但料废8,813件需关注来料问题。</span>
+          <span data-en>619/22/C10.5-15 has an NG rate of just <strong>0.04%</strong> (91,028 pcs output, only 33 NG), demonstrating excellent assembly quality — however 8,813 pcs material waste still requires attention to incoming material.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#7c3aed;">
+        <div class="insight-head"><span data-zh>🔍 操作员Ian — NG最高</span><span data-en>🔍 Operator Ian — Highest NG</span></div>
+        <div class="insight-body">
+          <span data-zh>Ian NG <strong>3,108件</strong>为最高，Nikko <strong>2,388件</strong>次之，均主要集中在 Line 9 的6203系列型号。建议针对性培训与工艺辅导。</span>
+          <span data-en>Ian has the highest NG count at <strong>3,108 pcs</strong>, followed by Nikko at <strong>2,388 pcs</strong>, both concentrated on Line 9's 6203-series models. Targeted training and process coaching recommended.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#0891b2;">
+        <div class="insight-head"><span data-zh>📌 6203系列体量最大</span><span data-en>📌 6203-Series Highest Volume</span></div>
+        <div class="insight-body">
+          <span data-zh>6203系列（DC6203 + 6203K + 6203-2RS + 6203-2ZJ）合计产出 <strong>310,978件</strong>，占总产出 <strong>74.5%</strong>，NG 5,872件，是控制重点。</span>
+          <span data-en>The 6203-series (DC6203 + 6203K + 6203-2RS + 6203-2ZJ) accounts for <strong>310,978 pcs</strong> output — <strong>74.5%</strong> of total — with 5,872 NG. This series deserves the most management focus.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── ASM TAB: MODEL ── -->
+<div class="tab-panel" id="tab-asm-model">
+  <section>
+    <div class="section-label">MODEL ANALYSIS</div>
+    <div class="section-title"><span data-zh>各型号废品详细分析</span><span data-en>Model Waste Detail Analysis</span></div>
+    <div class="proc-grid">
+      <!-- 6202K -->
+      <div class="proc-card" style="--pc-color:#dc2626;">
+        <div class="proc-header">
+          <div><div class="proc-name">6202K/C5-10</div><div class="proc-sub">Line 10 · <span data-zh>12条记录</span><span data-en>12 records</span></div></div>
+          <span class="badge badge-red">⚠ <span data-zh>NG率最高</span><span data-en>Highest NG Rate</span></span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">3,054</div><div class="proc-kpi-lbl">NG</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">2,139</div><div class="proc-kpi-lbl"><span data-zh>返工</span><span data-en>Rework</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#7c3aed;">915</div><div class="proc-kpi-lbl"><span data-zh>料废</span><span data-en>Mat.Waste</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;font-size:18px;">19.6%</div><div class="proc-kpi-lbl">NG<span data-zh>率</span><span data-en> Rate</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>主要缺陷</span><span data-en>Top Defects</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>生锈 Rust</span><span data-en>Rust</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">883</span></div>
+        <div class="defect-row"><span class="defect-label">Chamfer Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:57.3%;--db-color:#d97706;"></div></div><span class="defect-val">506</span></div>
+        <div class="defect-row"><span class="defect-label">OR EF SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:19.9%;--db-color:#7c3aed;"></div></div><span class="defect-val">176</span></div>
+        <div class="defect-row"><span class="defect-label">OR SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:11.7%;--db-color:#059669;"></div></div><span class="defect-val">103</span></div>
+      </div>
+      <!-- 6203K -->
+      <div class="proc-card" style="--pc-color:#2563eb;">
+        <div class="proc-header">
+          <div><div class="proc-name">6203K/C8-13</div><div class="proc-sub">Line 9 · <span data-zh>22条记录</span><span data-en>22 records</span></div></div>
+          <span class="badge badge-amber"><span data-zh>NG量高</span><span data-en>High NG</span></span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">2,428</div><div class="proc-kpi-lbl">NG</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">1,832</div><div class="proc-kpi-lbl"><span data-zh>返工</span><span data-en>Rework</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#7c3aed;">596</div><div class="proc-kpi-lbl"><span data-zh>料废</span><span data-en>Mat.Waste</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;font-size:18px;">2.0%</div><div class="proc-kpi-lbl">NG<span data-zh>率</span><span data-en> Rate</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>主要缺陷</span><span data-en>Top Defects</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>生锈 Rust</span><span data-en>Rust</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">460</span></div>
+        <div class="defect-row"><span class="defect-label">OR SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:69.6%;--db-color:#2563eb;"></div></div><span class="defect-val">320</span></div>
+        <div class="defect-row"><span class="defect-label">OR EF SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:51.1%;--db-color:#7c3aed;"></div></div><span class="defect-val">235</span></div>
+        <div class="defect-row"><span class="defect-label">OR FG Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:41.1%;--db-color:#d97706;"></div></div><span class="defect-val">189</span></div>
+      </div>
+      <!-- 6203-2ZJ -->
+      <div class="proc-card" style="--pc-color:#059669;">
+        <div class="proc-header">
+          <div><div class="proc-name">6203-2ZJ</div><div class="proc-sub">Line 9 · C19-24/H11M3 · <span data-zh>17条记录</span><span data-en>17 records</span></div></div>
+          <span class="badge badge-amber"><span data-zh>NG量较高</span><span data-en>Medium NG</span></span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">1,657</div><div class="proc-kpi-lbl">NG</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">1,205</div><div class="proc-kpi-lbl"><span data-zh>返工</span><span data-en>Rework</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#7c3aed;">452</div><div class="proc-kpi-lbl"><span data-zh>料废</span><span data-en>Mat.Waste</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;font-size:18px;">1.7%</div><div class="proc-kpi-lbl">NG<span data-zh>率</span><span data-en> Rate</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>主要缺陷</span><span data-en>Top Defects</span></div>
+        <div class="defect-row"><span class="defect-label">OR SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#059669;"></div></div><span class="defect-val">382</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>生锈 Rust</span><span data-en>Rust</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:88.7%;--db-color:#dc2626;"></div></div><span class="defect-val">339</span></div>
+        <div class="defect-row"><span class="defect-label">Bore Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:39.5%;--db-color:#2563eb;"></div></div><span class="defect-val">151</span></div>
+        <div class="defect-row"><span class="defect-label">IR EF SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:33.2%;--db-color:#7c3aed;"></div></div><span class="defect-val">127</span></div>
+      </div>
+      <!-- DC6203 -->
+      <div class="proc-card" style="--pc-color:#0891b2;">
+        <div class="proc-header">
+          <div><div class="proc-name">DC6203-2RS</div><div class="proc-sub">Line 9 · C15-21 · <span data-zh>12条记录</span><span data-en>12 records</span></div></div>
+          <span class="badge badge-blue"><span data-zh>中等</span><span data-en>Medium</span></span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">1,522</div><div class="proc-kpi-lbl">NG</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">1,122</div><div class="proc-kpi-lbl"><span data-zh>返工</span><span data-en>Rework</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#7c3aed;">400</div><div class="proc-kpi-lbl"><span data-zh>料废</span><span data-en>Mat.Waste</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#0891b2;font-size:18px;">2.4%</div><div class="proc-kpi-lbl">NG<span data-zh>率</span><span data-en> Rate</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>主要缺陷</span><span data-en>Top Defects</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>生锈 Rust</span><span data-en>Rust</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#0891b2;"></div></div><span class="defect-val">306</span></div>
+        <div class="defect-row"><span class="defect-label">IR EF SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:69.0%;--db-color:#7c3aed;"></div></div><span class="defect-val">211</span></div>
+        <div class="defect-row"><span class="defect-label">OR SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:67.6%;--db-color:#059669;"></div></div><span class="defect-val">207</span></div>
+        <div class="defect-row"><span class="defect-label">Bore Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:34.3%;--db-color:#2563eb;"></div></div><span class="defect-val">105</span></div>
+      </div>
+      <!-- 619/22 -->
+      <div class="proc-card" style="--pc-color:#7c3aed;">
+        <div class="proc-header">
+          <div><div class="proc-name">619/22</div><div class="proc-sub">Line 10 · C10.5-15 · <span data-zh>33条记录</span><span data-en>33 records</span></div></div>
+          <span class="badge badge-green">✅ <span data-zh>NG率极低</span><span data-en>Very Low NG</span></span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">33</div><div class="proc-kpi-lbl">NG</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">11,098</div><div class="proc-kpi-lbl"><span data-zh>返工</span><span data-en>Rework</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">8,813</div><div class="proc-kpi-lbl"><span data-zh>料废</span><span data-en>Mat.Waste</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;font-size:18px;">0.04%</div><div class="proc-kpi-lbl">NG<span data-zh>率</span><span data-en> Rate</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>主要缺陷（含料废）</span><span data-en>Top Defects (incl. material)</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>生锈 Rust</span><span data-en>Rust</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">1,658</span></div>
+        <div class="defect-row"><span class="defect-label">Chamfer Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:61.2%;--db-color:#7c3aed;"></div></div><span class="defect-val">1,014</span></div>
+        <div class="defect-row"><span class="defect-label">OR EF SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:51.9%;--db-color:#d97706;"></div></div><span class="defect-val">861</span></div>
+        <div class="defect-row"><span class="defect-label">OR SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:46.9%;--db-color:#059669;"></div></div><span class="defect-val">777</span></div>
+      </div>
+      <!-- 6203-2RS -->
+      <div class="proc-card" style="--pc-color:#10b981;">
+        <div class="proc-header">
+          <div><div class="proc-name">6203-2RS</div><div class="proc-sub">Line 9 · C8-13 · <span data-zh>6条记录</span><span data-en>6 records</span></div></div>
+          <span class="badge badge-green">✅ <span data-zh>正常</span><span data-en>Normal</span></span>
+        </div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#dc2626;">265</div><div class="proc-kpi-lbl">NG</div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">191</div><div class="proc-kpi-lbl"><span data-zh>返工</span><span data-en>Rework</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#7c3aed;">74</div><div class="proc-kpi-lbl"><span data-zh>料废</span><span data-en>Mat.Waste</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;font-size:18px;">1.0%</div><div class="proc-kpi-lbl">NG<span data-zh>率</span><span data-en> Rate</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>主要缺陷</span><span data-en>Top Defects</span></div>
+        <div class="defect-row"><span class="defect-label">OR SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#10b981;"></div></div><span class="defect-val">76</span></div>
+        <div class="defect-row"><span class="defect-label">IR EF SF Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:55.3%;--db-color:#059669;"></div></div><span class="defect-val">42</span></div>
+        <div class="defect-row"><span class="defect-label">Bore Scratch</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:47.4%;--db-color:#2563eb;"></div></div><span class="defect-val">36</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>生锈 Rust</span><span data-en>Rust</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:39.5%;--db-color:#dc2626;"></div></div><span class="defect-val">30</span></div>
+      </div>
+    </div>
+
+    <div class="charts-grid" style="margin-top:20px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>型号NG率对比（%）</span><span data-en>NG Rate by Model (%)</span></div>
+        <div class="chart-wrap"><canvas id="asmNgRateBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>NG / 返工 / 料废 堆叠对比</span><span data-en>NG / Rework / Material Waste by Model</span></div>
+        <div class="chart-wrap"><canvas id="asmModelStack"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── ASM TAB: DEFECT ── -->
+<div class="tab-panel" id="tab-asm-defect">
+  <section>
+    <div class="section-label">DEFECT ANALYSIS</div>
+    <div class="section-title"><span data-zh>装配缺陷类型详细分析</span><span data-en>Assembly Defect Type Detail</span></div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>所有缺陷类型汇总（降序）</span><span data-en>All Defect Types — Total Count (Descending)</span></div>
+        <div class="chart-wrap tall"><canvas id="asmDefectAllBar"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>缺陷类型占比</span><span data-en>Defect Type Distribution</span></div>
+        <div class="chart-wrap"><canvas id="asmDefectPie"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各型号主要缺陷热力图</span><span data-en>Top Defects × Model Heatmap</span></div>
+        <div class="heatmap-wrap"><table class="heatmap-table" id="asmDefectHeatmap"></table></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── ASM TAB: OPERATOR ── -->
+<div class="tab-panel" id="tab-asm-operator">
+  <section>
+    <div class="section-label">OPERATOR ANALYSIS</div>
+    <div class="section-title"><span data-zh>操作员废品分析</span><span data-en>Operator Waste Analysis</span></div>
+    <div class="charts-grid wide">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>操作员 NG / 返工 / 料废 对比</span><span data-en>Operator NG / Rework / Material Waste</span></div>
+        <div class="chart-wrap tall"><canvas id="asmOperBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>班次 &amp; 生产线交叉对比</span><span data-en>Shift &amp; Line Cross Analysis</span></div>
+        <div style="padding:8px 0;">
+          <div class="mini-bar-section">
+            <div class="mini-bar-section-title"><span data-zh>NG按班次</span><span data-en>NG by Shift</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label"><span data-zh>夜班 Night</span><span data-en>Night</span></span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:56.0%;--mb-color:#dc2626;"></div></div><span class="mini-bar-val">5,031</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label"><span data-zh>早班 Morning</span><span data-en>Morning</span></span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:43.8%;--mb-color:#d97706;"></div></div><span class="mini-bar-val">3,928</span></div>
+          </div>
+          <div class="mini-bar-section">
+            <div class="mini-bar-section-title"><span data-zh>NG按生产线</span><span data-en>NG by Line</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label">Line 9</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:65.5%;--mb-color:#2563eb;"></div></div><span class="mini-bar-val">5,872</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label">Line 10</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:34.5%;--mb-color:#60a5fa;"></div></div><span class="mini-bar-val">3,087</span></div>
+          </div>
+          <div class="mini-bar-section">
+            <div class="mini-bar-section-title"><span data-zh>料废按生产线</span><span data-en>Material Waste by Line</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label">Line 10</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:86.5%;--mb-color:#dc2626;"></div></div><span class="mini-bar-val">9,728</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label">Line 9</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:13.5%;--mb-color:#fca5a5;"></div></div><span class="mini-bar-val">1,522</span></div>
+          </div>
+          <div class="mini-bar-section">
+            <div class="mini-bar-section-title"><span data-zh>返工按生产线</span><span data-en>Rework by Line</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label">Line 10</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:75.3%;--mb-color:#7c3aed;"></div></div><span class="mini-bar-val">13,237</span></div>
+            <div class="mini-bar-row"><span class="mini-bar-label">Line 9</span><div class="mini-bar-bg"><div class="mini-bar-fill" style="width:24.7%;--mb-color:#c4b5fd;"></div></div><span class="mini-bar-val">4,350</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── ASM TAB: DETAIL ── -->
+<div class="tab-panel" id="tab-asm-detail">
+  <section>
+    <div class="section-label">DETAIL TABLES</div>
+    <div class="section-title"><span data-zh>装配数据明细表</span><span data-en>Assembly Data Detail Tables</span></div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>型号汇总表</span><span data-en>Model Summary Table</span></p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr>
+          <th><span data-zh>型号</span><span data-en>Model</span></th>
+          <th><span data-zh>生产线</span><span data-en>Line</span></th>
+          <th><span data-zh>总产出</span><span data-en>Output</span></th>
+          <th>NG</th>
+          <th><span data-zh>返工</span><span data-en>Rework</span></th>
+          <th><span data-zh>料废</span><span data-en>Mat.Waste</span></th>
+          <th>NG<span data-zh>率</span><span data-en> Rate</span></th>
+          <th><span data-zh>主要缺陷</span><span data-en>Main Defect</span></th>
+          <th><span data-zh>状态</span><span data-en>Status</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>6202K/C5-10</td><td>Line 10</td><td class="num">15,600</td><td class="num">3,054</td><td class="num">2,139</td><td class="num">915</td><td class="num" style="color:#dc2626;font-weight:700;">19.58%</td><td><span data-zh>生锈/倒角划伤</span><span data-en>Rust/Chamfer</span></td><td><span class="badge badge-red">⚠ <span data-zh>异常</span><span data-en>Critical</span></span></td></tr>
+          <tr><td>6203K/C8-13</td><td>Line 9</td><td class="num">121,155</td><td class="num">2,428</td><td class="num">1,832</td><td class="num">596</td><td class="num" style="color:#d97706;">2.00%</td><td><span data-zh>生锈/OR划伤</span><span data-en>Rust/OR Scratch</span></td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>6203-2ZJ/C19-24</td><td>Line 9</td><td class="num">99,639</td><td class="num">1,657</td><td class="num">1,205</td><td class="num">452</td><td class="num" style="color:#d97706;">1.66%</td><td>OR SF Scratch</td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>DC6203-2RS</td><td>Line 9</td><td class="num">62,541</td><td class="num">1,522</td><td class="num">1,122</td><td class="num">400</td><td class="num" style="color:#d97706;">2.43%</td><td><span data-zh>生锈/IR划伤</span><span data-en>Rust/IR Scratch</span></td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>6203-2RS/C8-13</td><td>Line 9</td><td class="num">27,643</td><td class="num">265</td><td class="num">191</td><td class="num">74</td><td class="num" style="color:#059669;">0.96%</td><td>OR SF Scratch</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>619/22/C10.5-15</td><td>Line 10</td><td class="num">91,028</td><td class="num">33</td><td class="num">11,098</td><td class="num">8,813</td><td class="num" style="color:#059669;">0.04%</td><td><span data-zh>生锈/倒角划伤</span><span data-en>Rust/Chamfer</span></td><td><span class="badge badge-blue"><span data-zh>料废需关注</span><span data-en>Mat.Watch</span></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>操作员明细</span><span data-en>Operator Detail</span></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-zh>操作员</span><span data-en>Operator</span></th>
+          <th><span data-zh>主要生产线</span><span data-en>Main Line</span></th>
+          <th>NG</th>
+          <th><span data-zh>返工</span><span data-en>Rework</span></th>
+          <th><span data-zh>料废</span><span data-en>Mat.Waste</span></th>
+          <th><span data-zh>评估</span><span data-en>Rating</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Ian</td><td>Line 9</td><td class="num">3,108</td><td class="num">2,318</td><td class="num">790</td><td><span class="badge badge-red">⚠ <span data-zh>最高</span><span data-en>Highest</span></span></td></tr>
+          <tr><td>Nikko</td><td>Line 9</td><td class="num">2,388</td><td class="num">2,656</td><td class="num">1,394</td><td><span class="badge badge-red">⚠ <span data-zh>高</span><span data-en>High</span></span></td></tr>
+          <tr><td>Edgardo</td><td>Line 10</td><td class="num">1,950</td><td class="num">6,322</td><td class="num">4,554</td><td><span class="badge badge-amber"><span data-zh>料废高</span><span data-en>High Mat.</span></span></td></tr>
+          <tr><td>Eugene</td><td>Line 10</td><td class="num">1,513</td><td class="num">6,291</td><td class="num">4,512</td><td><span class="badge badge-amber"><span data-zh>料废高</span><span data-en>High Mat.</span></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+</main>
+</div><!-- end module-assembly -->
+
 <footer>
-  <span><span data-zh>磨工废品分析报告 — 2026年5月</span><span data-en>Grinder Waste Analysis Report — May 2026</span></span>
+  <span><span data-zh>质量分析报告 — 2026年5月</span><span data-en>Quality Analysis Report — May 2026</span></span>
   <span><span data-zh>生成时间</span><span data-en>Generated</span>: 2026-06-04</span>
 </footer>
 
 <script>
+// ── State ──
+let _lang = 'zh', _mode = 'light';
+const allCharts = [];
+
 // ── Language switch ──
 function setLang(lang) {
-  document.body.className = 'lang-' + lang;
+  _lang = lang;
+  // Preserve mode+theme classes, only swap lang class
+  const body = document.body;
+  body.classList.remove('lang-zh','lang-en');
+  body.classList.add('lang-' + lang);
+  document.documentElement.lang = lang;
   document.getElementById('btn-zh').classList.toggle('active', lang==='zh');
   document.getElementById('btn-en').classList.toggle('active', lang==='en');
-  document.documentElement.lang = lang;
 }
+
+// ── Dark / Light mode ──
+function setMode(mode) {
+  _mode = mode;
+  const body = document.body;
+  if (mode === 'dark') {
+    body.classList.add('dark');
+  } else {
+    body.classList.remove('dark');
+  }
+  document.getElementById('btn-light').classList.toggle('active', mode==='light');
+  document.getElementById('btn-dark').classList.toggle('active',  mode==='dark');
+  // Update chart colors to match mode
+  const gridColor  = mode==='dark' ? '#2a2f48' : '#e8ecf5';
+  const textColor  = mode==='dark' ? '#8a96b8' : '#4b5a7a';
+  Chart.defaults.color       = textColor;
+  Chart.defaults.borderColor = gridColor;
+  allCharts.forEach(c => {
+    if (!c || c.destroyed) return;
+    // update grid lines on all scales
+    Object.values(c.options.scales||{}).forEach(sc => {
+      if (sc.grid) sc.grid.color = gridColor;
+      if (sc.ticks) sc.ticks.color = textColor;
+    });
+    if (c.options.plugins?.legend?.labels) c.options.plugins.legend.labels.color = textColor;
+    c.update('none');
+  });
+}
+
+// ── Init: apply initial classes ──
+document.body.classList.add('lang-zh');
 
 // ── Tab switch ──
 function switchTab(id, btn) {
@@ -761,8 +1253,10 @@ Chart.defaults.font.size = 11;
 
 function mk(id, type, data, opts={}) {
   const ctx = document.getElementById(id);
-  if (!ctx) return;
-  return new Chart(ctx, { type, data, options:{ responsive:true, maintainAspectRatio:false, ...opts } });
+  if (!ctx) return null;
+  const c = new Chart(ctx, { type, data, options:{ responsive:true, maintainAspectRatio:false, ...opts } });
+  allCharts.push(c);
+  return c;
 }
 
 // 1. Daily trend
@@ -925,6 +1419,144 @@ mk('beforeOperBar','bar',{
     {label:'Mat. Waste',data:[31,0],backgroundColor:'rgba(217,119,6,0.7)',borderRadius:4}
   ]
 },{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#eef1f8'}}}});
+// ── Module switch ──
+function switchModule(id, btn) {
+  document.querySelectorAll('.module-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.module-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('module-'+id).classList.add('active');
+  btn.classList.add('active');
+  // reset assembly tabs to overview when switching in
+  if (id==='assembly') {
+    document.querySelectorAll('#tab-asm-overview,#tab-asm-model,#tab-asm-defect,#tab-asm-operator,#tab-asm-detail')
+      .forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-asm-overview').classList.add('active');
+    document.querySelectorAll('#asm-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    initAsmCharts();
+  }
+}
+
+// ── Assembly tab switch ──
+function switchAsmTab(id, btn) {
+  document.querySelectorAll('#tab-asm-overview,#tab-asm-model,#tab-asm-defect,#tab-asm-operator,#tab-asm-detail')
+    .forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#asm-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  initAsmCharts();
+}
+
+// ── Assembly charts (lazy init, only once) ──
+let asmChartsInited = false;
+function initAsmCharts() {
+  if (asmChartsInited) return;
+  asmChartsInited = true;
+
+  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
+  const MODELS_SHORT = ['6202K','6203K','6203-2ZJ','DC6203','6203-2RS','619/22'];
+  const COLORS6 = ['#dc2626','#2563eb','#059669','#0891b2','#10b981','#7c3aed'];
+
+  // A1. Model NG bar
+  mk('asmModelBar','bar',{
+    labels: MODELS_SHORT,
+    datasets:[
+      {label:'NG',data:[3054,2428,1657,1522,265,33],backgroundColor:COLORS6.map(c=>c+'cc'),borderColor:COLORS6,borderWidth:1,borderRadius:4},
+    ]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // A2. Line bar
+  mk('asmLineBar','bar',{
+    labels:['Line 9','Line 10'],
+    datasets:[
+      {label:'NG',        data:[5872,3087],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:4,borderWidth:1},
+      {label:'Mat.Waste', data:[1522,9728],backgroundColor:'rgba(220,38,38,0.7)',borderRadius:4,borderWidth:1},
+      {label:'Rework',    data:[4350,13237],backgroundColor:'rgba(217,119,6,0.6)',borderRadius:4,borderWidth:1},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // A3. NG Rate bar
+  mk('asmNgRateBar','bar',{
+    labels: MODELS_SHORT,
+    datasets:[{
+      label:'NG Rate %',
+      data:[19.58,2.00,1.66,2.43,0.96,0.04],
+      backgroundColor:['#dc2626','#2563eb','#059669','#0891b2','#10b981','#7c3aed'].map(c=>c+'cc'),
+      borderColor:['#dc2626','#2563eb','#059669','#0891b2','#10b981','#7c3aed'],
+      borderWidth:1,borderRadius:4
+    }]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false}}}});
+
+  // A4. Model Stack
+  mk('asmModelStack','bar',{
+    labels: MODELS_SHORT,
+    datasets:[
+      {label:'NG',       data:[3054,2428,1657,1522,265,33],  backgroundColor:'rgba(220,38,38,0.8)',borderRadius:2},
+      {label:'Rework',   data:[2139,1832,1205,1122,191,11098],backgroundColor:'rgba(217,119,6,0.75)',borderRadius:2},
+      {label:'Mat.Waste',data:[915, 596, 452, 400, 74, 8813], backgroundColor:'rgba(124,58,237,0.7)',borderRadius:2},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10}},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:gridC}}}});
+
+  // A5. All defect bar
+  const defLabels=['Rust','OR SF Scratch','Chamfer Scratch','OR EF SF Scratch','Bore Scratch','IR EF SF Scratch','Stain','OR FG Scratch','IR EF Scratch','Gap','OR EF Scratch','Black Skin'];
+  const defVals  =[3676,  1865,           1655,             1402,              1134,           896,              842,    352,            306,            144,   104,            59];
+  mk('asmDefectAllBar','bar',{
+    labels: defLabels,
+    datasets:[{
+      label:'Count (pcs)',
+      data: defVals,
+      backgroundColor:'rgba(220,38,38,0.75)',
+      borderColor:'#dc2626',
+      borderWidth:1,borderRadius:4
+    }]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:35,minRotation:35,font:{size:10}}},y:{grid:{color:gridC}}}});
+
+  // A6. Defect pie
+  mk('asmDefectPie','doughnut',{
+    labels:['Rust (3,676)','OR SF Scratch (1,865)','Chamfer (1,655)','OR EF SF (1,402)','Bore (1,134)','IR EF SF (896)','Others (1,807)'],
+    datasets:[{
+      data:[3676,1865,1655,1402,1134,896,1807],
+      backgroundColor:['#dc2626','#2563eb','#d97706','#7c3aed','#0891b2','#059669','#9ca3af'],
+      borderColor:'#fff',borderWidth:3
+    }]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:9,font:{size:10}}}},cutout:'55%'});
+
+  // A7. Defect heatmap
+  (function(){
+    const rows={
+      '6202K':   {Rust:883, Chamfer:506, 'OR EF SF':176, 'OR SF':103, 'IR EF SF':61,  Bore:11,  Stain:0},
+      '6203K':   {Rust:460, Chamfer:72,  'OR EF SF':235, 'OR SF':320, 'IR EF SF':0,   Bore:88,  Stain:0},
+      '6203-2ZJ':{Rust:339, Chamfer:0,   'OR EF SF':0,   'OR SF':382, 'IR EF SF':127, Bore:151, Stain:64},
+      'DC6203':  {Rust:306, Chamfer:0,   'OR EF SF':52,  'OR SF':207, 'IR EF SF':211, Bore:105, Stain:62},
+      '6203-2RS':{Rust:30,  Chamfer:0,   'OR EF SF':25,  'OR SF':76,  'IR EF SF':42,  Bore:36,  Stain:34},
+      '619/22':  {Rust:1658,Chamfer:1014,'OR EF SF':861, 'OR SF':777, 'IR EF SF':386, Bore:743, Stain:607},
+    };
+    const cols=['Rust','Chamfer','OR EF SF','OR SF','IR EF SF','Bore','Stain'];
+    const maxV=1658;
+    function bg(v){if(!v)return'#f8f9fc';const p=v/maxV;if(p<.05)return'#fef2f2';if(p<.15)return'#fecaca';if(p<.35)return'#f87171';if(p<.6)return'#ef4444';return'#b91c1c';}
+    function tc(v){return v/maxV>.35?'#fff':'#1e2a45';}
+    const tbl=document.getElementById('asmDefectHeatmap');
+    let h='<thead><tr><th>Model</th>';
+    cols.forEach(c=>h+=`<th>${c}</th>`);
+    h+='</tr></thead><tbody>';
+    Object.entries(rows).forEach(([m,d])=>{
+      h+=`<tr><td>${m}</td>`;
+      cols.forEach(c=>{const v=d[c]||0;h+=`<td style="background:${bg(v)};color:${tc(v)};">${v||''}</td>`;});
+      h+='</tr>';
+    });
+    h+='</tbody>';
+    if(tbl) tbl.innerHTML=h;
+  })();
+
+  // A8. Operator bar
+  mk('asmOperBar','bar',{
+    labels:['Ian','Nikko','Edgardo','Eugene'],
+    datasets:[
+      {label:'NG',       data:[3108,2388,1950,1513],backgroundColor:'rgba(220,38,38,0.8)',borderRadius:3,borderWidth:1},
+      {label:'Rework',   data:[2318,2656,6322,6291],backgroundColor:'rgba(217,119,6,0.75)',borderRadius:3,borderWidth:1},
+      {label:'Mat.Waste',data:[790, 1394,4554,4512],backgroundColor:'rgba(124,58,237,0.7)',borderRadius:3,borderWidth:1},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+}
+
 </script>
 </body>
 </html>
