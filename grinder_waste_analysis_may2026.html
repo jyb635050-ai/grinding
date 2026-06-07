@@ -58,7 +58,9 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
   /* TAB NAV */
-  .tab-nav{background:var(--surface);border-bottom:2px solid var(--border);padding:0 52px;display:flex;gap:0;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(30,42,69,0.06);}
+  .tab-nav{background:var(--surface);border-bottom:2px solid var(--border);padding:0 52px;display:flex;gap:0;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(30,42,69,0.06);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+  .tab-nav::-webkit-scrollbar{height:4px;}
+  .tab-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
   .tab-btn{font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:500;color:var(--text-muted);padding:14px 20px;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;white-space:nowrap;}
   .tab-btn:hover{color:var(--accent);}
   .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
@@ -188,8 +190,18 @@
 
 <!-- CONTROL BAR: Language + Dark Mode + Color Theme -->
 <div id="ctrl-bar" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 55%,#60a5fa 100%);">
-  <div style="padding:8px 52px;display:flex;justify-content:flex-end;align-items:center;gap:16px;flex-wrap:wrap;">
+  <div style="padding:8px 52px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
 
+    <!-- Dashboard Title -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">📊</span>
+      <span style="font-family:'Noto Sans SC',sans-serif;font-size:15px;font-weight:900;color:#fff;letter-spacing:0.5px;">
+        <span data-zh>PHJY 数据分析仪表盘</span><span data-en>PHJY Data Analytics Dashboard</span>
+      </span>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
     <!-- Language -->
     <div style="display:flex;align-items:center;gap:6px;">
       <span style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;">LANG</span>
@@ -206,7 +218,7 @@
       <button class="ctrl-btn mode-btn active" id="btn-light" onclick="setMode('light')" title="浅色 / Light">☀️</button>
       <button class="ctrl-btn mode-btn" id="btn-dark" onclick="setMode('dark')" title="深色 / Dark">🌙</button>
     </div>
-
+    </div>
 
   </div>
 </div>
@@ -218,6 +230,12 @@
   </button>
   <button class="module-btn" id="mod-assembly" onclick="switchModule('assembly',this)">
     🔩 <span data-zh>装配分析</span><span data-en>Assembly Analysis</span>
+  </button>
+  <button class="module-btn" id="mod-final" onclick="switchModule('final',this)">
+    🔎 <span data-zh>终检分析</span><span data-en>Final Inspection</span>
+  </button>
+  <button class="module-btn" id="mod-qsd" onclick="switchModule('qsd',this)">
+    🛡️ <span data-zh>品监分析</span><span data-en>QSD Inspection</span>
   </button>
 </div>
 
@@ -1217,6 +1235,591 @@
 </main>
 </div><!-- end module-assembly -->
 
+<!-- ══════ MODULE: FINAL INSPECTION ══════ -->
+<div class="module-panel" id="module-final">
+
+<header>
+  <div class="header-tag">
+    <span data-zh>质量分析报告 · 成品终检</span>
+    <span data-en>Quality Analysis Report · Final Inspection</span>
+  </div>
+  <h1>
+    <span data-zh>成品终检<span>月度分析</span></span>
+    <span data-en>Final Inspection <span>Monthly Report</span></span>
+  </h1>
+  <div class="header-meta">
+    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年1-5月</span><span data-en>JAN-MAY 2026</span></div>
+    <div class="meta-pill">FINAL.xlsx</div>
+    <div class="meta-pill"><span data-zh>成品终检记录</span><span data-en>Finished Product Inspection</span></div>
+    <div class="meta-pill"><span data-zh>抽样检验</span><span data-en>Sampling Inspection</span></div>
+  </div>
+</header>
+
+<div class="tab-nav" id="fin-tab-nav">
+  <button class="tab-btn active" onclick="switchFinTab('fin-overview',this)">📊 <span data-zh>总览</span><span data-en>Overview</span></button>
+  <button class="tab-btn" onclick="switchFinTab('fin-trend',this)">📈 <span data-zh>月度趋势</span><span data-en>Monthly Trend</span></button>
+  <button class="tab-btn" onclick="switchFinTab('fin-defect',this)">🔍 <span data-zh>不良项目</span><span data-en>Defect Analysis</span></button>
+  <button class="tab-btn" onclick="switchFinTab('fin-model',this)">🏷️ <span data-zh>型号 &amp; 客户</span><span data-en>Model &amp; Customer</span></button>
+  <button class="tab-btn" onclick="switchFinTab('fin-detail',this)">📋 <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
+</div>
+
+<main>
+
+<!-- ── FIN OVERVIEW ── -->
+<div class="tab-panel active" id="tab-fin-overview">
+  <section>
+    <div class="section-label"><span data-zh>第一节</span><span data-en>SECTION 01</span></div>
+    <div class="section-title"><span data-zh>终检关键指标概览</span><span data-en>Final Inspection KPIs</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#059669;">
+        <span class="kpi-icon">✅</span>
+        <div class="kpi-label"><span data-zh>批次通过率</span><span data-en>Batch Pass Rate</span></div>
+        <div class="kpi-value">79.6%</div>
+        <div class="kpi-sub"><span data-zh>零缺陷批次 512 / 643</span><span data-en>Zero-defect batches 512 / 643</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#2563eb;">
+        <span class="kpi-icon">📦</span>
+        <div class="kpi-label"><span data-zh>检验总数</span><span data-en>Inspection Qty</span></div>
+        <div class="kpi-value">2.16M</div>
+        <div class="kpi-sub"><span data-zh>累计检验 2,164,356 件</span><span data-en>Total 2,164,356 pcs inspected</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;">
+        <span class="kpi-icon">🔬</span>
+        <div class="kpi-label"><span data-zh>抽样总数</span><span data-en>Sampling Qty</span></div>
+        <div class="kpi-value">44,674</div>
+        <div class="kpi-sub"><span data-zh>累计抽样件数</span><span data-en>Total samples drawn (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#dc2626;">
+        <span class="kpi-icon">❌</span>
+        <div class="kpi-label"><span data-zh>抽样不良数</span><span data-en>Sampling NG</span></div>
+        <div class="kpi-value">350</div>
+        <div class="kpi-sub"><span data-zh>抽样发现不良件数</span><span data-en>NG found in sampling (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#d97706;">
+        <span class="kpi-icon">📉</span>
+        <div class="kpi-label"><span data-zh>整体抽样不良率</span><span data-en>Sample Defect Rate</span></div>
+        <div class="kpi-value">0.78%</div>
+        <div class="kpi-sub"><span data-zh>不良数 ÷ 抽样数</span><span data-en>NG / Sampling Qty</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;">
+        <span class="kpi-icon">📅</span>
+        <div class="kpi-label"><span data-zh>检验批次</span><span data-en>Batches</span></div>
+        <div class="kpi-value">643</div>
+        <div class="kpi-sub"><span data-zh>1-5月累计批次</span><span data-en>Jan-May total batches</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;">
+        <span class="kpi-icon">🏭</span>
+        <div class="kpi-label"><span data-zh>检验型号</span><span data-en>Models</span></div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-sub"><span data-zh>涉及产品型号数</span><span data-en>Product models inspected</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#e85d04;">
+        <span class="kpi-icon">🤝</span>
+        <div class="kpi-label"><span data-zh>客户数量</span><span data-en>Customers</span></div>
+        <div class="kpi-value">20+</div>
+        <div class="kpi-sub"><span data-zh>涉及出货客户数</span><span data-en>Customers served</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
+    <div class="section-title"><span data-zh>月度通过率 &amp; 不良率趋势</span><span data-en>Monthly Pass Rate &amp; Defect Rate Trend</span></div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#059669;"><span data-zh>2026年1-5月：批次通过率 vs 抽样不良率</span><span data-en>2026 Jan-May: Batch Pass Rate vs Sampling Defect Rate</span></div>
+      <div class="chart-wrap tall"><canvas id="finTrendChart"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
+    <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights &amp; Recommendations</span></div>
+    <div class="insights">
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>✅ 亮点 — 5月通过率创新高</span><span data-en>✅ Highlight — May Best Pass Rate</span></div>
+        <div class="insight-body">
+          <span data-zh>5月批次通过率 <strong>89.93%</strong>，为今年最高，抽样不良率仅 <strong>0.22%</strong>，较4月（1.247%）大幅改善，质量管控成效显著。</span>
+          <span data-en>May achieved the highest batch pass rate of <strong>89.93%</strong> with a sampling defect rate of just <strong>0.22%</strong>, a major improvement over April (1.247%). Quality control efforts show clear results.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⚡ 关注 — 4月不良率最高</span><span data-en>⚡ Watch — April Highest Defect Rate</span></div>
+        <div class="insight-body">
+          <span data-zh>4月抽样不良率 <strong>1.247%</strong>为今年最高，通过率降至76.47%，划伤（Scratch/Abrasion）成为当月首要不良，需追溯4月工艺波动原因。</span>
+          <span data-en>April's sampling defect rate of <strong>1.247%</strong> was the year's highest, with pass rate dropping to 76.47%. Scratch/Abrasion became the top defect that month — April process fluctuations need root-cause investigation.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#d97706;">
+        <div class="insight-head"><span data-zh>🔍 不良项目 — 污渍居首</span><span data-en>🔍 Defects — Stain Leads</span></div>
+        <div class="insight-body">
+          <span data-zh>污渍（Stain）出现 <strong>54次</strong>，为最高频不良项，其中端面污渍（OR/IR Endface Stain）最常见。其次为生锈（23次）和标记问题（18次）。</span>
+          <span data-en>Stain appeared <strong>54 times</strong> — the most frequent defect, with OR/IR Endface Stain being most common. Followed by Rust (23) and Marking issues (18).</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⚡ 高风险型号 — 61905J</span><span data-en>⚡ High-Risk Model — 61905J</span></div>
+        <div class="insight-body">
+          <span data-zh>61905J 通过率仅 <strong>33.33%</strong>（12批中仅4批合格），不良数高达69件；61805（16.67%）和6202-2Z（64.10%）同样偏低，需重点管控小批量特殊型号。</span>
+          <span data-en>61905J has only a <strong>33.33%</strong> pass rate (4 of 12 batches), with 69 NG. 61805 (16.67%) and 6202-2Z (64.10%) are also low — small-batch specialty models need focused control.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#2563eb;">
+        <div class="insight-head"><span data-zh>📊 主力型号稳定</span><span data-en>📊 Main Models Stable</span></div>
+        <div class="insight-body">
+          <span data-zh>6203（83.23%）、619/22（81.20%）、6203-2RS（80.20%）三大主力型号合计395批次，通过率稳定在80%以上，质量基础扎实。</span>
+          <span data-en>The three main models — 6203 (83.23%), 619/22 (81.20%), 6203-2RS (80.20%) — total 395 batches with pass rates above 80%, showing a solid quality foundation.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#7c3aed;">
+        <div class="insight-head"><span data-zh>🤝 客户 — Namyang不良集中</span><span data-en>🤝 Customer — Namyang Concentrated NG</span></div>
+        <div class="insight-body">
+          <span data-zh>Namyang Nexmo 73批次产生 <strong>93件</strong>不良（全客户最高），需与该客户对接质量标准；TVS Motor批次最多（161批）但不良控制良好（45件）。</span>
+          <span data-en>Namyang Nexmo's 73 batches produced <strong>93 NG</strong> (highest among customers) — quality standards alignment is needed. TVS Motor has the most batches (161) but well-controlled NG (45).</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#0891b2;">
+        <div class="insight-head"><span data-zh>📌 抽样不良率整体可控</span><span data-en>📌 Overall Defect Rate Controlled</span></div>
+        <div class="insight-body">
+          <span data-zh>累计抽样不良率 <strong>0.78%</strong>，处于较低水平。但"批次通过率"79.6%偏低，说明少量不良即触发整批挑选，建议优化过程控制减少批次波动。</span>
+          <span data-en>The cumulative sampling defect rate of <strong>0.78%</strong> is low. However, the 79.6% batch pass rate is relatively low, meaning small defects trigger full-batch sorting. Process control optimization is recommended to reduce batch variability.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>📈 趋势向好</span><span data-en>📈 Improving Trend</span></div>
+        <div class="insight-body">
+          <span data-zh>不良数从1月103件降至5月18件，降幅达 <strong>82.5%</strong>，整体质量呈持续改善趋势，5月成果应固化为标准作业。</span>
+          <span data-en>NG count dropped from 103 in January to 18 in May — an <strong>82.5%</strong> reduction. Overall quality shows continuous improvement; May's results should be standardized into SOPs.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── FIN TREND ── -->
+<div class="tab-panel" id="tab-fin-trend">
+  <section>
+    <div class="section-label">MONTHLY TREND</div>
+    <div class="section-title"><span data-zh>月度详细趋势分析</span><span data-en>Monthly Detailed Trend</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各月批次通过率（%）</span><span data-en>Batch Pass Rate by Month (%)</span></div>
+        <div class="chart-wrap"><canvas id="finPassBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各月抽样不良率（%）</span><span data-en>Sampling Defect Rate by Month (%)</span></div>
+        <div class="chart-wrap"><canvas id="finDefRateBar"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各月检验数量 &amp; 批次数</span><span data-en>Inspection Qty &amp; Batch Count by Month</span></div>
+        <div class="chart-wrap"><canvas id="finVolumeChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>各月不良件数趋势</span><span data-en>Monthly NG Quantity Trend</span></div>
+        <div class="chart-wrap"><canvas id="finNgTrend"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── FIN DEFECT ── -->
+<div class="tab-panel" id="tab-fin-defect">
+  <section>
+    <div class="section-label">DEFECT ANALYSIS</div>
+    <div class="section-title"><span data-zh>不良项目详细分析</span><span data-en>Defect Category Detail</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>不良项目分类（出现次数）</span><span data-en>Defect Categories (Occurrences)</span></div>
+        <div class="chart-wrap"><canvas id="finDefectBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>不良项目占比</span><span data-en>Defect Category Distribution</span></div>
+        <div class="chart-wrap"><canvas id="finDefectPie"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>不良项目 × 月份热力图（出现次数）</span><span data-en>Defect Category × Month Heatmap (Occurrences)</span></div>
+        <div class="heatmap-wrap"><table class="heatmap-table" id="finDefectHeatmap"></table></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── FIN MODEL ── -->
+<div class="tab-panel" id="tab-fin-model">
+  <section>
+    <div class="section-label">MODEL &amp; CUSTOMER</div>
+    <div class="section-title"><span data-zh>型号 &amp; 客户分析</span><span data-en>Model &amp; Customer Analysis</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>主要型号通过率对比（%）</span><span data-en>Pass Rate by Model (%)</span></div>
+        <div class="chart-wrap tall"><canvas id="finModelPass"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>主要客户不良件数</span><span data-en>NG Quantity by Customer</span></div>
+        <div class="chart-wrap tall"><canvas id="finCustomerBar"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── FIN DETAIL ── -->
+<div class="tab-panel" id="tab-fin-detail">
+  <section>
+    <div class="section-label">DETAIL TABLES</div>
+    <div class="section-title"><span data-zh>终检数据明细表</span><span data-en>Final Inspection Detail Tables</span></div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>月度汇总表</span><span data-en>Monthly Summary</span></p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr>
+          <th><span data-zh>月份</span><span data-en>Month</span></th>
+          <th><span data-zh>批次数</span><span data-en>Batches</span></th>
+          <th><span data-zh>合格批次</span><span data-en>Pass Batches</span></th>
+          <th><span data-zh>通过率</span><span data-en>Pass Rate</span></th>
+          <th><span data-zh>检验数量</span><span data-en>Insp. Qty</span></th>
+          <th><span data-zh>抽样数</span><span data-en>Sample Qty</span></th>
+          <th><span data-zh>不良数</span><span data-en>NG Qty</span></th>
+          <th><span data-zh>抽样不良率</span><span data-en>Defect Rate</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-zh>1月</span><span data-en>January</span></td><td class="num">159</td><td class="num">118</td><td class="num">74.21%</td><td class="num">523,240</td><td class="num">10,599</td><td class="num">103</td><td class="num" style="color:#d97706;">0.972%</td></tr>
+          <tr><td><span data-zh>2月</span><span data-en>February</span></td><td class="num">96</td><td class="num">78</td><td class="num">81.25%</td><td class="num">409,730</td><td class="num">9,059</td><td class="num">62</td><td class="num">0.684%</td></tr>
+          <tr><td><span data-zh>3月</span><span data-en>March</span></td><td class="num">147</td><td class="num">113</td><td class="num">76.87%</td><td class="num">455,130</td><td class="num">9,276</td><td class="num">72</td><td class="num">0.776%</td></tr>
+          <tr><td><span data-zh>4月</span><span data-en>April</span></td><td class="num">102</td><td class="num">78</td><td class="num" style="color:#dc2626;">76.47%</td><td class="num">380,726</td><td class="num">7,619</td><td class="num">95</td><td class="num" style="color:#dc2626;font-weight:700;">1.247%</td></tr>
+          <tr><td><span data-zh>5月</span><span data-en>May</span></td><td class="num">139</td><td class="num">125</td><td class="num" style="color:#059669;font-weight:700;">89.93%</td><td class="num">395,530</td><td class="num">8,121</td><td class="num">18</td><td class="num" style="color:#059669;">0.222%</td></tr>
+          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">643</td><td class="num">512</td><td class="num">79.63%</td><td class="num">2,164,356</td><td class="num">44,674</td><td class="num">350</td><td class="num">0.783%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>型号通过率明细</span><span data-en>Model Pass Rate Detail</span></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-zh>型号</span><span data-en>Model</span></th>
+          <th><span data-zh>批次数</span><span data-en>Batches</span></th>
+          <th><span data-zh>合格批次</span><span data-en>Pass</span></th>
+          <th><span data-zh>通过率</span><span data-en>Pass Rate</span></th>
+          <th><span data-zh>抽样数</span><span data-en>Sample</span></th>
+          <th><span data-zh>不良数</span><span data-en>NG</span></th>
+          <th><span data-zh>状态</span><span data-en>Status</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>6203</td><td class="num">161</td><td class="num">134</td><td class="num">83.23%</td><td class="num">9,158</td><td class="num">45</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>619/22</td><td class="num">133</td><td class="num">108</td><td class="num">81.20%</td><td class="num">4,581</td><td class="num">34</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>6203-2RS</td><td class="num">101</td><td class="num">81</td><td class="num">80.20%</td><td class="num">9,796</td><td class="num">50</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>DC6203-2RS</td><td class="num">55</td><td class="num">49</td><td class="num">89.09%</td><td class="num">4,252</td><td class="num">12</td><td><span class="badge badge-green"><span data-zh>优</span><span data-en>Good</span></span></td></tr>
+          <tr><td>6203-2Z</td><td class="num">54</td><td class="num">44</td><td class="num">81.48%</td><td class="num">4,346</td><td class="num">16</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>6202-2Z</td><td class="num">39</td><td class="num">25</td><td class="num" style="color:#d97706;">64.10%</td><td class="num">1,823</td><td class="num">32</td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>SA6203-2RS</td><td class="num">30</td><td class="num">26</td><td class="num">86.67%</td><td class="num">2,230</td><td class="num">13</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>6204-2RS</td><td class="num">25</td><td class="num">20</td><td class="num">80.00%</td><td class="num">4,000</td><td class="num">30</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>61905J</td><td class="num">12</td><td class="num">4</td><td class="num" style="color:#dc2626;font-weight:700;">33.33%</td><td class="num">910</td><td class="num">69</td><td><span class="badge badge-red">⚠ <span data-zh>高风险</span><span data-en>High Risk</span></span></td></tr>
+          <tr><td>61805</td><td class="num">6</td><td class="num">1</td><td class="num" style="color:#dc2626;font-weight:700;">16.67%</td><td class="num">252</td><td class="num">23</td><td><span class="badge badge-red">⚠ <span data-zh>高风险</span><span data-en>High Risk</span></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+</main>
+</div><!-- end module-final -->
+
+<!-- ══════ MODULE: QSD INSPECTION ══════ -->
+<div class="module-panel" id="module-qsd">
+
+<header>
+  <div class="header-tag">
+    <span data-zh>质量分析报告 · 品监检验</span>
+    <span data-en>Quality Analysis Report · QSD Inspection</span>
+  </div>
+  <h1>
+    <span data-zh>品监检验<span>月度分析</span></span>
+    <span data-en>QSD Inspection <span>Monthly Report</span></span>
+  </h1>
+  <div class="header-meta">
+    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年1-6月</span><span data-en>JAN-JUN 2026</span></div>
+    <div class="meta-pill">QSD.xlsx</div>
+    <div class="meta-pill"><span data-zh>成品入库品监</span><span data-en>Finished Goods QSD</span></div>
+    <div class="meta-pill"><span data-zh>菲常队</span><span data-en>PH Team</span></div>
+  </div>
+</header>
+
+<div class="tab-nav" id="qsd-tab-nav">
+  <button class="tab-btn active" onclick="switchQsdTab('qsd-overview',this)">📊 <span data-zh>总览</span><span data-en>Overview</span></button>
+  <button class="tab-btn" onclick="switchQsdTab('qsd-trend',this)">📈 <span data-zh>月度趋势</span><span data-en>Monthly Trend</span></button>
+  <button class="tab-btn" onclick="switchQsdTab('qsd-defect',this)">🔍 <span data-zh>不良项目</span><span data-en>Defect Analysis</span></button>
+  <button class="tab-btn" onclick="switchQsdTab('qsd-model',this)">🏷️ <span data-zh>型号分析</span><span data-en>Model Analysis</span></button>
+  <button class="tab-btn" onclick="switchQsdTab('qsd-detail',this)">📋 <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
+</div>
+
+<main>
+
+<!-- ── QSD OVERVIEW ── -->
+<div class="tab-panel active" id="tab-qsd-overview">
+  <section>
+    <div class="section-label"><span data-zh>第一节</span><span data-en>SECTION 01</span></div>
+    <div class="section-title"><span data-zh>品监关键指标概览</span><span data-en>QSD Inspection KPIs</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#059669;">
+        <span class="kpi-icon">✅</span>
+        <div class="kpi-label"><span data-zh>批次合格率</span><span data-en>Batch Pass Rate</span></div>
+        <div class="kpi-value">96.90%</div>
+        <div class="kpi-sub"><span data-zh>合格批次 782 / 807</span><span data-en>Pass batches 782 / 807</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#2563eb;">
+        <span class="kpi-icon">📦</span>
+        <div class="kpi-label"><span data-zh>入库总数</span><span data-en>Inbound Qty</span></div>
+        <div class="kpi-value">2.71M</div>
+        <div class="kpi-sub"><span data-zh>累计入库 2,712,693 件</span><span data-en>Total 2,712,693 pcs inbound</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;">
+        <span class="kpi-icon">🔬</span>
+        <div class="kpi-label"><span data-zh>抽检总数</span><span data-en>Sampling Qty</span></div>
+        <div class="kpi-value">91,839</div>
+        <div class="kpi-sub"><span data-zh>累计抽检件数</span><span data-en>Total samples drawn (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#dc2626;">
+        <span class="kpi-icon">❌</span>
+        <div class="kpi-label"><span data-zh>不合格数</span><span data-en>NG Qty</span></div>
+        <div class="kpi-value">89</div>
+        <div class="kpi-sub"><span data-zh>抽检不合格件数</span><span data-en>NG found in sampling (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#d97706;">
+        <span class="kpi-icon">📉</span>
+        <div class="kpi-label"><span data-zh>整体抽检不良率</span><span data-en>Sample Defect Rate</span></div>
+        <div class="kpi-value">0.097%</div>
+        <div class="kpi-sub"><span data-zh>不合格数 ÷ 抽检数</span><span data-en>NG / Sampling Qty</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;">
+        <span class="kpi-icon">📅</span>
+        <div class="kpi-label"><span data-zh>检验批次</span><span data-en>Batches</span></div>
+        <div class="kpi-value">807</div>
+        <div class="kpi-sub"><span data-zh>1-6月累计批次</span><span data-en>Jan-Jun total batches</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;">
+        <span class="kpi-icon">🏭</span>
+        <div class="kpi-label"><span data-zh>检验型号</span><span data-en>Models</span></div>
+        <div class="kpi-value">23</div>
+        <div class="kpi-sub"><span data-zh>涉及产品型号数</span><span data-en>Product models inspected</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#e85d04;">
+        <span class="kpi-icon">❌</span>
+        <div class="kpi-label"><span data-zh>不合格批次</span><span data-en>NG Batches</span></div>
+        <div class="kpi-value">25</div>
+        <div class="kpi-sub"><span data-zh>判定不合格批次数</span><span data-en>Batches judged NG</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
+    <div class="section-title"><span data-zh>月度合格率 &amp; 不良率趋势</span><span data-en>Monthly Pass Rate &amp; Defect Rate Trend</span></div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#059669;"><span data-zh>2026年1-6月：批次合格率 vs 抽检不良率</span><span data-en>2026 Jan-Jun: Batch Pass Rate vs Sampling Defect Rate</span></div>
+      <div class="chart-wrap tall"><canvas id="qsdTrendChart"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
+    <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights &amp; Recommendations</span></div>
+    <div class="insights">
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>✅ 亮点 — 整体合格率优秀</span><span data-en>✅ Highlight — Excellent Overall Pass Rate</span></div>
+        <div class="insight-body">
+          <span data-zh>品监整体批次合格率 <strong>96.90%</strong>，抽检不良率仅 <strong>0.097%</strong>，远低于千分之一，品监把关效果优异，成品出库质量稳定可靠。</span>
+          <span data-en>QSD overall batch pass rate reaches <strong>96.90%</strong> with a sampling defect rate of just <strong>0.097%</strong>, well below 0.1%. QSD gate-keeping is highly effective and outbound product quality is stable.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⚡ 关注 — 4月合格率最低</span><span data-en>⚡ Watch — April Lowest Pass Rate</span></div>
+        <div class="insight-body">
+          <span data-zh>4月合格率 <strong>94.02%</strong>为前五月最低，不良率0.155%最高（21件不良），打字与划伤问题集中。需追溯4月生产工艺波动。</span>
+          <span data-en>April's pass rate of <strong>94.02%</strong> was the lowest in the first five months, with the highest defect rate (0.155%, 21 NG). Marking and scratch issues were concentrated. April process fluctuations need investigation.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#d97706;">
+        <div class="insight-head"><span data-zh>⚠ 关注 — 6月不良率骤升</span><span data-en>⚠ Watch — June Defect Rate Spike</span></div>
+        <div class="insight-body">
+          <span data-zh>6月（截至6/6）不良率达 <strong>0.374%</strong>，为全期最高，合格率降至88.89%。虽样本量较小（36批），但尺寸/椭圆度不良首次出现，需密切跟踪。</span>
+          <span data-en>June (through 6/6) shows the highest defect rate at <strong>0.374%</strong>, with pass rate dropping to 88.89%. Though the sample is small (36 batches), dimension/ovality defects appeared for the first time — close monitoring is needed.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#7c3aed;">
+        <div class="insight-head"><span data-zh>🔍 不良项目 — 打字居首</span><span data-en>🔍 Defects — Marking Leads</span></div>
+        <div class="insight-body">
+          <span data-zh>不合格批次中打字（Marking）问题 <strong>6次</strong>居首，其次为瘪盖（5次）、划伤（4次）、锈蚀（4次）。外观类占全部不良的92%。</span>
+          <span data-en>Among NG batches, Marking issues lead with <strong>6 occurrences</strong>, followed by Dented Shield (5), Scratch (4), and Rust (4). Appearance defects account for 92% of all NG.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⚡ 高风险型号 — 6210T1</span><span data-en>⚡ High-Risk Model — 6210T1</span></div>
+        <div class="insight-body">
+          <span data-zh>6210T1 合格率仅 <strong>75%</strong>（4批中1批不合格），不良数11件最高；SA6203-2合格率92.9%（9件不良）也需关注小批量型号管控。</span>
+          <span data-en>6210T1 has a pass rate of only <strong>75%</strong> (1 of 4 batches NG) with the highest NG count of 11. SA6203-2 at 92.9% (9 NG) also warrants attention to small-batch model control.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#2563eb;">
+        <div class="insight-head"><span data-zh>📊 主力型号稳健</span><span data-en>📊 Main Models Robust</span></div>
+        <div class="insight-body">
+          <span data-zh>6203JCU1（184批/96.2%）、6203-2（171批/95.3%）、619/22（134批/99.3%）三大主力合计489批，合格率均高，619/22表现尤佳。</span>
+          <span data-en>The three main models — 6203JCU1 (184 batches/96.2%), 6203-2 (171/95.3%), 619/22 (134/99.3%) — total 489 batches with high pass rates. 619/22 performs especially well.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#0891b2;">
+        <div class="insight-head"><span data-zh>📌 样品外贸不良率偏高</span><span data-en>📌 Sample Export Higher NG</span></div>
+        <div class="insight-body">
+          <span data-zh>样品外贸20批产生11件不良，而常规外贸787批仅78件，样品类不良占比明显偏高，反映新品/小批量产品质量稳定性待提升。</span>
+          <span data-en>Sample-export (20 batches, 11 NG) shows a notably higher defect ratio than regular export (787 batches, 78 NG), reflecting that new/small-batch product quality stability needs improvement.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>📈 2月表现最佳</span><span data-en>📈 February Best Performance</span></div>
+        <div class="insight-body">
+          <span data-zh>2月合格率 <strong>99.26%</strong>为全期最高，不良率仅0.024%（136批仅1批不合格、4件不良），可作为质量管控标杆月份分析其经验。</span>
+          <span data-en>February achieved the highest pass rate of <strong>99.26%</strong> with a defect rate of just 0.024% (only 1 of 136 batches NG, 4 NG pcs). It can serve as a benchmark month for quality control best practices.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── QSD TREND ── -->
+<div class="tab-panel" id="tab-qsd-trend">
+  <section>
+    <div class="section-label">MONTHLY TREND</div>
+    <div class="section-title"><span data-zh>月度详细趋势分析</span><span data-en>Monthly Detailed Trend</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各月批次合格率（%）</span><span data-en>Batch Pass Rate by Month (%)</span></div>
+        <div class="chart-wrap"><canvas id="qsdPassBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各月抽检不良率（%）</span><span data-en>Sampling Defect Rate by Month (%)</span></div>
+        <div class="chart-wrap"><canvas id="qsdDefRateBar"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各月入库数量 &amp; 批次数</span><span data-en>Inbound Qty &amp; Batch Count by Month</span></div>
+        <div class="chart-wrap"><canvas id="qsdVolumeChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>各月不良件数趋势</span><span data-en>Monthly NG Quantity Trend</span></div>
+        <div class="chart-wrap"><canvas id="qsdNgTrend"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── QSD DEFECT ── -->
+<div class="tab-panel" id="tab-qsd-defect">
+  <section>
+    <div class="section-label">DEFECT ANALYSIS</div>
+    <div class="section-title"><span data-zh>不良项目详细分析</span><span data-en>Defect Category Detail</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>不良项目分类（不合格批次数）</span><span data-en>Defect Categories (NG Batches)</span></div>
+        <div class="chart-wrap"><canvas id="qsdDefectBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>不良项目占比</span><span data-en>Defect Category Distribution</span></div>
+        <div class="chart-wrap"><canvas id="qsdDefectPie"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>不良项目 × 月份热力图（不合格批次数）</span><span data-en>Defect Category × Month Heatmap (NG Batches)</span></div>
+        <div class="heatmap-wrap"><table class="heatmap-table" id="qsdDefectHeatmap"></table></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── QSD MODEL ── -->
+<div class="tab-panel" id="tab-qsd-model">
+  <section>
+    <div class="section-label">MODEL ANALYSIS</div>
+    <div class="section-title"><span data-zh>型号分析</span><span data-en>Model Analysis</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>主要型号合格率对比（%）</span><span data-en>Pass Rate by Model (%)</span></div>
+        <div class="chart-wrap tall"><canvas id="qsdModelPass"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>主要型号不良件数</span><span data-en>NG Quantity by Model</span></div>
+        <div class="chart-wrap tall"><canvas id="qsdModelNg"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── QSD DETAIL ── -->
+<div class="tab-panel" id="tab-qsd-detail">
+  <section>
+    <div class="section-label">DETAIL TABLES</div>
+    <div class="section-title"><span data-zh>品监数据明细表</span><span data-en>QSD Inspection Detail Tables</span></div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>月度汇总表</span><span data-en>Monthly Summary</span></p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr>
+          <th><span data-zh>月份</span><span data-en>Month</span></th>
+          <th><span data-zh>批次数</span><span data-en>Batches</span></th>
+          <th><span data-zh>合格批次</span><span data-en>Pass</span></th>
+          <th><span data-zh>合格率</span><span data-en>Pass Rate</span></th>
+          <th><span data-zh>入库数量</span><span data-en>Inbound Qty</span></th>
+          <th><span data-zh>抽检数</span><span data-en>Sample</span></th>
+          <th><span data-zh>不良数</span><span data-en>NG</span></th>
+          <th><span data-zh>抽检不良率</span><span data-en>Defect Rate</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td><span data-zh>1月</span><span data-en>January</span></td><td class="num">169</td><td class="num">167</td><td class="num">98.82%</td><td class="num">558,360</td><td class="num">18,560</td><td class="num">17</td><td class="num">0.092%</td></tr>
+          <tr><td><span data-zh>2月</span><span data-en>February</span></td><td class="num">136</td><td class="num">135</td><td class="num" style="color:#059669;font-weight:700;">99.26%</td><td class="num">552,790</td><td class="num">16,861</td><td class="num">4</td><td class="num" style="color:#059669;">0.024%</td></tr>
+          <tr><td><span data-zh>3月</span><span data-en>March</span></td><td class="num">174</td><td class="num">168</td><td class="num">96.55%</td><td class="num">572,640</td><td class="num">20,161</td><td class="num">15</td><td class="num">0.074%</td></tr>
+          <tr><td><span data-zh>4月</span><span data-en>April</span></td><td class="num">117</td><td class="num">110</td><td class="num" style="color:#dc2626;">94.02%</td><td class="num">412,026</td><td class="num">13,574</td><td class="num">21</td><td class="num" style="color:#dc2626;">0.155%</td></tr>
+          <tr><td><span data-zh>5月</span><span data-en>May</span></td><td class="num">175</td><td class="num">170</td><td class="num">97.14%</td><td class="num">517,877</td><td class="num">18,935</td><td class="num">18</td><td class="num">0.095%</td></tr>
+          <tr><td><span data-zh>6月（截至6/6）</span><span data-en>June (to 6/6)</span></td><td class="num">36</td><td class="num">32</td><td class="num" style="color:#dc2626;font-weight:700;">88.89%</td><td class="num">99,000</td><td class="num">3,748</td><td class="num">14</td><td class="num" style="color:#dc2626;font-weight:700;">0.374%</td></tr>
+          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">807</td><td class="num">782</td><td class="num">96.90%</td><td class="num">2,712,693</td><td class="num">91,839</td><td class="num">89</td><td class="num">0.097%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>型号合格率明细</span><span data-en>Model Pass Rate Detail</span></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-zh>型号</span><span data-en>Model</span></th>
+          <th><span data-zh>批次数</span><span data-en>Batches</span></th>
+          <th><span data-zh>合格批次</span><span data-en>Pass</span></th>
+          <th><span data-zh>合格率</span><span data-en>Pass Rate</span></th>
+          <th><span data-zh>抽检数</span><span data-en>Sample</span></th>
+          <th><span data-zh>不良数</span><span data-en>NG</span></th>
+          <th><span data-zh>状态</span><span data-en>Status</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>6203JCU1</td><td class="num">184</td><td class="num">177</td><td class="num">96.2%</td><td class="num">23,212</td><td class="num">17</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>6203-2</td><td class="num">171</td><td class="num">163</td><td class="num">95.3%</td><td class="num">18,186</td><td class="num">25</td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>619/22</td><td class="num">134</td><td class="num">133</td><td class="num" style="color:#059669;font-weight:700;">99.3%</td><td class="num">11,460</td><td class="num">2</td><td><span class="badge badge-green"><span data-zh>优</span><span data-en>Good</span></span></td></tr>
+          <tr><td>6202-2</td><td class="num">78</td><td class="num">76</td><td class="num">97.4%</td><td class="num">7,916</td><td class="num">10</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>DC6203-2</td><td class="num">65</td><td class="num">64</td><td class="num">98.5%</td><td class="num">7,945</td><td class="num">1</td><td><span class="badge badge-green"><span data-zh>优</span><span data-en>Good</span></span></td></tr>
+          <tr><td>BT6203W1</td><td class="num">58</td><td class="num">57</td><td class="num">98.3%</td><td class="num">7,200</td><td class="num">6</td><td><span class="badge badge-green"><span data-zh>正常</span><span data-en>Normal</span></span></td></tr>
+          <tr><td>SA6203-2</td><td class="num">28</td><td class="num">26</td><td class="num" style="color:#d97706;">92.9%</td><td class="num">3,664</td><td class="num">9</td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>SA6303-2</td><td class="num">26</td><td class="num">26</td><td class="num" style="color:#059669;">100%</td><td class="num">3,042</td><td class="num">0</td><td><span class="badge badge-green"><span data-zh>优</span><span data-en>Good</span></span></td></tr>
+          <tr><td>61905J</td><td class="num">14</td><td class="num">13</td><td class="num">92.9%</td><td class="num">1,748</td><td class="num">1</td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
+          <tr><td>6210T1</td><td class="num">4</td><td class="num">3</td><td class="num" style="color:#dc2626;font-weight:700;">75.0%</td><td class="num">465</td><td class="num">11</td><td><span class="badge badge-red">⚠ <span data-zh>高风险</span><span data-en>High Risk</span></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+</main>
+</div><!-- end module-qsd -->
+
 <footer>
   <span><span data-zh>质量分析报告 — 2026年5月</span><span data-en>Quality Analysis Report — May 2026</span></span>
   <span><span data-zh>生成时间</span><span data-en>Generated</span>: 2026-06-04</span>
@@ -1465,6 +2068,40 @@ function switchModule(id, btn) {
     document.querySelectorAll('#asm-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
     initAsmCharts();
   }
+  if (id==='final') {
+    document.querySelectorAll('#tab-fin-overview,#tab-fin-trend,#tab-fin-defect,#tab-fin-model,#tab-fin-detail')
+      .forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-fin-overview').classList.add('active');
+    document.querySelectorAll('#fin-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    initFinCharts();
+  }
+  if (id==='qsd') {
+    document.querySelectorAll('#tab-qsd-overview,#tab-qsd-trend,#tab-qsd-defect,#tab-qsd-model,#tab-qsd-detail')
+      .forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-qsd-overview').classList.add('active');
+    document.querySelectorAll('#qsd-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    initQsdCharts();
+  }
+}
+
+// ── QSD tab switch ──
+function switchQsdTab(id, btn) {
+  document.querySelectorAll('#tab-qsd-overview,#tab-qsd-trend,#tab-qsd-defect,#tab-qsd-model,#tab-qsd-detail')
+    .forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#qsd-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  initQsdCharts();
+}
+
+// ── Final inspection tab switch ──
+function switchFinTab(id, btn) {
+  document.querySelectorAll('#tab-fin-overview,#tab-fin-trend,#tab-fin-defect,#tab-fin-model,#tab-fin-detail')
+    .forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#fin-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  initFinCharts();
 }
 
 // ── Assembly tab switch ──
@@ -1593,7 +2230,262 @@ function initAsmCharts() {
      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:gridC}}}});
 }
 
-</script>
+// ── Final Inspection charts (lazy init once) ──
+let finChartsInited = false;
+function initFinCharts() {
+  if (finChartsInited) return;
+  finChartsInited = true;
+
+  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
+  const MONTHS = ['1月 Jan','2月 Feb','3月 Mar','4月 Apr','5月 May'];
+  const passRate = [74.21, 81.25, 76.87, 76.47, 89.93];
+  const defRate  = [0.972, 0.684, 0.776, 1.247, 0.222];
+
+  // F1. Combined trend (dual axis)
+  mk('finTrendChart','bar',{
+    labels: MONTHS,
+    datasets:[
+      {type:'line', label:'通过率 Pass Rate %', data:passRate, yAxisID:'y',
+       borderColor:'#059669', backgroundColor:'rgba(5,150,105,0.1)', borderWidth:3,
+       pointBackgroundColor:'#059669', pointRadius:5, tension:0.3, fill:true, order:0},
+      {type:'bar', label:'抽样不良率 Defect Rate %', data:defRate, yAxisID:'y1',
+       backgroundColor:'rgba(220,38,38,0.7)', borderColor:'#dc2626', borderWidth:1, borderRadius:4, order:1},
+    ]
+  },{
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:14}},tooltip:{mode:'index',intersect:false}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{position:'left',grid:{color:gridC},min:60,max:100,title:{display:true,text:'Pass Rate %'}},
+      y1:{position:'right',grid:{display:false},min:0,max:2,title:{display:true,text:'Defect Rate %'}}
+    }
+  });
+
+  // F2. Pass rate bar
+  mk('finPassBar','bar',{
+    labels: MONTHS,
+    datasets:[{label:'Pass Rate %', data:passRate,
+      backgroundColor:passRate.map(v=>v>=85?'rgba(5,150,105,0.85)':v>=78?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.75)'),
+      borderRadius:4,borderWidth:1}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},min:60,max:100}}});
+
+  // F3. Defect rate bar
+  mk('finDefRateBar','bar',{
+    labels: MONTHS,
+    datasets:[{label:'Defect Rate %', data:defRate,
+      backgroundColor:defRate.map(v=>v>=1?'rgba(220,38,38,0.85)':v>=0.7?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.75)'),
+      borderRadius:4,borderWidth:1}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // F4. Volume chart
+  mk('finVolumeChart','bar',{
+    labels: MONTHS,
+    datasets:[
+      {type:'bar', label:'检验数量 Insp.Qty', data:[523240,409730,455130,380726,395530], yAxisID:'y',
+       backgroundColor:'rgba(37,99,235,0.7)', borderRadius:4, order:1},
+      {type:'line', label:'批次数 Batches', data:[159,96,147,102,139], yAxisID:'y1',
+       borderColor:'#e85d04', backgroundColor:'rgba(232,93,4,0.1)', borderWidth:3,
+       pointBackgroundColor:'#e85d04', pointRadius:4, tension:0.3, order:0},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{position:'left',grid:{color:gridC}},y1:{position:'right',grid:{display:false},min:0,max:200}}});
+
+  // F5. NG qty trend
+  mk('finNgTrend','line',{
+    labels: MONTHS,
+    datasets:[{label:'NG Qty', data:[103,62,72,95,18],
+      borderColor:'#dc2626', backgroundColor:'rgba(220,38,38,0.12)', borderWidth:3,
+      pointBackgroundColor:'#dc2626', pointRadius:5, tension:0.3, fill:true}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true}}});
+
+  // F6. Defect category bar
+  mk('finDefectBar','bar',{
+    labels:['Stain 污渍','Rust 生锈','Marking 标记','Scratch 划伤','Seal/Damage 密封','Dent 磕碰','Pit 凹点','Misalign 错位','Other 其他'],
+    datasets:[{label:'次数 Count', data:[54,23,18,17,11,5,2,1,33],
+      backgroundColor:'rgba(217,119,6,0.8)', borderColor:'#d97706', borderWidth:1, borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:35,font:{size:9}}},y:{grid:{color:gridC}}}});
+
+  // F7. Defect pie
+  mk('finDefectPie','doughnut',{
+    labels:['Stain 污渍 (54)','Other 其他 (33)','Rust 生锈 (23)','Marking 标记 (18)','Scratch 划伤 (17)','Seal/Damage (11)','Dent/Pit/Misalign (8)'],
+    datasets:[{data:[54,33,23,18,17,11,8],
+      backgroundColor:['#d97706','#9ca3af','#dc2626','#7c3aed','#2563eb','#0891b2','#10b981'],
+      borderColor:'#fff', borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:8,font:{size:10}}}},cutout:'55%'});
+
+  // F8. Defect × Month heatmap
+  (function(){
+    const rows={
+      'Stain 污渍':   {1:23, 2:7,  3:17, 4:3, 5:4},
+      'Rust 生锈':    {1:8,  2:3,  3:6,  4:5, 5:1},
+      'Marking 标记': {1:4,  2:3,  3:4,  4:4, 5:3},
+      'Scratch 划伤': {1:3,  2:2,  3:2,  4:8, 5:2},
+      'Seal/Damage':  {1:2,  2:5,  3:2,  4:1, 5:1},
+      'Other 其他':   {1:8,  2:5,  3:8,  4:4, 5:8},
+    };
+    const cols=['1','2','3','4','5'];
+    const colLabels=['Jan','Feb','Mar','Apr','May'];
+    let maxV=0;
+    Object.values(rows).forEach(d=>cols.forEach(c=>{if((d[c]||0)>maxV)maxV=d[c];}));
+    function bg(v){if(!v)return'#f8f9fc';const p=v/maxV;if(p<.15)return'#fef3e2';if(p<.35)return'#fcd9a5';if(p<.6)return'#f9b454';if(p<.8)return'#e8870d';return'#b45309';}
+    function tc(v){return v/maxV>.5?'#fff':'#1e2a45';}
+    const tbl=document.getElementById('finDefectHeatmap');
+    let h='<thead><tr><th>Defect</th>';
+    colLabels.forEach(c=>h+=`<th>${c}</th>`);
+    h+='<th>Total</th></tr></thead><tbody>';
+    Object.entries(rows).forEach(([m,d])=>{
+      h+=`<tr><td>${m}</td>`;
+      let tot=0;
+      cols.forEach(c=>{const v=d[c]||0;tot+=v;h+=`<td style="background:${bg(v)};color:${tc(v)};">${v||''}</td>`;});
+      h+=`<td style="font-weight:700;">${tot}</td></tr>`;
+    });
+    h+='</tbody>';
+    if(tbl) tbl.innerHTML=h;
+  })();
+
+  // F9. Model pass rate
+  mk('finModelPass','bar',{
+    labels:['DC6203-2RS','SA6203-2RS','6203','6203-2Z','619/22','6203-2RS','6204-2RS','6202-2Z','61905J','61805'],
+    datasets:[{label:'Pass Rate %', data:[89.09,86.67,83.23,81.48,81.20,80.20,80.00,64.10,33.33,16.67],
+      backgroundColor:[89.09,86.67,83.23,81.48,81.20,80.20,80.00,64.10,33.33,16.67].map(v=>v>=80?'rgba(5,150,105,0.8)':v>=60?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.8)'),
+      borderRadius:4,borderWidth:1}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC},max:100},y:{grid:{display:false}}}});
+
+  // F10. Customer NG bar
+  mk('finCustomerBar','bar',{
+    labels:['Namyang Nexmo','TVS Motor','Lentron','Argentina WEG','MUVIQ','Gates','Beko','Borgwarner','Hyundai Mobis'],
+    datasets:[{label:'NG Qty', data:[93,45,30,29,27,23,14,12,12],
+      backgroundColor:'rgba(220,38,38,0.75)', borderColor:'#dc2626', borderWidth:1, borderRadius:4}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false}}}});
+}
+
+// ── QSD Inspection charts (lazy init once) ──
+let qsdChartsInited = false;
+function initQsdCharts() {
+  if (qsdChartsInited) return;
+  qsdChartsInited = true;
+
+  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
+  const MONTHS = ['1月 Jan','2月 Feb','3月 Mar','4月 Apr','5月 May','6月 Jun'];
+  const passRate = [98.82, 99.26, 96.55, 94.02, 97.14, 88.89];
+  const defRate  = [0.092, 0.024, 0.074, 0.155, 0.095, 0.374];
+
+  // Q1. Combined trend (dual axis)
+  mk('qsdTrendChart','bar',{
+    labels: MONTHS,
+    datasets:[
+      {type:'line', label:'合格率 Pass Rate %', data:passRate, yAxisID:'y',
+       borderColor:'#059669', backgroundColor:'rgba(5,150,105,0.1)', borderWidth:3,
+       pointBackgroundColor:'#059669', pointRadius:5, tension:0.3, fill:true, order:0},
+      {type:'bar', label:'抽检不良率 Defect Rate %', data:defRate, yAxisID:'y1',
+       backgroundColor:'rgba(220,38,38,0.7)', borderColor:'#dc2626', borderWidth:1, borderRadius:4, order:1},
+    ]
+  },{
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:14}},tooltip:{mode:'index',intersect:false}},
+    scales:{
+      x:{grid:{display:false}},
+      y:{position:'left',grid:{color:gridC},min:80,max:100,title:{display:true,text:'Pass Rate %'}},
+      y1:{position:'right',grid:{display:false},min:0,max:0.5,title:{display:true,text:'Defect Rate %'}}
+    }
+  });
+
+  // Q2. Pass rate bar
+  mk('qsdPassBar','bar',{
+    labels: MONTHS,
+    datasets:[{label:'Pass Rate %', data:passRate,
+      backgroundColor:passRate.map(v=>v>=98?'rgba(5,150,105,0.85)':v>=95?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.75)'),
+      borderRadius:4,borderWidth:1}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},min:80,max:100}}});
+
+  // Q3. Defect rate bar
+  mk('qsdDefRateBar','bar',{
+    labels: MONTHS,
+    datasets:[{label:'Defect Rate %', data:defRate,
+      backgroundColor:defRate.map(v=>v>=0.2?'rgba(220,38,38,0.85)':v>=0.1?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.75)'),
+      borderRadius:4,borderWidth:1}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // Q4. Volume chart
+  mk('qsdVolumeChart','bar',{
+    labels: MONTHS,
+    datasets:[
+      {type:'bar', label:'入库数量 Inbound', data:[558360,552790,572640,412026,517877,99000], yAxisID:'y',
+       backgroundColor:'rgba(37,99,235,0.7)', borderRadius:4, order:1},
+      {type:'line', label:'批次数 Batches', data:[169,136,174,117,175,36], yAxisID:'y1',
+       borderColor:'#e85d04', backgroundColor:'rgba(232,93,4,0.1)', borderWidth:3,
+       pointBackgroundColor:'#e85d04', pointRadius:4, tension:0.3, order:0},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{position:'left',grid:{color:gridC}},y1:{position:'right',grid:{display:false},min:0,max:200}}});
+
+  // Q5. NG qty trend
+  mk('qsdNgTrend','line',{
+    labels: MONTHS,
+    datasets:[{label:'NG Qty', data:[17,4,15,21,18,14],
+      borderColor:'#dc2626', backgroundColor:'rgba(220,38,38,0.12)', borderWidth:3,
+      pointBackgroundColor:'#dc2626', pointRadius:5, tension:0.3, fill:true}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true}}});
+
+  // Q6. Defect category bar
+  mk('qsdDefectBar','bar',{
+    labels:['打字 Marking','瘪盖 Dented Shield','划伤 Scratch','锈蚀 Rust','翻唇/脱胶 Lip','尺寸/椭圆 Dimension','密封破损 Seal'],
+    datasets:[{label:'不合格批次 NG Batches', data:[6,5,4,4,3,2,1],
+      backgroundColor:'rgba(217,119,6,0.8)', borderColor:'#d97706', borderWidth:1, borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:35,font:{size:9}}},y:{grid:{color:gridC}}}});
+
+  // Q7. Defect pie
+  mk('qsdDefectPie','doughnut',{
+    labels:['打字 Marking (6)','瘪盖 Dented (5)','划伤 Scratch (4)','锈蚀 Rust (4)','翻唇/脱胶 Lip (3)','尺寸/椭圆 Dim (2)','密封破损 Seal (1)'],
+    datasets:[{data:[6,5,4,4,3,2,1],
+      backgroundColor:['#7c3aed','#d97706','#2563eb','#dc2626','#0891b2','#10b981','#9ca3af'],
+      borderColor:'#fff', borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:8,font:{size:10}}}},cutout:'55%'});
+
+  // Q8. Defect × Month heatmap
+  (function(){
+    const rows={
+      '打字 Marking':       {1:0, 2:0, 3:3, 4:3, 5:0, 6:0},
+      '瘪盖 Dented Shield': {1:0, 2:1, 3:1, 4:2, 5:0, 6:1},
+      '划伤 Scratch':       {1:1, 2:0, 3:1, 4:2, 5:0, 6:0},
+      '锈蚀 Rust':          {1:0, 2:0, 3:1, 4:0, 5:2, 6:1},
+      '翻唇/脱胶 Lip':      {1:1, 2:0, 3:0, 4:0, 5:2, 6:0},
+      '尺寸/椭圆 Dimension':{1:0, 2:0, 3:0, 4:0, 5:0, 6:2},
+      '密封破损 Seal':      {1:0, 2:0, 3:0, 4:0, 5:1, 6:0},
+    };
+    const cols=['1','2','3','4','5','6'];
+    const colLabels=['Jan','Feb','Mar','Apr','May','Jun'];
+    let maxV=0;
+    Object.values(rows).forEach(d=>cols.forEach(c=>{if((d[c]||0)>maxV)maxV=d[c];}));
+    function bg(v){if(!v)return'#f8f9fc';const p=v/maxV;if(p<.34)return'#fef3e2';if(p<.67)return'#f9b454';return'#b45309';}
+    function tc(v){return v/maxV>.5?'#fff':'#1e2a45';}
+    const tbl=document.getElementById('qsdDefectHeatmap');
+    let h='<thead><tr><th>Defect</th>';
+    colLabels.forEach(c=>h+=`<th>${c}</th>`);
+    h+='<th>Total</th></tr></thead><tbody>';
+    Object.entries(rows).forEach(([m,d])=>{
+      h+=`<tr><td>${m}</td>`;
+      let tot=0;
+      cols.forEach(c=>{const v=d[c]||0;tot+=v;h+=`<td style="background:${bg(v)};color:${tc(v)};">${v||''}</td>`;});
+      h+=`<td style="font-weight:700;">${tot}</td></tr>`;
+    });
+    h+='</tbody>';
+    if(tbl) tbl.innerHTML=h;
+  })();
+
+  // Q9. Model pass rate
+  mk('qsdModelPass','bar',{
+    labels:['SA6303-2','619/22','DC6203-2','BT6203W1','6202-2','6203JCU1','6203-2','61905J','SA6203-2','6210T1'],
+    datasets:[{label:'Pass Rate %', data:[100,99.3,98.5,98.3,97.4,96.2,95.3,92.9,92.9,75.0],
+      backgroundColor:[100,99.3,98.5,98.3,97.4,96.2,95.3,92.9,92.9,75.0].map(v=>v>=98?'rgba(5,150,105,0.8)':v>=93?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.8)'),
+      borderRadius:4,borderWidth:1}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC},min:60,max:100},y:{grid:{display:false}}}});
+
+  // Q10. Model NG qty
+  mk('qsdModelNg','bar',{
+    labels:['6203-2','6203JCU1','6210T1','6202-2','SA6203-2','BT6203W1','619/22','61905J','DC6203-2'],
+    datasets:[{label:'NG Qty', data:[25,17,11,10,9,6,2,1,1],
+      backgroundColor:'rgba(220,38,38,0.75)', borderColor:'#dc2626', borderWidth:1, borderRadius:4}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false}}}});
+}
 
 </script>
 </body>
