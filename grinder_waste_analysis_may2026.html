@@ -178,11 +178,54 @@
   .module-panel{display:none;}
   .module-panel.active{display:block;}
 
+  @media(max-width:1024px){
+    main{padding-left:32px;padding-right:32px;}
+    header,footer,.tab-nav,.module-bar{padding-left:32px;padding-right:32px;}
+    #ctrl-bar > div{padding-left:32px !important;padding-right:32px !important;}
+    .charts-grid.three{grid-template-columns:1fr 1fr;}
+    .charts-grid.wide{grid-template-columns:1fr;}
+  }
+
   @media(max-width:768px){
-    main,header,footer,.tab-nav,.module-bar{padding-left:16px;padding-right:16px;}
-    #ctrl-bar > div{padding-left:16px !important;padding-right:16px !important;flex-wrap:wrap;gap:10px !important;}
-    .charts-grid,.charts-grid.wide,.charts-grid.three{grid-template-columns:1fr;}
-    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    main{padding-left:18px;padding-right:18px;padding-bottom:48px;}
+    header{padding:28px 18px 26px;}
+    footer,.tab-nav,.module-bar{padding-left:18px;padding-right:18px;}
+    #ctrl-bar > div{padding-left:18px !important;padding-right:18px !important;flex-wrap:wrap;gap:10px !important;}
+    .charts-grid,.charts-grid.wide,.charts-grid.three{grid-template-columns:1fr;gap:14px;}
+    .proc-grid{grid-template-columns:1fr;gap:14px;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+    section{margin-top:30px;}
+    .chart-card{padding:16px;}
+    .chart-wrap{height:240px;}
+    .chart-wrap.tall{height:280px;}
+    .insights{grid-template-columns:1fr;}
+    .module-btn{padding:8px 14px;font-size:12px;}
+    .tab-btn{padding:12px 14px;font-size:12px;}
+    header h1{font-size:clamp(20px,6vw,30px);}
+    .header-meta{gap:6px;}
+    .meta-pill{font-size:10px;padding:4px 10px;}
+  }
+
+  @media(max-width:480px){
+    main{padding-left:12px;padding-right:12px;}
+    header{padding:22px 12px 22px;}
+    footer,.tab-nav,.module-bar{padding-left:12px;padding-right:12px;}
+    #ctrl-bar > div{padding-left:12px !important;padding-right:12px !important;}
+    .kpi-grid{grid-template-columns:1fr;gap:10px;}
+    .kpi-value{font-size:26px;}
+    .chart-card{padding:13px;}
+    .chart-wrap{height:220px;}
+    .chart-wrap.tall{height:250px;}
+    .chart-wrap.short{height:190px;}
+    .section-title{font-size:16px;}
+    .proc-card{padding:14px 15px;}
+    footer{flex-direction:column;gap:6px;align-items:flex-start;}
+    /* dashboard title shrinks on phone */
+    #ctrl-bar [data-zh],#ctrl-bar [data-en]{font-size:13px !important;}
+    .ctrl-btn{padding:4px 10px;}
+    /* tables scroll horizontally, already wrapped in .table-wrap */
+    thead th,tbody td{padding:8px 10px;font-size:11px;}
+    .heatmap-table th,.heatmap-table td{padding:5px 7px;font-size:10px;}
   }
 </style>
 </head>
@@ -236,6 +279,9 @@
   </button>
   <button class="module-btn" id="mod-qsd" onclick="switchModule('qsd',this)">
     🛡️ <span data-zh>品监分析</span><span data-en>QSD Inspection</span>
+  </button>
+  <button class="module-btn" id="mod-prod" onclick="switchModule('prod',this)">
+    📦 <span data-zh>产量分析</span><span data-en>Production Output</span>
   </button>
 </div>
 
@@ -1820,6 +1866,371 @@
 </main>
 </div><!-- end module-qsd -->
 
+<!-- ══════ MODULE: PRODUCTION OUTPUT ══════ -->
+<div class="module-panel" id="module-prod">
+
+<header>
+  <div class="header-tag">
+    <span data-zh>生产分析报告 · 三大工段产量</span>
+    <span data-en>Production Analysis Report · Three-Stage Output</span>
+  </div>
+  <h1>
+    <span data-zh>生产产量<span>月度分析</span></span>
+    <span data-en>Production Output <span>Monthly Report</span></span>
+  </h1>
+  <div class="header-meta">
+    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年5月</span><span data-en>MAY 2026</span></div>
+    <div class="meta-pill">PHJY_Production_Report.xlsx</div>
+    <div class="meta-pill"><span data-zh>前磨 · 后磨 · 装配</span><span data-en>Front · Back · Assembly</span></div>
+    <div class="meta-pill"><span data-zh>深沟球轴承 DGBB</span><span data-en>Deep Groove Ball Bearing</span></div>
+  </div>
+</header>
+
+<div class="tab-nav" id="prod-tab-nav">
+  <button class="tab-btn active" onclick="switchProdTab('prod-overview',this)">📊 <span data-zh>总览</span><span data-en>Overview</span></button>
+  <button class="tab-btn" onclick="switchProdTab('prod-front',this)">🔵 <span data-zh>前磨产量</span><span data-en>Front Grinding</span></button>
+  <button class="tab-btn" onclick="switchProdTab('prod-back',this)">🟣 <span data-zh>后磨超精</span><span data-en>Superfinish</span></button>
+  <button class="tab-btn" onclick="switchProdTab('prod-asm',this)">🔴 <span data-zh>装配成品</span><span data-en>Assembly</span></button>
+  <button class="tab-btn" onclick="switchProdTab('prod-model',this)">🏷️ <span data-zh>型号产量</span><span data-en>Model Output</span></button>
+  <button class="tab-btn" onclick="switchProdTab('prod-detail',this)">📋 <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
+</div>
+
+<main>
+
+<!-- ── PROD OVERVIEW ── -->
+<div class="tab-panel active" id="tab-prod-overview">
+  <section>
+    <div class="section-label"><span data-zh>第一节</span><span data-en>SECTION 01</span></div>
+    <div class="section-title"><span data-zh>产量关键指标概览</span><span data-en>Production KPIs</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#2563eb;">
+        <span class="kpi-icon">🔵</span>
+        <div class="kpi-label"><span data-zh>前磨端面产量</span><span data-en>Front: Endface</span></div>
+        <div class="kpi-value">825,559</div>
+        <div class="kpi-sub"><span data-zh>内圈端面+外圈端面 (白班)</span><span data-en>IR+OR endface (morning only)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;">
+        <span class="kpi-icon">🔵</span>
+        <div class="kpi-label"><span data-zh>前磨无心产量</span><span data-en>Front: Centerless</span></div>
+        <div class="kpi-value">398,250</div>
+        <div class="kpi-sub"><span data-zh>外圈无心磨 (白班)</span><span data-en>Outer centerless (morning only)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;">
+        <span class="kpi-icon">🟣</span>
+        <div class="kpi-label"><span data-zh>后磨超精产量</span><span data-en>Superfinish</span></div>
+        <div class="kpi-value">922,434</div>
+        <div class="kpi-sub"><span data-zh>套圈超精 (白+夜班)</span><span data-en>Ring superfinish (mor+night)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#dc2626;">
+        <span class="kpi-icon">🔴</span>
+        <div class="kpi-label"><span data-zh>装配成品产量</span><span data-en>Assembly Finished</span></div>
+        <div class="kpi-value">417,941</div>
+        <div class="kpi-sub"><span data-zh>成品轴承 (白+夜班)</span><span data-en>Finished bearings (mor+night)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#059669;">
+        <span class="kpi-icon">☀️</span>
+        <div class="kpi-label"><span data-zh>超精白班</span><span data-en>SF Morning</span></div>
+        <div class="kpi-value">498,177</div>
+        <div class="kpi-sub"><span data-zh>超精白班套圈 (pcs)</span><span data-en>Superfinish morning rings (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;">
+        <span class="kpi-icon">🌙</span>
+        <div class="kpi-label"><span data-zh>超精夜班</span><span data-en>SF Night</span></div>
+        <div class="kpi-value">424,257</div>
+        <div class="kpi-sub"><span data-zh>超精夜班套圈 (pcs)</span><span data-en>Superfinish night rings (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#d97706;">
+        <span class="kpi-icon">☀️</span>
+        <div class="kpi-label"><span data-zh>装配白班</span><span data-en>Assembly Morning</span></div>
+        <div class="kpi-value">211,563</div>
+        <div class="kpi-sub"><span data-zh>装配白班成品 (pcs)</span><span data-en>Assembly morning finished (pcs)</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#e85d04;">
+        <span class="kpi-icon">🌙</span>
+        <div class="kpi-label"><span data-zh>装配夜班</span><span data-en>Assembly Night</span></div>
+        <div class="kpi-value">206,378</div>
+        <div class="kpi-sub"><span data-zh>装配夜班成品 (pcs)</span><span data-en>Assembly night finished (pcs)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
+    <div class="section-title"><span data-zh>三大工段产量对比</span><span data-en>Output by Three Stages</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>三大工段产量</span><span data-en>Output by Stage</span></div>
+        <div class="chart-wrap"><canvas id="prodStageBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>后磨/装配 班次产量占比</span><span data-en>Shift Share (SF / Assembly)</span></div>
+        <div class="chart-wrap"><canvas id="prodShiftPie"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
+    <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights</span></div>
+    <div class="insights">
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>🔴 成品轴承 417,941 件</span><span data-en>🔴 Finished Bearings: 417,941</span></div>
+        <div class="insight-body">
+          <span data-zh>装配工段产出 <strong>417,941 件成品轴承</strong>，为工厂最终交付成果。白班211,563 + 夜班206,378，两班高度均衡（差距仅2.4%）。</span>
+          <span data-en>Assembly produced <strong>417,941 finished bearings</strong> as the final deliverable. Morning 211,563 + night 206,378, highly balanced (only 2.4% gap).</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#2563eb;">
+        <div class="insight-head"><span data-zh>🔵 前磨端面白班产量最大</span><span data-en>🔵 Front Endface — Largest Morning Output</span></div>
+        <div class="insight-body">
+          <span data-zh>前磨端面（内圈+外圈）合计 <strong>825,559件</strong>，全部白班生产。内圈端面427,250 + 外圈端面398,309，内圈略多于外圈。</span>
+          <span data-en>Front endface (inner+outer) totals <strong>825,559 pcs</strong>, all morning shift. Inner endface 427,250 + outer endface 398,309, inner slightly more than outer.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#0891b2;">
+        <div class="insight-head"><span data-zh>🔵 无心磨仅外圈</span><span data-en>🔵 Centerless — Outer Ring Only</span></div>
+        <div class="insight-body">
+          <span data-zh>无心磨 <strong>398,250件</strong>，仅外圈需此工序，全白班。与外圈端面磨产量（398,309）几乎完全一致，外圈线工序衔接顺畅。</span>
+          <span data-en>Centerless <strong>398,250 pcs</strong> — only outer rings require this step, all morning. Nearly identical to outer endface (398,309), indicating smooth outer-ring line flow.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#7c3aed;">
+        <div class="insight-head"><span data-zh>🟣 超精白班高出夜班17.4%</span><span data-en>🟣 SF Morning 17.4% Higher</span></div>
+        <div class="insight-body">
+          <span data-zh>后磨超精 <strong>922,434件</strong>，白班498,177高于夜班424,257（+17.4%），差距明显。建议提升超精夜班产能利用率。</span>
+          <span data-en>Superfinish <strong>922,434 pcs</strong>, morning 498,177 exceeds night 424,257 (+17.4%), a notable gap. Improving night-shift superfinish utilization is recommended.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>⭕ 超精内外圈接近1:1</span><span data-en>⭕ SF Inner/Outer Near 1:1</span></div>
+        <div class="insight-body">
+          <span data-zh>超精内圈 <strong>452,170件</strong>、外圈 <strong>470,264件</strong>，比例0.96:1，符合"一套轴承=1内圈+1外圈"配套要求。</span>
+          <span data-en>Superfinish inner <strong>452,170</strong> and outer <strong>470,264</strong>, ratio 0.96:1, consistent with "one bearing = 1 inner + 1 outer".</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#d97706;">
+        <div class="insight-head"><span data-zh>🏷️ 6203系列为主力</span><span data-en>🏷️ 6203 Series — Main Driver</span></div>
+        <div class="insight-body">
+          <span data-zh>成品中6203（127,333）和6203K（121,135）合计占 <strong>59.5%</strong>；超精中两者合计51.4万件，是各工段绝对主力型号。</span>
+          <span data-en>In finished goods, 6203 (127,333) and 6203K (121,135) total <strong>59.5%</strong>; in superfinish they total 514K — the dominant models across all stages.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#4f46e5;">
+        <div class="insight-head"><span data-zh>📈 月末成品爬坡</span><span data-en>📈 Month-End Ramp-Up</span></div>
+        <div class="insight-body">
+          <span data-zh>成品产量月末走高，5月28日达单日峰值 <strong>22,210件</strong>，超精5月11日峰值59,908件，反映月末交付冲刺。</span>
+          <span data-en>Finished output climbed at month-end, peaking at <strong>22,210</strong> on May 28; superfinish peaked at 59,908 on May 11, reflecting end-of-month delivery push.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>⭕ 6202K为小批量型号</span><span data-en>⭕ 6202K — Small-Batch Model</span></div>
+        <div class="insight-body">
+          <span data-zh>6202K端面仅11,282件、无心11,278件、超精45,498件、成品15,600件，为小批量型号，前磨端面/无心产量明显偏低。</span>
+          <span data-en>6202K: endface 11,282, centerless 11,278, superfinish 45,498, finished 15,600 — a small-batch model with notably lower front-grinding output.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── PROD FRONT (前磨) ── -->
+<div class="tab-panel" id="tab-prod-front">
+  <section>
+    <div class="section-label">FRONT GRINDING</div>
+    <div class="section-title"><span data-zh>前磨产量分析（端面 + 无心，全白班）</span><span data-en>Front Grinding (Endface + Centerless, Morning Only)</span></div>
+    <div class="proc-grid">
+      <div class="proc-card" style="--pc-color:#2563eb;">
+        <div class="proc-header"><div><div class="proc-name"><span data-zh>端面产量</span><span data-en>Endface</span></div><div class="proc-sub"><span data-zh>内圈端面 + 外圈端面 · 白班</span><span data-en>IR + OR Endface · Morning</span></div></div><span class="badge badge-blue"><span data-zh>白班</span><span data-en>Morning</span></span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#2563eb;">427,250</div><div class="proc-kpi-lbl"><span data-zh>内圈端面</span><span data-en>IR Endface</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#0891b2;">398,309</div><div class="proc-kpi-lbl"><span data-zh>外圈端面</span><span data-en>OR Endface</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>端面合计 825,559 — 按型号</span><span data-en>Endface Total 825,559 — by Model</span></div>
+        <div class="defect-row"><span class="defect-label">6203K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#2563eb;"></div></div><span class="defect-val">295K</span></div>
+        <div class="defect-row"><span class="defect-label">6203</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:89.2%;--db-color:#3b82f6;"></div></div><span class="defect-val">263K</span></div>
+        <div class="defect-row"><span class="defect-label">619/22</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:86.9%;--db-color:#60a5fa;"></div></div><span class="defect-val">256K</span></div>
+        <div class="defect-row"><span class="defect-label">6202K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:3.8%;--db-color:#93c5fd;"></div></div><span class="defect-val">11K</span></div>
+      </div>
+      <div class="proc-card" style="--pc-color:#0891b2;">
+        <div class="proc-header"><div><div class="proc-name"><span data-zh>无心产量</span><span data-en>Centerless</span></div><div class="proc-sub"><span data-zh>外圈无心磨 · 白班</span><span data-en>OR Centerless · Morning</span></div></div><span class="badge badge-blue"><span data-zh>仅外圈</span><span data-en>Outer Only</span></span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#0891b2;">398,250</div><div class="proc-kpi-lbl"><span data-zh>无心总产量</span><span data-en>Total Output</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>无心磨 — 按型号</span><span data-en>Centerless — by Model</span></div>
+        <div class="defect-row"><span class="defect-label">6203K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#0891b2;"></div></div><span class="defect-val">146K</span></div>
+        <div class="defect-row"><span class="defect-label">6203</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:91.1%;--db-color:#22d3ee;"></div></div><span class="defect-val">133K</span></div>
+        <div class="defect-row"><span class="defect-label">619/22</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:74.8%;--db-color:#67e8f9;"></div></div><span class="defect-val">109K</span></div>
+        <div class="defect-row"><span class="defect-label">6202K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:7.7%;--db-color:#a5f3fc;"></div></div><span class="defect-val">11K</span></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:20px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>端面 vs 无心 — 各型号产量对比</span><span data-en>Endface vs Centerless by Model</span></div>
+        <div class="chart-wrap"><canvas id="prodFrontBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#0891b2;"><span data-zh>前磨工序产量构成</span><span data-en>Front Grinding Process Composition</span></div>
+        <div class="chart-wrap"><canvas id="prodFrontPie"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── PROD BACK (后磨超精) ── -->
+<div class="tab-panel" id="tab-prod-back">
+  <section>
+    <div class="section-label">SUPERFINISH</div>
+    <div class="section-title"><span data-zh>后磨超精产量分析（白班 + 夜班）</span><span data-en>Superfinish Output (Morning + Night)</span></div>
+    <div class="proc-grid">
+      <div class="proc-card" style="--pc-color:#7c3aed;">
+        <div class="proc-header"><div><div class="proc-name"><span data-zh>超精总产量</span><span data-en>Superfinish</span></div><div class="proc-sub"><span data-zh>内圈+外圈沟道超精</span><span data-en>IR+OR Raceway SF</span></div></div><span class="badge badge-red"><span data-zh>双班</span><span data-en>2 Shifts</span></span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#059669;">498,177</div><div class="proc-kpi-lbl"><span data-zh>白班</span><span data-en>Morning</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#4f46e5;">424,257</div><div class="proc-kpi-lbl"><span data-zh>夜班</span><span data-en>Night</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>套圈类型</span><span data-en>By Ring Type</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>外圈 Outer</span><span data-en>Outer</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#0891b2;"></div></div><span class="defect-val">470K</span></div>
+        <div class="defect-row"><span class="defect-label"><span data-zh>内圈 Inner</span><span data-en>Inner</span></span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:96.2%;--db-color:#2563eb;"></div></div><span class="defect-val">452K</span></div>
+      </div>
+      <div class="proc-card" style="--pc-color:#7c3aed;">
+        <div class="proc-header"><div><div class="proc-name"><span data-zh>超精 — 型号</span><span data-en>SF by Model</span></div><div class="proc-sub"><span data-zh>各型号超精产量</span><span data-en>Output by Model</span></div></div></div>
+        <div class="proc-section-lbl"><span data-zh>按型号（内+外合计）</span><span data-en>by Model (inner+outer)</span></div>
+        <div class="defect-row"><span class="defect-label">6203</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#7c3aed;"></div></div><span class="defect-val">264K</span></div>
+        <div class="defect-row"><span class="defect-label">6203K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:95.0%;--db-color:#a78bfa;"></div></div><span class="defect-val">250K</span></div>
+        <div class="defect-row"><span class="defect-label">619/22</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:87.8%;--db-color:#c4b5fd;"></div></div><span class="defect-val">231K</span></div>
+        <div class="defect-row"><span class="defect-label">DC6203</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:50.0%;--db-color:#ddd6fe;"></div></div><span class="defect-val">132K</span></div>
+        <div class="defect-row"><span class="defect-label">6202K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:17.3%;--db-color:#ede9fe;"></div></div><span class="defect-val">45K</span></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:20px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>超精每日产量趋势</span><span data-en>Superfinish Daily Trend</span></div>
+        <div class="chart-wrap"><canvas id="prodSfDaily"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>超精各型号 白班 vs 夜班</span><span data-en>SF Morning vs Night by Model</span></div>
+        <div class="chart-wrap"><canvas id="prodSfShiftModel"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── PROD ASM (装配) ── -->
+<div class="tab-panel" id="tab-prod-asm">
+  <section>
+    <div class="section-label">ASSEMBLY</div>
+    <div class="section-title"><span data-zh>装配成品产量分析（白班 + 夜班）</span><span data-en>Assembly Finished Output (Morning + Night)</span></div>
+    <div class="proc-grid">
+      <div class="proc-card" style="--pc-color:#dc2626;">
+        <div class="proc-header"><div><div class="proc-name"><span data-zh>成品总产量</span><span data-en>Finished</span></div><div class="proc-sub"><span data-zh>合套铆压注脂 → 成品轴承</span><span data-en>Matching/Riveting/Greasing</span></div></div><span class="badge badge-red"><span data-zh>成品</span><span data-en>Finished</span></span></div>
+        <div class="proc-kpi-row">
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#d97706;">211,563</div><div class="proc-kpi-lbl"><span data-zh>白班</span><span data-en>Morning</span></div></div>
+          <div class="proc-kpi"><div class="proc-kpi-val" style="color:#e85d04;">206,378</div><div class="proc-kpi-lbl"><span data-zh>夜班</span><span data-en>Night</span></div></div>
+        </div>
+        <div class="proc-section-lbl"><span data-zh>成品总计 417,941 件</span><span data-en>Total 417,941 finished</span></div>
+        <div style="font-size:12px;color:var(--text-sub);line-height:1.6;">
+          <span data-zh>白夜班产量高度均衡，差距仅2.4%，排产稳定。日均14,927件。</span>
+          <span data-en>Morning/night highly balanced (2.4% gap), stable scheduling. Daily average 14,927 pcs.</span>
+        </div>
+      </div>
+      <div class="proc-card" style="--pc-color:#dc2626;">
+        <div class="proc-header"><div><div class="proc-name"><span data-zh>成品 — 型号</span><span data-en>Finished by Model</span></div><div class="proc-sub"><span data-zh>各型号成品产量</span><span data-en>Output by Model</span></div></div></div>
+        <div class="proc-section-lbl"><span data-zh>按型号</span><span data-en>by Model</span></div>
+        <div class="defect-row"><span class="defect-label">6203</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:100%;--db-color:#dc2626;"></div></div><span class="defect-val">127K</span></div>
+        <div class="defect-row"><span class="defect-label">6203K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:95.1%;--db-color:#ef4444;"></div></div><span class="defect-val">121K</span></div>
+        <div class="defect-row"><span class="defect-label">619/22</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:71.5%;--db-color:#f87171;"></div></div><span class="defect-val">91K</span></div>
+        <div class="defect-row"><span class="defect-label">DC6203</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:49.4%;--db-color:#fca5a5;"></div></div><span class="defect-val">63K</span></div>
+        <div class="defect-row"><span class="defect-label">6202K</span><div class="defect-bar-bg"><div class="defect-bar-fill" style="width:12.3%;--db-color:#fecaca;"></div></div><span class="defect-val">16K</span></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:20px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>成品每日产量趋势</span><span data-en>Finished Daily Trend</span></div>
+        <div class="chart-wrap"><canvas id="prodAbDaily"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>成品各型号 白班 vs 夜班</span><span data-en>Finished Morning vs Night by Model</span></div>
+        <div class="chart-wrap"><canvas id="prodAbShiftModel"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── PROD MODEL ── -->
+<div class="tab-panel" id="tab-prod-model">
+  <section>
+    <div class="section-label">MODEL OUTPUT</div>
+    <div class="section-title"><span data-zh>三大工段各型号产量对比</span><span data-en>Model Output Across Three Stages</span></div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各型号产量：前磨端面 / 前磨无心 / 后磨超精 / 装配成品</span><span data-en>Model Output: Endface / Centerless / Superfinish / Finished</span></div>
+        <div class="chart-wrap tall"><canvas id="prodModelStack"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>后磨超精各型号产量</span><span data-en>Superfinish by Model</span></div>
+        <div class="chart-wrap"><canvas id="prodSfModel"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>装配成品各型号产量</span><span data-en>Finished by Model</span></div>
+        <div class="chart-wrap"><canvas id="prodAsmModel"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── PROD DETAIL ── -->
+<div class="tab-panel" id="tab-prod-detail">
+  <section>
+    <div class="section-label">DETAIL TABLES</div>
+    <div class="section-title"><span data-zh>产量数据明细表</span><span data-en>Production Detail Tables</span></div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>三大工段产量汇总</span><span data-en>Three-Stage Output Summary</span></p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr>
+          <th><span data-zh>工段</span><span data-en>Stage</span></th>
+          <th><span data-zh>工序</span><span data-en>Process</span></th>
+          <th><span data-zh>白班</span><span data-en>Morning</span></th>
+          <th><span data-zh>夜班</span><span data-en>Night</span></th>
+          <th><span data-zh>总产量</span><span data-en>Total</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td rowspan="2"><span data-zh>前磨</span><span data-en>Front</span></td><td><span data-zh>端面（内+外）</span><span data-en>Endface (IR+OR)</span></td><td class="num">825,559</td><td class="num">—</td><td class="num">825,559</td></tr>
+          <tr><td><span data-zh>无心（外圈）</span><span data-en>Centerless (OR)</span></td><td class="num">398,250</td><td class="num">—</td><td class="num">398,250</td></tr>
+          <tr><td><span data-zh>后磨</span><span data-en>Back</span></td><td><span data-zh>超精（套圈）</span><span data-en>Superfinish (Rings)</span></td><td class="num">498,177</td><td class="num">424,257</td><td class="num">922,434</td></tr>
+          <tr style="font-weight:700;background:#fef2f2;"><td><span data-zh>装配</span><span data-en>Assembly</span></td><td><span data-zh>成品轴承</span><span data-en>Finished Bearings</span></td><td class="num">211,563</td><td class="num">206,378</td><td class="num">417,941</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>各型号产量明细（跨工段）</span><span data-en>Model Output Detail (Cross-Stage)</span></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-zh>型号</span><span data-en>Model</span></th>
+          <th><span data-zh>端面</span><span data-en>Endface</span></th>
+          <th><span data-zh>无心</span><span data-en>Centerless</span></th>
+          <th><span data-zh>超精</span><span data-en>Superfinish</span></th>
+          <th><span data-zh>成品</span><span data-en>Finished</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>6203K</td><td class="num">294,980</td><td class="num">145,512</td><td class="num">250,280</td><td class="num">121,135</td></tr>
+          <tr><td>6203</td><td class="num">263,092</td><td class="num">132,662</td><td class="num">263,545</td><td class="num">127,333</td></tr>
+          <tr><td>619/22</td><td class="num">256,205</td><td class="num">108,798</td><td class="num">231,281</td><td class="num">91,028</td></tr>
+          <tr><td>DC6203</td><td class="num">—</td><td class="num">—</td><td class="num">131,830</td><td class="num">62,845</td></tr>
+          <tr><td>6202K</td><td class="num">11,282</td><td class="num">11,278</td><td class="num">45,498</td><td class="num">15,600</td></tr>
+          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">825,559</td><td class="num">398,250</td><td class="num">922,434</td><td class="num">417,941</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+</main>
+</div><!-- end module-prod -->
+
 <footer>
   <span><span data-zh>质量分析报告 — 2026年5月</span><span data-en>Quality Analysis Report — May 2026</span></span>
   <span><span data-zh>生成时间</span><span data-en>Generated</span>: 2026-06-04</span>
@@ -2082,6 +2493,23 @@ function switchModule(id, btn) {
     document.querySelectorAll('#qsd-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
     initQsdCharts();
   }
+  if (id==='prod') {
+    document.querySelectorAll('#tab-prod-overview,#tab-prod-front,#tab-prod-back,#tab-prod-asm,#tab-prod-model,#tab-prod-detail')
+      .forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-prod-overview').classList.add('active');
+    document.querySelectorAll('#prod-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    initProdCharts();
+  }
+}
+
+// ── Production tab switch ──
+function switchProdTab(id, btn) {
+  document.querySelectorAll('#tab-prod-overview,#tab-prod-front,#tab-prod-back,#tab-prod-asm,#tab-prod-model,#tab-prod-detail')
+    .forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#prod-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  initProdCharts();
 }
 
 // ── QSD tab switch ──
@@ -2485,6 +2913,106 @@ function initQsdCharts() {
     datasets:[{label:'NG Qty', data:[25,17,11,10,9,6,2,1,1],
       backgroundColor:'rgba(220,38,38,0.75)', borderColor:'#dc2626', borderWidth:1, borderRadius:4}]
   },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false}}}});
+}
+
+// ── Production charts (lazy init once) ──
+let prodChartsInited = false;
+function initProdCharts() {
+  if (prodChartsInited) return;
+  prodChartsInited = true;
+
+  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
+
+  // P1. Stage bar (overview)
+  mk('prodStageBar','bar',{
+    labels:['前磨端面 Endface','前磨无心 Centerless','后磨超精 SF','装配成品 Finished'],
+    datasets:[{label:'Output', data:[825559,398250,922434,417941],
+      backgroundColor:['#2563eb','#0891b2','#7c3aed','#dc2626'],borderWidth:1,borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC}}}});
+
+  // P2. Shift pie (SF + Assembly morning/night)
+  mk('prodShiftPie','doughnut',{
+    labels:['超精白班 SF Mor (498K)','超精夜班 SF Ngt (424K)','装配白班 Asm Mor (212K)','装配夜班 Asm Ngt (206K)'],
+    datasets:[{data:[498177,424257,211563,206378],
+      backgroundColor:['#059669','#4f46e5','#d97706','#e85d04'],borderColor:'#fff',borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:8,font:{size:10}}}},cutout:'55%'});
+
+  // P3. Front: endface vs centerless by model
+  mk('prodFrontBar','bar',{
+    labels:['6203K','6203','619/22','6202K'],
+    datasets:[
+      {label:'端面 Endface', data:[294980,263092,256205,11282],backgroundColor:'rgba(37,99,235,0.8)',borderRadius:3,borderWidth:1},
+      {label:'无心 Centerless', data:[145512,132662,108798,11278],backgroundColor:'rgba(8,145,178,0.8)',borderRadius:3,borderWidth:1},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:12}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // P4. Front pie
+  mk('prodFrontPie','doughnut',{
+    labels:['内圈端面 IR Endface (427K)','外圈端面 OR Endface (398K)','外圈无心 Centerless (398K)'],
+    datasets:[{data:[427250,398309,398250],
+      backgroundColor:['#2563eb','#0891b2','#22d3ee'],borderColor:'#fff',borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:8,font:{size:10}}}},cutout:'55%'});
+
+  // P5. SF daily
+  mk('prodSfDaily','line',{
+    labels:['3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'],
+    datasets:[{label:'Superfinish', data:[23317,29375,28333,29404,32300,25663,23303,25208,59908,23440,28100,22426,25330,26770,22482,47260,25234,35877,38409,32327,42422,35847,45044,42453,39889,43155,41117,28041],
+      borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.12)',borderWidth:2.5,pointBackgroundColor:'#7c3aed',pointRadius:3,tension:0.3,fill:true}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC},beginAtZero:true}}});
+
+  // P6. SF shift by model
+  mk('prodSfShiftModel','bar',{
+    labels:['6203','6203K','619/22','DC6203','6202K'],
+    datasets:[
+      {label:'☀️ 白班 Morning', data:[128602,131146,128374,64557,45498],backgroundColor:'rgba(5,150,105,0.8)',borderRadius:3,borderWidth:1},
+      {label:'🌙 夜班 Night',   data:[134943,119134,102907,67273,0],    backgroundColor:'rgba(79,70,229,0.8)',borderRadius:3,borderWidth:1},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:12}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // P7. Assembly daily
+  mk('prodAbDaily','line',{
+    labels:['3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'],
+    datasets:[{label:'Finished', data:[7265,14322,13140,13195,15016,13576,9300,12600,12900,13243,16700,13500,13700,13200,11426,12000,13172,17098,17357,12709,19358,17800,20180,20770,18020,22210,18840,15344],
+      borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,0.12)',borderWidth:2.5,pointBackgroundColor:'#dc2626',pointRadius:3,tension:0.3,fill:true}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC},beginAtZero:true}}});
+
+  // P8. Assembly shift by model
+  mk('prodAbShiftModel','bar',{
+    labels:['6203','6203K','619/22','DC6203','6202K'],
+    datasets:[
+      {label:'☀️ 白班 Morning', data:[62386,62792,47738,29047,9600],backgroundColor:'rgba(217,119,6,0.8)',borderRadius:3,borderWidth:1},
+      {label:'🌙 夜班 Night',   data:[64947,58343,43290,33798,6000],backgroundColor:'rgba(232,93,4,0.8)',borderRadius:3,borderWidth:1},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:12}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // P9. Model stack across 4 processes
+  mk('prodModelStack','bar',{
+    labels:['6203K','6203','619/22','DC6203','6202K'],
+    datasets:[
+      {label:'端面 Endface',    data:[294980,263092,256205,0,11282],   backgroundColor:'rgba(37,99,235,0.85)',borderRadius:2},
+      {label:'无心 Centerless', data:[145512,132662,108798,0,11278],   backgroundColor:'rgba(8,145,178,0.85)',borderRadius:2},
+      {label:'超精 Superfinish',data:[250280,263545,231281,131830,45498],backgroundColor:'rgba(124,58,237,0.85)',borderRadius:2},
+      {label:'成品 Finished',   data:[121135,127333,91028,62845,15600], backgroundColor:'rgba(220,38,38,0.85)',borderRadius:2},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // P10. SF by model
+  mk('prodSfModel','bar',{
+    labels:['6203','6203K','619/22','DC6203','6202K'],
+    datasets:[{label:'超精 SF', data:[263545,250280,231281,131830,45498],
+      backgroundColor:['#7c3aed','#a78bfa','#c4b5fd','#ddd6fe','#ede9fe'],borderColor:'#7c3aed',borderWidth:1,borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
+
+  // P11. Finished by model
+  mk('prodAsmModel','bar',{
+    labels:['6203','6203K','619/22','DC6203','6202K'],
+    datasets:[{label:'成品 Finished', data:[127333,121135,91028,62845,15600],
+      backgroundColor:['#dc2626','#ef4444','#f87171','#fca5a5','#fecaca'],borderColor:'#dc2626',borderWidth:1,borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
 }
 
 </script>
