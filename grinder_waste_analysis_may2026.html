@@ -303,6 +303,9 @@
   <button class="module-btn" id="mod-inv" onclick="switchModule('inv',this)">
     📚 <span data-zh>库存分析</span><span data-en>Inventory</span>
   </button>
+  <button class="module-btn" id="mod-sales" onclick="switchModule('sales',this)">
+    💰 <span data-zh>销售分析</span><span data-en>Sales</span>
+  </button>
 </div>
 
 <!-- ══════ MODULE: GRINDER ══════ -->
@@ -953,6 +956,12 @@
         <div class="chart-wrap"><canvas id="asmLineBar"></canvas></div>
       </div>
     </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#e85d04;"><span data-zh>PHJY 装配不良柏拉图分析（占比% + 累计%）</span><span data-en>PHJY Assembly Defect Pareto Analysis (Share% + Cumulative%)</span></div>
+        <div class="chart-wrap tall"><canvas id="asmParetoChart"></canvas></div>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -1187,13 +1196,9 @@
       </div>
     </div>
     <div class="charts-grid">
-      <div class="chart-card">
+      <div class="chart-card full">
         <div class="chart-title" style="--ct-color:#e85d04;"><span data-zh>组装废品缺陷类型（Assemble）</span><span data-en>Assembly Defects Breakdown</span></div>
         <div class="chart-wrap short"><canvas id="asmAssemBar"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>全部缺陷类型汇总（Top 10）</span><span data-en>All Defects Top 10 Overview</span></div>
-        <div class="chart-wrap short"><canvas id="asmDefectTop10"></canvas></div>
       </div>
     </div>
   </section>
@@ -1467,16 +1472,6 @@
     <div class="section-label">MONTHLY TREND</div>
     <div class="section-title"><span data-zh>月度详细趋势分析</span><span data-en>Monthly Detailed Trend</span></div>
     <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各月批次通过率（%）</span><span data-en>Batch Pass Rate by Month (%)</span></div>
-        <div class="chart-wrap"><canvas id="finPassBar"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各月抽样不良率（%）</span><span data-en>Sampling Defect Rate by Month (%)</span></div>
-        <div class="chart-wrap"><canvas id="finDefRateBar"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-top:18px;">
       <div class="chart-card">
         <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各月检验数量 &amp; 批次数</span><span data-en>Inspection Qty &amp; Batch Count by Month</span></div>
         <div class="chart-wrap"><canvas id="finVolumeChart"></canvas></div>
@@ -1759,16 +1754,6 @@
     <div class="section-label">MONTHLY TREND</div>
     <div class="section-title"><span data-zh>月度详细趋势分析</span><span data-en>Monthly Detailed Trend</span></div>
     <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各月批次合格率（%）</span><span data-en>Batch Pass Rate by Month (%)</span></div>
-        <div class="chart-wrap"><canvas id="qsdPassBar"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各月抽检不良率（%）</span><span data-en>Sampling Defect Rate by Month (%)</span></div>
-        <div class="chart-wrap"><canvas id="qsdDefRateBar"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-top:18px;">
       <div class="chart-card">
         <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各月入库数量 &amp; 批次数</span><span data-en>Inbound Qty &amp; Batch Count by Month</span></div>
         <div class="chart-wrap"><canvas id="qsdVolumeChart"></canvas></div>
@@ -2199,16 +2184,6 @@
         <div class="chart-wrap tall"><canvas id="prodModelStack"></canvas></div>
       </div>
     </div>
-    <div class="charts-grid" style="margin-top:18px;">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>后磨超精各型号产量</span><span data-en>Superfinish by Model</span></div>
-        <div class="chart-wrap"><canvas id="prodSfModel"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>装配成品各型号产量</span><span data-en>Finished by Model</span></div>
-        <div class="chart-wrap"><canvas id="prodAsmModel"></canvas></div>
-      </div>
-    </div>
   </section>
 </div>
 
@@ -2431,22 +2406,18 @@
     <div class="section-title"><span data-zh>月度详细趋势分析</span><span data-en>Monthly Detailed Trend</span></div>
     <div class="charts-grid">
       <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各月单件合格率（%）</span><span data-en>Unit Pass Rate by Month (%)</span></div>
-        <div class="chart-wrap"><canvas id="gp12PassBar"></canvas></div>
-      </div>
-      <div class="chart-card">
         <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各月不良数量</span><span data-en>Defect Quantity by Month</span></div>
         <div class="chart-wrap"><canvas id="gp12DefBar"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-top:18px;">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各月检验量 &amp; 批次数</span><span data-en>Inspected Qty &amp; Batches by Month</span></div>
-        <div class="chart-wrap"><canvas id="gp12VolumeChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-title" style="--ct-color:#0891b2;"><span data-zh>各月批次合格率（%）</span><span data-en>Batch Pass Rate by Month (%)</span></div>
         <div class="chart-wrap"><canvas id="gp12BatchBar"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>各月检验量 &amp; 批次数</span><span data-en>Inspected Qty &amp; Batches by Month</span></div>
+        <div class="chart-wrap"><canvas id="gp12VolumeChart"></canvas></div>
       </div>
     </div>
   </section>
@@ -3351,6 +3322,354 @@
 </main>
 </div><!-- end module-inv -->
 
+<!-- ══════ MODULE: SALES ══════ -->
+<div class="module-panel" id="module-sales">
+
+<header>
+  <div class="header-tag">
+    <span data-zh>商务报告 · 销售发货分析</span>
+    <span data-en>Commercial Report · Sales &amp; Shipment</span>
+  </div>
+  <h1>
+    <span data-zh>销售<span>发货分析</span></span>
+    <span data-en>Sales <span>Shipment Analysis</span></span>
+  </h1>
+  <div class="header-meta">
+    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年5月</span><span data-en>MAY 2026</span></div>
+    <div class="meta-pill">5月份销售发货.xlsx</div>
+    <div class="meta-pill"><span data-zh>23单 全外贸</span><span data-en>23 Orders · All Export</span></div>
+    <div class="meta-pill"><span data-zh>金额 ¥179万</span><span data-en>Value ¥1.79M</span></div>
+  </div>
+</header>
+
+<div class="tab-nav" id="sales-tab-nav">
+  <button class="tab-btn active" onclick="switchSalesTab('sales-overview',this)">📊 <span data-zh>总览</span><span data-en>Overview</span></button>
+  <button class="tab-btn" onclick="switchSalesTab('sales-customer',this)">🤝 <span data-zh>客户分析</span><span data-en>Customer</span></button>
+  <button class="tab-btn" onclick="switchSalesTab('sales-trend',this)">📈 <span data-zh>日发货趋势</span><span data-en>Daily Trend</span></button>
+  <button class="tab-btn" onclick="switchSalesTab('sales-trade',this)">🚢 <span data-zh>贸易 &amp; 运营</span><span data-en>Trade &amp; Ops</span></button>
+  <button class="tab-btn" onclick="switchSalesTab('sales-detail',this)">📋 <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
+</div>
+
+<main>
+
+<!-- ── SALES OVERVIEW ── -->
+<div class="tab-panel active" id="tab-sales-overview">
+  <section>
+    <div class="section-label"><span data-zh>第一节</span><span data-en>SECTION 01</span></div>
+    <div class="section-title"><span data-zh>销售关键指标概览</span><span data-en>Sales KPIs</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#2563eb;">
+        <span class="kpi-icon">💰</span>
+        <div class="kpi-label"><span data-zh>发货金额</span><span data-en>Shipment Value</span></div>
+        <div class="kpi-value">¥1.79M</div>
+        <div class="kpi-sub"><span data-zh>累计 ¥1,790,690</span><span data-en>Total ¥1,790,690</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#059669;">
+        <span class="kpi-icon">📦</span>
+        <div class="kpi-label"><span data-zh>出库总量</span><span data-en>Shipped Qty</span></div>
+        <div class="kpi-value">434,143</div>
+        <div class="kpi-sub"><span data-zh>件 pcs</span><span data-en>pcs</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#d97706;">
+        <span class="kpi-icon">📋</span>
+        <div class="kpi-label"><span data-zh>发货单据</span><span data-en>Orders</span></div>
+        <div class="kpi-value">23</div>
+        <div class="kpi-sub"><span data-zh>全部出库完成</span><span data-en>All completed</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;">
+        <span class="kpi-icon">💵</span>
+        <div class="kpi-label"><span data-zh>单件均价</span><span data-en>Avg Unit Price</span></div>
+        <div class="kpi-value">¥4.12</div>
+        <div class="kpi-sub"><span data-zh>金额 ÷ 数量</span><span data-en>Value ÷ Qty</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#dc2626;">
+        <span class="kpi-icon">🏆</span>
+        <div class="kpi-label"><span data-zh>最大开票客户</span><span data-en>Top Bill-to</span></div>
+        <div class="kpi-value"><span data-zh>¥75万</span><span data-en>¥751K</span></div>
+        <div class="kpi-sub"><span data-zh>C&amp;U Americas 占42%</span><span data-en>C&amp;U Americas · 42%</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;">
+        <span class="kpi-icon">🎯</span>
+        <div class="kpi-label"><span data-zh>最大终端客户</span><span data-en>Top End Customer</span></div>
+        <div class="kpi-value"><span data-zh>¥56万</span><span data-en>¥560K</span></div>
+        <div class="kpi-sub"><span data-zh>BorgWarner (ETTS+Thermal) 占31%</span><span data-en>BorgWarner (ETTS+Thermal) · 31%</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#e85d04;">
+        <span class="kpi-icon">🤝</span>
+        <div class="kpi-label"><span data-zh>客户覆盖</span><span data-en>Customers</span></div>
+        <div class="kpi-value">7 / 10</div>
+        <div class="kpi-sub"><span data-zh>开票7家 / 终端10家</span><span data-en>7 bill-to / 10 end</span></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;">
+        <span class="kpi-icon">🌍</span>
+        <div class="kpi-label"><span data-zh>出口结构</span><span data-en>Export Structure</span></div>
+        <div class="kpi-value">100%</div>
+        <div class="kpi-sub"><span data-zh>全外贸 FOB:DAP:CIF=15:6:2</span><span data-en>All export · FOB 15 / DAP 6 / CIF 2</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
+    <div class="section-title"><span data-zh>开票客户 vs 终端客户金额分布</span><span data-en>Bill-to vs End Customer Value</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>开票客户 — 金额占比</span><span data-en>Bill-to Customer — Value Share</span></div>
+        <div class="chart-wrap"><canvas id="salesBillPie"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>终端客户 — 金额占比</span><span data-en>End Customer — Value Share</span></div>
+        <div class="chart-wrap"><canvas id="salesEndPie"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
+    <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights</span></div>
+    <div class="insights">
+      <div class="insight-card" style="--ic-color:#dc2626;">
+        <div class="insight-head"><span data-zh>🌍 C&amp;U贸易体系占主体</span><span data-en>🌍 C&amp;U Trading System Dominant</span></div>
+        <div class="insight-body">
+          <span data-zh>C&amp;U Americas(¥75万)、C&amp;U Europe(¥12.3万)、日本C&amp;U精工(¥3.7万)合计¥91.1万，<strong>占总金额51%</strong>。C&amp;U作为集团内贸易枢纽，承担了一半以上的销售开票。</span>
+          <span data-en>C&amp;U Americas (¥750K), C&amp;U Europe (¥123K), and Japan C&amp;U Seiko (¥37K) total ¥911K — <strong>51% of revenue</strong>. C&amp;U serves as the group's trading hub, handling over half of sales billing.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#7c3aed;">
+        <div class="insight-head"><span data-zh>🎯 BorgWarner是真正最大终端</span><span data-en>🎯 BorgWarner — True Top End Customer</span></div>
+        <div class="insight-body">
+          <span data-zh>从终端客户看，BorgWarner(ETTS ¥44.4万 + Thermal ¥11.5万 = <strong>¥56万,占31%</strong>)是最大终端用户，全部通过C&amp;U Americas开票。</span>
+          <span data-en>By end customer, BorgWarner (ETTS ¥444K + Thermal ¥115K = <strong>¥560K, 31%</strong>) is the largest end user — all billed through C&amp;U Americas.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#059669;">
+        <div class="insight-head"><span data-zh>💵 GATES单价最高</span><span data-en>💵 GATES Highest Unit Price</span></div>
+        <div class="insight-body">
+          <span data-zh>GATES印度单件均价 <strong>¥4.22</strong> 居高位；BorgWarner ETTS 高达<strong>¥10.28</strong>(43,200件 ¥44.4万,单笔最大订单)；TVS单价仅¥2.53最低，产品价值差异显著。</span>
+          <span data-en>GATES India avg unit price <strong>¥4.22</strong>; BorgWarner ETTS as high as <strong>¥10.28</strong> (43,200 pcs for ¥444K — the single biggest order); TVS at just ¥2.53 — significant product value gap.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#0891b2;">
+        <div class="insight-head"><span data-zh>🚢 FOB为主要贸易条款</span><span data-en>🚢 FOB Dominant Term</span></div>
+        <div class="insight-body">
+          <span data-zh>23单中FOB条款<strong>15单(65%)</strong>，DAP 6单(26%)、CIF 2单(9%)。FOB为主表明客户多自行安排海运保险。</span>
+          <span data-en>Of 23 orders, FOB <strong>15 (65%)</strong>, DAP 6 (26%), CIF 2 (9%). FOB dominance indicates customers mostly arrange their own freight/insurance.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#d97706;">
+        <div class="insight-head"><span data-zh>📅 5月23日为发货高峰</span><span data-en>📅 May 23 — Peak Shipping Day</span></div>
+        <div class="insight-body">
+          <span data-zh>5月23日单日发货 <strong>¥71万(占40%)</strong>5单，含BorgWarner ¥44.4万大单。5月4日次之¥31.6万。月内发货集中在中下旬，节奏不均。</span>
+          <span data-en>May 23 alone shipped <strong>¥710K (40%)</strong> across 5 orders, including the BorgWarner ¥444K mega-deal. May 4 next at ¥316K. Shipments concentrated in mid-late May — uneven cadence.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#4f46e5;">
+        <div class="insight-head"><span data-zh>🌐 客户地理分布广</span><span data-en>🌐 Wide Geographic Spread</span></div>
+        <div class="insight-body">
+          <span data-zh>终端客户覆盖<strong>美国(BorgWarner/MUVIQ/Nidec)、韩国(Mobis)、印度(GATES/TVS)、泰国(ZF)、日本(関東農機)、捷克(Beko)</strong>等六大区域，市场分布健康。</span>
+          <span data-en>End customers span <strong>USA (BorgWarner/MUVIQ/Nidec), Korea (Mobis), India (GATES/TVS), Thailand (ZF), Japan (Kanto Nouki), Czech (Beko)</strong> — healthy diversification across 6+ regions.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#2563eb;">
+        <div class="insight-head"><span data-zh>📋 全部出库完成 无紧急/直发</span><span data-en>📋 All Completed · No Urgent/Direct</span></div>
+        <div class="insight-body">
+          <span data-zh>23单全部"出库完成"，无紧急发货、无直发，贴标统一为"常规标签"，运营高度标准化，履约状态良好。</span>
+          <span data-en>All 23 orders "shipment complete," none urgent, none direct-ship, all "regular labels" — highly standardized operations and good fulfillment status.</span>
+        </div>
+      </div>
+      <div class="insight-card" style="--ic-color:#e85d04;">
+        <div class="insight-head"><span data-zh>⚡ BorgWarner ¥44万单笔订单</span><span data-en>⚡ BorgWarner ¥444K Mega-Order</span></div>
+        <div class="insight-body">
+          <span data-zh>5月23日发往BorgWarner ETTS的单笔订单 <strong>43,200件 ¥44.4万</strong>，占当月销售25%。重点客户大单贡献突出，但也带来集中度风险。</span>
+          <span data-en>The May 23 BorgWarner ETTS single order — <strong>43,200 pcs for ¥444K</strong> — accounts for 25% of monthly revenue. Major-customer concentration delivers volume but adds risk.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── SALES CUSTOMER ── -->
+<div class="tab-panel" id="tab-sales-customer">
+  <section>
+    <div class="section-label">CUSTOMER</div>
+    <div class="section-title"><span data-zh>客户分析（双维度）</span><span data-en>Customer Analysis (Dual View)</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>开票客户 — 金额排行（¥）</span><span data-en>Bill-to — Value Ranking (¥)</span></div>
+        <div class="chart-wrap"><canvas id="salesBillBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>终端客户 — 金额排行（¥）</span><span data-en>End Customer — Value Ranking (¥)</span></div>
+        <div class="chart-wrap"><canvas id="salesEndBar"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各客户出库数量（件）</span><span data-en>Shipped Qty by Customer (pcs)</span></div>
+        <div class="chart-wrap"><canvas id="salesQtyBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>终端客户单件均价（¥/件）</span><span data-en>Unit Price by End Customer (¥/pc)</span></div>
+        <div class="chart-wrap"><canvas id="salesPriceBar"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── SALES TREND ── -->
+<div class="tab-panel" id="tab-sales-trend">
+  <section>
+    <div class="section-label">DAILY TREND</div>
+    <div class="section-title"><span data-zh>日发货趋势</span><span data-en>Daily Shipment Trend</span></div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>5月每日发货金额 &amp; 单据数</span><span data-en>Daily Shipment Value &amp; Order Count</span></div>
+        <div class="chart-wrap tall"><canvas id="salesDailyChart"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>5月每日发货数量（件）</span><span data-en>Daily Shipment Quantity (pcs)</span></div>
+        <div class="chart-wrap"><canvas id="salesDailyQty"></canvas></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── SALES TRADE ── -->
+<div class="tab-panel" id="tab-sales-trade">
+  <section>
+    <div class="section-label">TRADE &amp; OPS</div>
+    <div class="section-title"><span data-zh>贸易条款 &amp; 运营特征</span><span data-en>Trade Terms &amp; Operations</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#0891b2;"><span data-zh>贸易条款分布</span><span data-en>Trade Terms Distribution</span></div>
+        <div class="chart-wrap"><canvas id="salesTermsPie"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>各贸易条款金额对比</span><span data-en>Value by Trade Term</span></div>
+        <div class="chart-wrap"><canvas id="salesTermsBar"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>运营特征汇总</span><span data-en>Operational Characteristics</span></div>
+        <div style="padding:8px 4px;font-size:12.5px;color:var(--text-sub);line-height:1.95;">
+          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <strong style="color:var(--text);"><span data-zh>📦 销售类型</span><span data-en>Sales Type</span></strong>
+            <span><span data-zh>23单全部为外贸销售，无内销订单</span><span data-en>All 23 orders are export sales; no domestic orders</span></span>
+          </p>
+          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <strong style="color:var(--text);"><span data-zh>✅ 发货状态</span><span data-en>Status</span></strong>
+            <span><span data-zh>23单全部"出库完成"，履约率100%</span><span data-en>All 23 orders "shipment complete" — 100% fulfillment</span></span>
+          </p>
+          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <strong style="color:var(--text);"><span data-zh>🚚 是否直发</span><span data-en>Direct Ship</span></strong>
+            <span><span data-zh>全部"否"，统一经PHJY仓库发货</span><span data-en>All "No" — uniformly shipped from PHJY warehouse</span></span>
+          </p>
+          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <strong style="color:var(--text);"><span data-zh>⚡ 紧急发货</span><span data-en>Urgent</span></strong>
+            <span><span data-zh>全部"否"，无紧急订单</span><span data-en>All "No" — no urgent orders</span></span>
+          </p>
+          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <strong style="color:var(--text);"><span data-zh>🏷️ 贴标 / 打包</span><span data-en>Label / Pack</span></strong>
+            <span><span data-zh>统一"常规标签"+"无包装带"，运营高度标准化</span><span data-en>All "regular labels" + "no packing strap" — highly standardized</span></span>
+          </p>
+          <p style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <strong style="color:var(--text);"><span data-zh>🚛 送货方式</span><span data-en>Delivery</span></strong>
+            <span><span data-zh>全部"送货"模式</span><span data-en>All "delivery" mode</span></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── SALES DETAIL ── -->
+<div class="tab-panel" id="tab-sales-detail">
+  <section>
+    <div class="section-label">DETAIL TABLES</div>
+    <div class="section-title"><span data-zh>销售数据明细表</span><span data-en>Sales Detail Tables</span></div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>开票客户 / 终端客户 汇总</span><span data-en>Bill-to vs End Customer Summary</span></p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr>
+          <th><span data-zh>开票客户 Bill-to</span><span data-en>Bill-to</span></th>
+          <th><span data-zh>单据</span><span data-en>Orders</span></th>
+          <th><span data-zh>数量(件)</span><span data-en>Qty (pcs)</span></th>
+          <th><span data-zh>金额(¥)</span><span data-en>Value (¥)</span></th>
+          <th><span data-zh>占比</span><span data-en>Share</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>C&amp;U Americas, LLC</td><td class="num">7</td><td class="num">117,151</td><td class="num">750,866</td><td class="num" style="color:#dc2626;font-weight:700;">41.9%</td></tr>
+          <tr><td>GATES UNITTA INDIA</td><td class="num">2</td><td class="num">68,040</td><td class="num">286,884</td><td class="num">16.0%</td></tr>
+          <tr><td>TVS MOTOR COMPANY</td><td class="num">2</td><td class="num">99,000</td><td class="num">250,104</td><td class="num">14.0%</td></tr>
+          <tr><td>Hyundai Mobis Co., Ltd</td><td class="num">3</td><td class="num">56,160</td><td class="num">186,496</td><td class="num">10.4%</td></tr>
+          <tr><td>ZF Automotive Thailand</td><td class="num">6</td><td class="num">30,192</td><td class="num">156,126</td><td class="num">8.7%</td></tr>
+          <tr><td>C&amp;U Europe GmbH</td><td class="num">1</td><td class="num">49,600</td><td class="num">123,008</td><td class="num">6.9%</td></tr>
+          <tr><td><span data-zh>日本C&amp;U精工株式会社</span><span data-en>C&amp;U Seiko Japan</span></td><td class="num">2</td><td class="num">14,000</td><td class="num">37,206</td><td class="num">2.1%</td></tr>
+          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">23</td><td class="num">434,143</td><td class="num">1,790,690</td><td class="num">100.0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>终端客户 汇总（含单件均价）</span><span data-en>End Customer Summary (incl. Unit Price)</span></p>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead><tr>
+          <th><span data-zh>终端客户 End Customer</span><span data-en>End Customer</span></th>
+          <th><span data-zh>单据</span><span data-en>Orders</span></th>
+          <th><span data-zh>数量(件)</span><span data-en>Qty (pcs)</span></th>
+          <th><span data-zh>金额(¥)</span><span data-en>Value (¥)</span></th>
+          <th><span data-zh>单价(¥/件)</span><span data-en>Unit ¥</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>BORGWARNER TURBO (ETTS)</td><td class="num">3</td><td class="num">43,231</td><td class="num" style="color:#dc2626;font-weight:700;">444,474</td><td class="num">10.28</td></tr>
+          <tr><td>GATES UNITTA INDIA</td><td class="num">2</td><td class="num">68,040</td><td class="num">286,884</td><td class="num">4.22</td></tr>
+          <tr><td>TVS MOTOR COMPANY</td><td class="num">2</td><td class="num">99,000</td><td class="num">250,104</td><td class="num">2.53</td></tr>
+          <tr><td>Hyundai Mobis</td><td class="num">3</td><td class="num">56,160</td><td class="num">186,496</td><td class="num">3.32</td></tr>
+          <tr><td>ZF Automotive Thailand</td><td class="num">6</td><td class="num">30,192</td><td class="num">156,126</td><td class="num">5.17</td></tr>
+          <tr><td>MUVIQ USA, LLC</td><td class="num">1</td><td class="num">40,320</td><td class="num">155,599</td><td class="num">3.86</td></tr>
+          <tr><td>Beko Spol. S.R.O</td><td class="num">1</td><td class="num">49,600</td><td class="num">123,008</td><td class="num">2.48</td></tr>
+          <tr><td>BorgWarner Thermal Systems</td><td class="num">2</td><td class="num">22,800</td><td class="num">115,398</td><td class="num">5.06</td></tr>
+          <tr><td><span data-zh>関東農機</span><span data-en>Kanto Nouki</span></td><td class="num">2</td><td class="num">14,000</td><td class="num">37,206</td><td class="num">2.66</td></tr>
+          <tr><td>NIDEC MOTOR CORP HURST</td><td class="num">1</td><td class="num">10,800</td><td class="num">35,395</td><td class="num">3.28</td></tr>
+          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">23</td><td class="num">434,143</td><td class="num">1,790,690</td><td class="num">4.12</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>单笔订单 TOP10（按金额）</span><span data-en>Top 10 Single Orders (by Value)</span></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-zh>日期</span><span data-en>Date</span></th>
+          <th><span data-zh>开票客户</span><span data-en>Bill-to</span></th>
+          <th><span data-zh>终端客户</span><span data-en>End</span></th>
+          <th><span data-zh>数量</span><span data-en>Qty</span></th>
+          <th><span data-zh>金额(¥)</span><span data-en>Value (¥)</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>05-23</td><td>C&amp;U Americas</td><td>BorgWarner ETTS</td><td class="num">43,200</td><td class="num" style="color:#dc2626;font-weight:700;">444,195</td></tr>
+          <tr><td>05-04</td><td>GATES UNITTA INDIA</td><td>GATES UNITTA INDIA</td><td class="num">45,360</td><td class="num">191,256</td></tr>
+          <tr><td>05-23</td><td>C&amp;U Americas</td><td>MUVIQ USA</td><td class="num">40,320</td><td class="num">155,599</td></tr>
+          <tr><td>05-14</td><td>TVS MOTOR</td><td>TVS MOTOR</td><td class="num">49,500</td><td class="num">125,052</td></tr>
+          <tr><td>05-04</td><td>TVS MOTOR</td><td>TVS MOTOR</td><td class="num">49,500</td><td class="num">125,052</td></tr>
+          <tr><td>05-11</td><td>C&amp;U Europe</td><td>Beko (Czech)</td><td class="num">49,600</td><td class="num">123,008</td></tr>
+          <tr><td>05-28</td><td>GATES UNITTA INDIA</td><td>GATES UNITTA INDIA</td><td class="num">22,680</td><td class="num">95,628</td></tr>
+          <tr><td>05-12</td><td>C&amp;U Americas</td><td>BorgWarner Thermal</td><td class="num">14,400</td><td class="num">93,248</td></tr>
+          <tr><td>05-25</td><td>Hyundai Mobis</td><td>Hyundai Mobis</td><td class="num">14,040</td><td class="num">62,166</td></tr>
+          <tr><td>05-25</td><td>Hyundai Mobis</td><td>Hyundai Mobis</td><td class="num">14,040</td><td class="num">62,166</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+</main>
+</div><!-- end module-sales -->
+
 <footer>
   <span><span data-zh>质量分析报告 — 2026年5月</span><span data-en>Quality Analysis Report — May 2026</span></span>
   <span><span data-zh>生成时间</span><span data-en>Generated</span>: 2026-06-04</span>
@@ -3641,6 +3960,23 @@ function switchModule(id, btn) {
     document.querySelectorAll('#inv-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
     initInvCharts();
   }
+  if (id==='sales') {
+    document.querySelectorAll('#tab-sales-overview,#tab-sales-customer,#tab-sales-trend,#tab-sales-trade,#tab-sales-detail')
+      .forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-sales-overview').classList.add('active');
+    document.querySelectorAll('#sales-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+    initSalesCharts();
+  }
+}
+
+// ── Sales tab switch ──
+function switchSalesTab(id, btn) {
+  document.querySelectorAll('#tab-sales-overview,#tab-sales-customer,#tab-sales-trend,#tab-sales-trade,#tab-sales-detail')
+    .forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#sales-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  initSalesCharts();
 }
 
 // ── Inventory tab switch ──
@@ -3802,19 +4138,37 @@ function initAsmCharts() {
   },{plugins:{legend:{display:false}},
      scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
 
-  // A8. Top10 all defects
-  mk('asmDefectTop10','bar',{
-    labels:['GW Flower\n(Final)','Rust','OR SF Scratch','Chamfer Scratch','GW Flower\n(1st)',
-            'OR EF SF Scratch','Bore Scratch','Asm Others','IR EF SF Scratch','Stain'],
-    datasets:[{
-      label:'Pcs',
-      data:[3938,3676,1865,1655,1546,1402,1134,1023,896,842],
-      backgroundColor:['#0891b2','#dc2626','#2563eb','#d97706','#10b981',
-                       '#7c3aed','#2563eb','#9ca3af','#7c3aed','#f97316'].map(c=>c+'cc'),
-      borderRadius:4,borderWidth:1
-    }]
-  },{plugins:{legend:{display:false}},
-     scales:{x:{grid:{display:false},ticks:{maxRotation:35,font:{size:9}}},y:{grid:{color:gridC}}}});
+  // A8b. Pareto chart — defect share% bars + cumulative% line
+  mk('asmParetoChart','bar',{
+    labels:['GW Flower','Rust','OR SF Scratch','Chamfer Scratch','OR EF SF Scratch','Bore Scratch','Asm Others','IR EF SF Scratch','Stain','Riveting NG','其他 Others'],
+    datasets:[
+      {type:'line', label:'累计占比 Cumulative %', data:[27.4,45.7,55.1,63.3,70.3,76.0,81.1,85.6,89.8,93.2,100],
+       borderColor:'#e85d04', backgroundColor:'rgba(232,93,4,0.08)', borderWidth:3,
+       pointBackgroundColor:'#e85d04', pointBorderColor:'#fff', pointBorderWidth:1.5, pointRadius:5,
+       tension:0.25, fill:false, order:0},
+      {type:'bar', label:'占比 Share %', data:[27.4,18.4,9.3,8.3,7.0,5.7,5.1,4.5,4.2,3.4,6.8],
+       backgroundColor:(ctx)=>{
+         const c=ctx.chart.ctx; const g=c.createLinearGradient(0,0,0,300);
+         g.addColorStop(0,'rgba(34,211,238,0.95)'); g.addColorStop(1,'rgba(37,99,235,0.85)');
+         return g;},
+       borderColor:'#0891b2', borderWidth:1, borderRadius:4, order:1},
+    ]
+  },{
+    plugins:{
+      legend:{position:'top',labels:{boxWidth:12,padding:14,font:{size:11}}},
+      tooltip:{mode:'index',intersect:false,callbacks:{
+        label:c=>`${c.dataset.label}: ${c.parsed.y}%`,
+        afterBody:items=>{
+          const pcs={'GW Flower':5484,'Rust':3676,'OR SF Scratch':1865,'Chamfer Scratch':1655,'OR EF SF Scratch':1402,'Bore Scratch':1134,'Asm Others':1023,'IR EF SF Scratch':896,'Stain':842,'Riveting NG':678,'其他 Others':1369};
+          return `数量 Qty: ${(pcs[items[0].label]||0).toLocaleString()} pcs`;
+        }}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{maxRotation:35,font:{size:9.5}}},
+      y:{position:'left',grid:{color:gridC},min:0,max:100,ticks:{callback:v=>v+'%'}},
+      y1:{position:'right',grid:{display:false},min:0,max:100,ticks:{callback:v=>v+'%'}}
+    }
+  });
 
   // A9. Operator bar — 4 categories stacked
   mk('asmOperBar','bar',{
@@ -3858,22 +4212,6 @@ function initFinCharts() {
       y1:{position:'right',grid:{display:false},min:0,max:2,title:{display:true,text:'Defect Rate %'}}
     }
   });
-
-  // F2. Pass rate bar
-  mk('finPassBar','bar',{
-    labels: MONTHS,
-    datasets:[{label:'Pass Rate %', data:passRate,
-      backgroundColor:passRate.map(v=>v>=85?'rgba(5,150,105,0.85)':v>=78?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.75)'),
-      borderRadius:4,borderWidth:1}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},min:60,max:100}}});
-
-  // F3. Defect rate bar
-  mk('finDefRateBar','bar',{
-    labels: MONTHS,
-    datasets:[{label:'Defect Rate %', data:defRate,
-      backgroundColor:defRate.map(v=>v>=1?'rgba(220,38,38,0.85)':v>=0.7?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.75)'),
-      borderRadius:4,borderWidth:1}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
 
   // F4. Volume chart
   mk('finVolumeChart','bar',{
@@ -3972,7 +4310,7 @@ function initQsdCharts() {
   mk('qsdTrendChart','bar',{
     labels: MONTHS,
     datasets:[
-      {type:'line', label:'合格率 Pass Rate %', data:passRate, yAxisID:'y',
+      {type:'line', label:'批次合格率 Pass Rate %', data:passRate, yAxisID:'y',
        borderColor:'#059669', backgroundColor:'rgba(5,150,105,0.1)', borderWidth:3,
        pointBackgroundColor:'#059669', pointRadius:5, tension:0.3, fill:true, order:0},
       {type:'bar', label:'抽检不良率 Defect Rate %', data:defRate, yAxisID:'y1',
@@ -3986,22 +4324,6 @@ function initQsdCharts() {
       y1:{position:'right',grid:{display:false},min:0,max:0.5,title:{display:true,text:'Defect Rate %'}}
     }
   });
-
-  // Q2. Pass rate bar
-  mk('qsdPassBar','bar',{
-    labels: MONTHS,
-    datasets:[{label:'Pass Rate %', data:passRate,
-      backgroundColor:passRate.map(v=>v>=98?'rgba(5,150,105,0.85)':v>=95?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.75)'),
-      borderRadius:4,borderWidth:1}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},min:80,max:100}}});
-
-  // Q3. Defect rate bar
-  mk('qsdDefRateBar','bar',{
-    labels: MONTHS,
-    datasets:[{label:'Defect Rate %', data:defRate,
-      backgroundColor:defRate.map(v=>v>=0.2?'rgba(220,38,38,0.85)':v>=0.1?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.75)'),
-      borderRadius:4,borderWidth:1}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
 
   // Q4. Volume chart
   mk('qsdVolumeChart','bar',{
@@ -4196,19 +4518,6 @@ function initProdCharts() {
   },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10,font:{size:10}}},tooltip:{mode:'index',intersect:false}},
      scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
 
-  // P10. SF by model
-  mk('prodSfModel','bar',{
-    labels:['6203','6203K','619/22','DC6203','6202K'],
-    datasets:[{label:'超精 SF', data:[263545,250280,231281,131830,45498],
-      backgroundColor:['#7c3aed','#a78bfa','#c4b5fd','#ddd6fe','#ede9fe'],borderColor:'#7c3aed',borderWidth:1,borderRadius:4}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
-
-  // P11. Finished by model
-  mk('prodAsmModel','bar',{
-    labels:['6203','6203K','619/22','DC6203','6202K'],
-    datasets:[{label:'成品 Finished', data:[127333,121135,91028,62845,15600],
-      backgroundColor:['#dc2626','#ef4444','#f87171','#fca5a5','#fecaca'],borderColor:'#dc2626',borderWidth:1,borderRadius:4}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC}}}});
 }
 
 // ── Daily trend view switchers (shift / model) ──
@@ -4252,14 +4561,6 @@ function initGp12Charts() {
     scales:{x:{grid:{display:false}},
       y:{position:'left',grid:{color:gridC},min:95,max:100,title:{display:true,text:'Pass %'}},
       y1:{position:'right',grid:{display:false},min:0,max:3,title:{display:true,text:'Defect %'}}}});
-
-  // G2. Unit pass bar
-  mk('gp12PassBar','bar',{
-    labels: MONTHS,
-    datasets:[{label:'Unit Pass %', data:unitPass,
-      backgroundColor:unitPass.map(v=>v>=99?'rgba(5,150,105,0.85)':v>=98?'rgba(217,119,6,0.8)':'rgba(220,38,38,0.75)'),
-      borderRadius:4,borderWidth:1}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},min:95,max:100}}});
 
   // G3. Defect qty bar
   mk('gp12DefBar','bar',{
@@ -4615,6 +4916,100 @@ function initInvCharts() {
     datasets:[{label:'只 pcs', data:[75400,75200,72500,23125,13000,6300,6000,5000],
       backgroundColor:'rgba(37,99,235,0.78)',borderColor:'#2563eb',borderWidth:1,borderRadius:3}]
   },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:9}}}}});
+}
+
+// ── Sales charts (lazy init once) ──
+let salesChartsInited = false;
+function initSalesCharts() {
+  if (salesChartsInited) return;
+  salesChartsInited = true;
+
+  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
+  const palette=['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#0891b2','#e85d04','#4f46e5','#f59e0b','#10b981'];
+
+  // S1. Bill-to pie
+  mk('salesBillPie','doughnut',{
+    labels:['C&U Americas (¥751K)','GATES India (¥287K)','TVS Motor (¥250K)','Hyundai Mobis (¥186K)','ZF Thailand (¥156K)','C&U Europe (¥123K)','C&U Japan (¥37K)'],
+    datasets:[{data:[750866,286884,250104,186496,156126,123008,37206],
+      backgroundColor:palette.slice(0,7),borderColor:'#fff',borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:7,font:{size:9.5}}}},cutout:'55%'});
+
+  // S2. End-customer pie
+  mk('salesEndPie','doughnut',{
+    labels:['BorgWarner ETTS (¥444K)','GATES India (¥287K)','TVS Motor (¥250K)','Hyundai Mobis (¥186K)','ZF Thailand (¥156K)','MUVIQ (¥156K)','Beko (¥123K)','BW Thermal (¥115K)','其他 Others (¥73K)'],
+    datasets:[{data:[444474,286884,250104,186496,156126,155599,123008,115398,72601],
+      backgroundColor:['#dc2626','#d97706','#059669','#0891b2','#7c3aed','#e85d04','#2563eb','#4f46e5','#9ca3af'],
+      borderColor:'#fff',borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:7,font:{size:9.5}}}},cutout:'55%'});
+
+  // S3. Bill-to bar
+  mk('salesBillBar','bar',{
+    labels:['C&U Americas','GATES India','TVS Motor','Hyundai Mobis','ZF Thailand','C&U Europe','C&U Japan'],
+    datasets:[{label:'¥', data:[750866,286884,250104,186496,156126,123008,37206],
+      backgroundColor:'rgba(37,99,235,0.78)',borderColor:'#2563eb',borderWidth:1,borderRadius:3}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:10}}}}});
+
+  // S4. End-customer bar
+  mk('salesEndBar','bar',{
+    labels:['BorgWarner ETTS','GATES India','TVS Motor','Hyundai Mobis','ZF Thailand','MUVIQ USA','Beko Czech','BW Thermal','Kanto Nouki','Nidec Hurst'],
+    datasets:[{label:'¥', data:[444474,286884,250104,186496,156126,155599,123008,115398,37206,35395],
+      backgroundColor:'rgba(220,38,38,0.78)',borderColor:'#dc2626',borderWidth:1,borderRadius:3}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:9.5}}}}});
+
+  // S5. Qty bar (combined customers)
+  mk('salesQtyBar','bar',{
+    labels:['TVS Motor','GATES India','Hyundai Mobis','Beko Czech','BorgWarner ETTS','MUVIQ USA','ZF Thailand','BW Thermal','Kanto Nouki','Nidec Hurst'],
+    datasets:[{label:'件 pcs', data:[99000,68040,56160,49600,43231,40320,30192,22800,14000,10800],
+      backgroundColor:'rgba(5,150,105,0.78)',borderColor:'#059669',borderWidth:1,borderRadius:3}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:9.5}}}}});
+
+  // S6. Unit price by end customer
+  mk('salesPriceBar','bar',{
+    labels:['BorgWarner ETTS','ZF Thailand','BW Thermal','GATES India','MUVIQ USA','Hyundai Mobis','Nidec Hurst','Kanto Nouki','TVS Motor','Beko Czech'],
+    datasets:[{label:'¥/件', data:[10.28,5.17,5.06,4.22,3.86,3.32,3.28,2.66,2.53,2.48],
+      backgroundColor:[10.28,5.17,5.06,4.22,3.86,3.32,3.28,2.66,2.53,2.48].map(v=>v>=6?'rgba(220,38,38,0.8)':v>=4?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.8)'),
+      borderWidth:1,borderRadius:3}]
+  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC},beginAtZero:true},y:{grid:{display:false},ticks:{font:{size:9.5}}}}});
+
+  // S7. Daily value + order count (dual axis)
+  const dayLabels=['5/4','5/5','5/6','5/8','5/11','5/12','5/14','5/16','5/23','5/25','5/28'];
+  mk('salesDailyChart','bar',{
+    labels: dayLabels,
+    datasets:[
+      {type:'bar', label:'金额 Value (¥)', data:[316308,270,9,90249,123008,93248,182751,65877,710770,112572,95628], yAxisID:'y',
+       backgroundColor:'rgba(37,99,235,0.75)',borderColor:'#2563eb',borderWidth:1,borderRadius:4,order:1},
+      {type:'line', label:'单据数 Orders', data:[2,1,1,3,1,1,2,3,5,3,1], yAxisID:'y1',
+       borderColor:'#e85d04',backgroundColor:'rgba(232,93,4,0.1)',borderWidth:3,
+       pointBackgroundColor:'#e85d04',pointRadius:4,tension:0.3,order:0},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:12}},tooltip:{mode:'index',intersect:false}},
+     scales:{x:{grid:{display:false}},y:{position:'left',grid:{color:gridC},beginAtZero:true,title:{display:true,text:'¥'}},
+             y1:{position:'right',grid:{display:false},min:0,max:6,title:{display:true,text:'Orders'}}}});
+
+  // S8. Daily qty
+  mk('salesDailyQty','bar',{
+    labels: dayLabels,
+    datasets:[{label:'件 pcs', data:[94860,30,1,17448,49600,28080,60900,12744,111720,36080,22680],
+      backgroundColor:'rgba(217,119,6,0.78)',borderColor:'#d97706',borderWidth:1,borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true}}});
+
+  // S9. Trade terms pie
+  mk('salesTermsPie','doughnut',{
+    labels:['FOB (15)','DAP (6)','CIF (2)'],
+    datasets:[{data:[15,6,2],
+      backgroundColor:['#0891b2','#7c3aed','#d97706'],borderColor:'#fff',borderWidth:3}]
+  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:8,font:{size:11}}}},cutout:'55%'});
+
+  // S10. Trade terms by value
+  // FOB: C&U Americas + Hyundai + ZF + GATES (most) ≈ estimate by orders ratio
+  mk('salesTermsBar','bar',{
+    labels:['FOB','DAP','CIF'],
+    datasets:[
+      {label:'金额(¥) Value', data:[1180890,397040,212760], yAxisID:'y',
+       backgroundColor:'rgba(8,145,178,0.78)',borderRadius:3,borderWidth:1},
+    ]
+  },{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`¥${c.parsed.y.toLocaleString()}`}}},
+     scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true}}});
 }
 
 </script>
