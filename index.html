@@ -630,6 +630,9 @@
             <label>宽 mm <input type="number" id="palletD" min="100" value="800"></label>
             <label>高 mm <input type="number" id="palletH" min="10" value="140"></label>
           </div>
+          <div class="grid-2" style="margin-top:9px">
+            <label>托盘重量 kg <input type="number" id="palletWeight" min="0" step="0.01" value="0"></label>
+          </div>
         </section>
 
         <section class="section">
@@ -645,6 +648,7 @@
           <div class="grid-2" style="margin-top:9px">
             <label>层数 <input type="number" id="layers" min="1" max="12" value="3"></label>
             <label>每箱数量 <input type="number" id="perBox" min="0" value="880"></label>
+            <label>单箱重量 kg <input type="number" id="boxWeight" min="0" step="0.01" value="0"></label>
           </div>
         </section>
 
@@ -716,7 +720,7 @@
           <div class="metric"><span>单层箱数</span><strong id="boxCount">0</strong></div>
           <div class="metric"><span>整托箱数</span><strong id="totalBoxes">0</strong></div>
           <div class="metric"><span>整托数量</span><strong id="totalQty">0</strong></div>
-          <div class="metric" id="overlapMetric"><span>检查</span><strong id="checkText">正常</strong></div>
+          <div class="metric" id="totalWeightMetric"><span>总重量</span><strong id="totalWeight">0 kg</strong></div>
         </div>
       </section>
 
@@ -762,9 +766,11 @@
       palletW: document.querySelector("#palletW"),
       palletD: document.querySelector("#palletD"),
       palletH: document.querySelector("#palletH"),
+      palletWeight: document.querySelector("#palletWeight"),
       boxW: document.querySelector("#boxW"),
       boxD: document.querySelector("#boxD"),
       boxH: document.querySelector("#boxH"),
+      boxWeight: document.querySelector("#boxWeight"),
       layers: document.querySelector("#layers"),
       perBox: document.querySelector("#perBox"),
       palletColor: document.querySelector("#palletColor"),
@@ -775,8 +781,7 @@
       boxCount: document.querySelector("#boxCount"),
       totalBoxes: document.querySelector("#totalBoxes"),
       totalQty: document.querySelector("#totalQty"),
-      checkText: document.querySelector("#checkText"),
-      overlapMetric: document.querySelector("#overlapMetric"),
+      totalWeight: document.querySelector("#totalWeight"),
       selectedInfo: document.querySelector("#selectedInfo"),
       fitStatus: document.querySelector("#fitStatus"),
       scaleReadout: document.querySelector("#scaleReadout"),
@@ -796,6 +801,8 @@
     const state = {
       pallet: { w: 1200, d: 800, h: 140 },
       box: { w: 360, d: 215, h: 90 },
+      palletWeight: 0,
+      boxWeight: 0,
       layers: 3,
       perBox: 880,
       colors: { pallet: "#d8ad6a", box: "#4f8df6" },
@@ -828,6 +835,8 @@
         lengthMm: "长 mm",
         widthMm: "宽 mm",
         heightMm: "高 mm",
+        palletWeightKg: "托盘重量 kg",
+        boxWeightKg: "单箱重量 kg",
         layers: "层数",
         perBox: "每箱数量",
         pallet: "托盘",
@@ -852,7 +861,7 @@
         boxesPerLayer: "单层箱数",
         totalBoxes: "整托箱数",
         totalQty: "整托数量",
-        check: "检查",
+        totalWeight: "总重量",
         normal: "正常",
         needsCheck: "需要检查",
         overlap: "重叠 {count} 个",
@@ -911,6 +920,8 @@
         lengthMm: "Length mm",
         widthMm: "Width mm",
         heightMm: "Height mm",
+        palletWeightKg: "Pallet Weight kg",
+        boxWeightKg: "Carton Weight kg",
         layers: "Layers",
         perBox: "Qty / Carton",
         pallet: "Pallet",
@@ -935,7 +946,7 @@
         boxesPerLayer: "Boxes / Layer",
         totalBoxes: "Total Cartons",
         totalQty: "Total Qty",
-        check: "Check",
+        totalWeight: "Total Weight",
         normal: "OK",
         needsCheck: "Review Needed",
         overlap: "{count} Overlap",
@@ -984,6 +995,7 @@
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
     const mm = value => `${Math.round(value)} mm`;
     const fmt = value => Number(value).toLocaleString("zh-CN");
+    const fmtWeight = value => `${Number(value.toFixed(2)).toLocaleString("zh-CN", { maximumFractionDigits: 2 })} kg`;
 
     function t(key, vars = {}) {
       const source = I18N[state.lang] || I18N.zh;
@@ -1032,9 +1044,11 @@
       setInputLabel("palletW", "lengthMm");
       setInputLabel("palletD", "widthMm");
       setInputLabel("palletH", "heightMm");
+      setInputLabel("palletWeight", "palletWeightKg");
       setInputLabel("boxW", "lengthMm");
       setInputLabel("boxD", "widthMm");
       setInputLabel("boxH", "heightMm");
+      setInputLabel("boxWeight", "boxWeightKg");
       setInputLabel("layers", "layers");
       setInputLabel("perBox", "perBox");
       setInputLabel("palletColor", "pallet");
@@ -1059,7 +1073,7 @@
       setText(".metrics .metric:nth-child(1) span", "boxesPerLayer");
       setText(".metrics .metric:nth-child(2) span", "totalBoxes");
       setText(".metrics .metric:nth-child(3) span", "totalQty");
-      setText(".metrics .metric:nth-child(4) span", "check");
+      setText(".metrics .metric:nth-child(4) span", "totalWeight");
       setText(".view-head h2", "view3d");
       setText(".view-head p", "view3dHelp");
       els.scene3d.setAttribute("aria-label", t("scene3dLabel"));
@@ -1092,9 +1106,11 @@
       state.pallet.w = Math.max(100, Number(els.palletW.value) || 1200);
       state.pallet.d = Math.max(100, Number(els.palletD.value) || 800);
       state.pallet.h = Math.max(10, Number(els.palletH.value) || 140);
+      state.palletWeight = Math.max(0, Number(els.palletWeight.value) || 0);
       state.box.w = Math.max(10, Number(els.boxW.value) || 360);
       state.box.d = Math.max(10, Number(els.boxD.value) || 215);
       state.box.h = Math.max(10, Number(els.boxH.value) || 90);
+      state.boxWeight = Math.max(0, Number(els.boxWeight.value) || 0);
       state.layers = clamp(Number(els.layers.value) || 1, 1, 12);
       state.perBox = Math.max(0, Number(els.perBox.value) || 0);
       state.colors.pallet = els.palletColor.value;
@@ -1314,18 +1330,16 @@
     function updateMetrics(overlaps) {
       const layerCount = state.layout.length;
       const totalBoxes = layerCount * state.layers;
+      const totalWeight = state.palletWeight + totalBoxes * state.boxWeight;
       els.boxCount.textContent = fmt(layerCount);
       els.totalBoxes.textContent = fmt(totalBoxes);
       els.totalQty.textContent = fmt(totalBoxes * state.perBox);
+      els.totalWeight.textContent = fmtWeight(totalWeight);
 
       const outside = state.layout.some(box => box.x < -0.01 || box.y < -0.01 || box.x + box.w > state.pallet.w + 0.01 || box.y + box.d > state.pallet.d + 0.01);
       if (overlaps.size || outside) {
-        els.checkText.textContent = overlaps.size ? t("overlap", { count: overlaps.size }) : t("outOfBounds");
-        els.overlapMetric.classList.add("warning");
         els.fitStatus.textContent = t("needsCheck");
       } else {
-        els.checkText.textContent = t("normal");
-        els.overlapMetric.classList.remove("warning");
         els.fitStatus.textContent = t("normal");
       }
     }
@@ -1884,8 +1898,14 @@
     }
 
     function attachEvents() {
-      ["palletW","palletD","palletH","boxW","boxD","boxH","layers","perBox","palletColor","boxColor","gridSize"].forEach(id => {
+      ["palletW","palletD","palletH","boxW","boxD","boxH","layers","palletColor","boxColor","gridSize"].forEach(id => {
         document.querySelector(`#${id}`).addEventListener("input", rebuildForNewSize);
+      });
+      ["palletWeight","boxWeight","perBox"].forEach(id => {
+        document.querySelector(`#${id}`).addEventListener("input", () => {
+          readForm();
+          updateMetrics(collectOverlaps());
+        });
       });
       document.querySelector("#generatePallet").addEventListener("click", rebuildForNewSize);
       document.querySelector("#addBox").addEventListener("click", () => addBox(false));
