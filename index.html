@@ -19,8 +19,8 @@
       --control-hover: #fff8e7;
       --canvas-a: #eef5fb;
       --canvas-b: #f8fbfd;
-      --scene-a: #e8f4ff;
-      --scene-b: #f9fbfd;
+      --scene-a: #ffffff;
+      --scene-b: #ffffff;
       --accent: #f59f0b;
       --accent-2: #2f8cff;
       --good: #28a66a;
@@ -45,8 +45,8 @@
       --control-hover: #24344a;
       --canvas-a: #111a26;
       --canvas-b: #172535;
-      --scene-a: #0f1a27;
-      --scene-b: #182638;
+      --scene-a: #ffffff;
+      --scene-b: #ffffff;
       --shadow: 0 14px 34px rgba(0, 0, 0, .36);
     }
 
@@ -494,9 +494,7 @@
 
     #scene3d {
       min-height: 0;
-      background:
-        linear-gradient(180deg, var(--scene-a) 0%, var(--scene-b) 64%),
-        var(--panel-2);
+      background: #ffffff;
       position: relative;
       overflow: hidden;
     }
@@ -1043,10 +1041,10 @@
       localStorage.setItem("palletPlannerTheme", state.theme);
       els.themeToggle.textContent = t(state.theme === "dark" ? "themeLight" : "themeDark");
       if (scene) {
-        scene.background = new THREE.Color(state.theme === "dark" ? 0x0f1a27 : 0xeaf4ff);
+        scene.background = new THREE.Color(0xffffff);
       }
       if (floorMesh) {
-        floorMesh.material.color.set(state.theme === "dark" ? 0x162333 : 0xdfe7ee);
+        floorMesh.material.color.set(0xffffff);
       }
       schedule3D();
     }
@@ -1550,7 +1548,7 @@
 
     function init3D() {
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xeaf4ff);
+      scene.background = new THREE.Color(0xffffff);
       camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
       camera.position.set(4.8, 4.2, 5.6);
       renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -1570,7 +1568,7 @@
       scene.add(sun);
       floorMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(18, 18),
-        new THREE.MeshStandardMaterial({ color: 0xdfe7ee, roughness: 0.9 })
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
       );
       floorMesh.rotation.x = -Math.PI / 2;
       floorMesh.position.y = -0.02;
