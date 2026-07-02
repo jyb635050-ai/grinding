@@ -514,6 +514,26 @@
       gap: 10px;
     }
 
+    .dimension-control {
+      display: grid;
+      grid-template-columns: minmax(160px, auto) 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dimension-readout {
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+      padding: 9px 12px;
+      border: 2px solid #d6dee8;
+      border-radius: 7px;
+      background: var(--panel-2);
+      color: var(--ink);
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
     .legend {
       display: none;
       gap: 8px;
@@ -710,6 +730,10 @@
         </div>
         <div id="scene3d" role="img" aria-label="3D 预览"></div>
         <div class="view-foot">
+          <div class="dimension-control">
+            <label class="toggle"><input type="checkbox" id="showDimensions3d" checked> 显示外形尺寸</label>
+            <div class="dimension-readout" id="dimensionReadout">外形尺寸：1200 × 800 × 410 mm</div>
+          </div>
           <label class="toggle"><input type="checkbox" id="palletOnly3d"> 只看托盘结构</label>
           <div class="legend">
             <div class="legend-item"><span class="swatch" id="legendPallet"></span>木托盘：同色顶板 + 三条纵向支撑，形成 2 个叉车孔</div>
@@ -763,6 +787,8 @@
       toast: document.querySelector("#toast"),
       legendPallet: document.querySelector("#legendPallet"),
       legendBox: document.querySelector("#legendBox"),
+      showDimensions3d: document.querySelector("#showDimensions3d"),
+      dimensionReadout: document.querySelector("#dimensionReadout"),
       langToggle: document.querySelector("#langToggle"),
       themeToggle: document.querySelector("#themeToggle"),
     };
@@ -782,6 +808,7 @@
       renderQueued: false,
       lang: localStorage.getItem("palletPlannerLang") || "zh",
       theme: localStorage.getItem("palletPlannerTheme") || "light",
+      showDimensions: localStorage.getItem("palletPlannerShowDimensions") !== "false",
     };
 
     const I18N = {
@@ -834,6 +861,11 @@
         scene3dLabel: "3D 预览",
         view3dHelp: "鼠标拖动旋转，滚轮缩放；托盘按两孔木托盘结构建模，整体同色、外形尺寸一致。",
         export3d: "导出3D图",
+        showDimensions: "显示外形尺寸",
+        outerSize: "外形尺寸：{l} × {w} × {h} mm",
+        dimLength: "长 {value} mm",
+        dimWidth: "宽 {value} mm",
+        dimHeight: "高 {value} mm",
         palletOnly: "只看托盘结构",
         selectedNone: "未选中箱子。点击箱子后可拖动、旋转或对齐。",
         selectedBox: "选中 #{index}：位置 {x} mm, {y} mm；尺寸 {w}×{d}；方向 {direction}。",
@@ -912,6 +944,11 @@
         scene3dLabel: "3D preview",
         view3dHelp: "Drag to rotate, scroll to zoom. The pallet uses a two-opening wooden pallet model with one color and consistent outer size.",
         export3d: "Export 3D",
+        showDimensions: "Show Outer Size",
+        outerSize: "Outer size: {l} × {w} × {h} mm",
+        dimLength: "L {value} mm",
+        dimWidth: "W {value} mm",
+        dimHeight: "H {value} mm",
         palletOnly: "Pallet Only",
         selectedNone: "No carton selected. Click a carton to drag, rotate, or align it.",
         selectedBox: "Selected #{index}: position {x} mm, {y} mm; size {w}×{d}; orientation {direction}.",
@@ -1027,9 +1064,11 @@
       setText(".view-head p", "view3dHelp");
       els.scene3d.setAttribute("aria-label", t("scene3dLabel"));
       setText("#export3d", "export3d");
+      setInputLabel("showDimensions3d", "showDimensions");
       const legendItems = document.querySelectorAll(".legend-item");
       if (legendItems[0]) legendItems[0].lastChild.textContent = t("legendPallet");
       if (legendItems[1]) legendItems[1].lastChild.textContent = t("legendBox");
+      updateDimensionReadout();
       if (rerender) {
         renderPlans();
         render2D();
@@ -1060,10 +1099,31 @@
       state.perBox = Math.max(0, Number(els.perBox.value) || 0);
       state.colors.pallet = els.palletColor.value;
       state.colors.box = els.boxColor.value;
+      state.showDimensions = els.showDimensions3d.checked;
       document.documentElement.style.setProperty("--pallet", state.colors.pallet);
       document.documentElement.style.setProperty("--box", state.colors.box);
       els.legendPallet.style.background = state.colors.pallet;
       els.legendBox.style.background = state.colors.box;
+      updateDimensionReadout();
+    }
+
+    function visibleOuterDimensions() {
+      const showLoad = !document.querySelector("#palletOnly3d")?.checked && state.layout.length > 0;
+      return {
+        l: state.pallet.w,
+        w: state.pallet.d,
+        h: state.pallet.h + (showLoad ? state.layers * state.box.h : 0),
+      };
+    }
+
+    function updateDimensionReadout() {
+      if (!els.dimensionReadout) return;
+      const dims = visibleOuterDimensions();
+      els.dimensionReadout.textContent = t("outerSize", {
+        l: fmt(Math.round(dims.l)),
+        w: fmt(Math.round(dims.w)),
+        h: fmt(Math.round(dims.h)),
+      });
     }
 
     function fitScale() {
@@ -1630,6 +1690,107 @@
       return line;
     }
 
+    function addDimensionLine(group, points, color = 0x1d2633, opacity = 0.9) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(points.map(point => (
+        new THREE.Vector3(point[0] * UNIT, point[1] * UNIT, point[2] * UNIT)
+      )));
+      const line = new THREE.Line(
+        geometry,
+        new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthTest: false })
+      );
+      line.renderOrder = 20;
+      group.add(line);
+      return line;
+    }
+
+    function drawRoundedRect(ctx, x, y, w, h, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + w - radius, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+      ctx.lineTo(x + w, y + h - radius);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+      ctx.lineTo(x + radius, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function makeDimensionLabel(text) {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.font = "800 28px Arial, 'Microsoft YaHei', sans-serif";
+      const textWidth = Math.ceil(ctx.measureText(text).width);
+      canvas.width = Math.max(190, textWidth + 44);
+      canvas.height = 64;
+      ctx.font = "800 28px Arial, 'Microsoft YaHei', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      drawRoundedRect(ctx, 3, 3, canvas.width - 6, canvas.height - 6, 14);
+      ctx.fillStyle = "rgba(255, 255, 255, .94)";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#1d2633";
+      ctx.stroke();
+      ctx.fillStyle = "#1d2633";
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
+      const spriteWidth = Math.max(0.9, canvas.width / 245);
+      sprite.scale.set(spriteWidth, spriteWidth * (canvas.height / canvas.width), 1);
+      sprite.renderOrder = 30;
+      return sprite;
+    }
+
+    function addDimensionLabel(group, text, x, y, z) {
+      const sprite = makeDimensionLabel(text);
+      sprite.position.set(x * UNIT, y * UNIT, z * UNIT);
+      group.add(sprite);
+      return sprite;
+    }
+
+    function addDimensionAnnotations(group, dims) {
+      const l = dims.l;
+      const w = dims.w;
+      const h = dims.h;
+      const x0 = -l / 2;
+      const x1 = l / 2;
+      const z0 = -w / 2;
+      const z1 = w / 2;
+      const gap = Math.max(95, Math.min(l, w) * 0.12);
+      const tick = Math.max(36, Math.min(l, w) * 0.045);
+      const topY = h + Math.max(70, h * 0.08);
+      const line = 0x1d2633;
+      const accent = 0xf59f0b;
+
+      const zLength = z1 + gap;
+      addDimensionLine(group, [[x0, topY, zLength], [x1, topY, zLength]], accent, 1);
+      addDimensionLine(group, [[x0, topY, zLength - tick], [x0, topY, zLength + tick]], line, 0.85);
+      addDimensionLine(group, [[x1, topY, zLength - tick], [x1, topY, zLength + tick]], line, 0.85);
+      addDimensionLine(group, [[x0, h, z1], [x0, topY, zLength]], line, 0.35);
+      addDimensionLine(group, [[x1, h, z1], [x1, topY, zLength]], line, 0.35);
+      addDimensionLabel(group, t("dimLength", { value: fmt(Math.round(l)) }), 0, topY + 42, zLength);
+
+      const xWidth = x1 + gap;
+      addDimensionLine(group, [[xWidth, topY, z0], [xWidth, topY, z1]], accent, 1);
+      addDimensionLine(group, [[xWidth - tick, topY, z0], [xWidth + tick, topY, z0]], line, 0.85);
+      addDimensionLine(group, [[xWidth - tick, topY, z1], [xWidth + tick, topY, z1]], line, 0.85);
+      addDimensionLine(group, [[x1, h, z0], [xWidth, topY, z0]], line, 0.35);
+      addDimensionLine(group, [[x1, h, z1], [xWidth, topY, z1]], line, 0.35);
+      addDimensionLabel(group, t("dimWidth", { value: fmt(Math.round(w)) }), xWidth + gap * 0.25, topY + 42, 0);
+
+      const xHeight = x1 + gap * 0.78;
+      const zHeight = z1 + gap * 0.64;
+      addDimensionLine(group, [[xHeight, 0, zHeight], [xHeight, h, zHeight]], accent, 1);
+      addDimensionLine(group, [[xHeight - tick, 0, zHeight], [xHeight + tick, 0, zHeight]], line, 0.85);
+      addDimensionLine(group, [[xHeight - tick, h, zHeight], [xHeight + tick, h, zHeight]], line, 0.85);
+      addDimensionLine(group, [[x1, 0, z1], [xHeight, 0, zHeight]], line, 0.35);
+      addDimensionLine(group, [[x1, h, z1], [xHeight, h, zHeight]], line, 0.35);
+      addDimensionLabel(group, t("dimHeight", { value: fmt(Math.round(h)) }), xHeight + gap * 0.28, h / 2, zHeight);
+    }
+
     function addNail(group, x, z, y, radius = 4) {
       const nail = new THREE.Mesh(
         new THREE.CylinderGeometry(radius * UNIT, radius * UNIT, 1.6 * UNIT, 14),
@@ -1684,10 +1845,15 @@
         });
       }
 
+      const dims = visibleOuterDimensions();
+      updateDimensionReadout();
+      if (state.showDimensions) addDimensionAnnotations(modelGroup, dims);
+
       modelGroup.rotation.y = -0.25;
-      const maxDim = Math.max(p.w, p.d, p.h + state.layers * state.box.h) * UNIT;
+      const annotationPad = state.showDimensions ? Math.max(220, Math.min(dims.l, dims.w) * 0.3) : 0;
+      const maxDim = Math.max(dims.l + annotationPad * 2, dims.w + annotationPad * 2, dims.h + annotationPad) * UNIT;
       camera.position.set(maxDim * 1.4, maxDim * 1.05, maxDim * 1.55);
-      controls.target.set(0, (p.h + state.layers * state.box.h) * UNIT * 0.45, 0);
+      controls.target.set(0, dims.h * UNIT * 0.45, 0);
       camera.updateProjectionMatrix();
     }
 
@@ -1740,7 +1906,16 @@
       document.querySelector("#addRow").addEventListener("click", addRow);
       document.querySelector("#resetView2d").addEventListener("click", () => els.wrap.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
       document.querySelector("#export3d").addEventListener("click", export3D);
-      document.querySelector("#palletOnly3d").addEventListener("change", schedule3D);
+      document.querySelector("#showDimensions3d").addEventListener("change", () => {
+        state.showDimensions = els.showDimensions3d.checked;
+        localStorage.setItem("palletPlannerShowDimensions", String(state.showDimensions));
+        updateDimensionReadout();
+        schedule3D();
+      });
+      document.querySelector("#palletOnly3d").addEventListener("change", () => {
+        updateDimensionReadout();
+        schedule3D();
+      });
       document.querySelector("#langToggle").addEventListener("click", () => {
         state.lang = state.lang === "zh" ? "en" : "zh";
         localStorage.setItem("palletPlannerLang", state.lang);
@@ -1760,6 +1935,7 @@
       window.addEventListener("resize", render2D);
     }
 
+    els.showDimensions3d.checked = state.showDimensions;
     readForm();
     init3D();
     attachEvents();
