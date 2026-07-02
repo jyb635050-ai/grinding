@@ -1,0 +1,1774 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PHJY托盘箱子摆放规划器</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --bg: #eef2f5;
+      --ink: #1d2633;
+      --muted: #66727f;
+      --line: #263241;
+      --soft-line: #c8d1dc;
+      --panel: #ffffff;
+      --panel-2: #f7fafc;
+      --field: #ffffff;
+      --control: #ffffff;
+      --control-hover: #fff8e7;
+      --canvas-a: #eef5fb;
+      --canvas-b: #f8fbfd;
+      --scene-a: #e8f4ff;
+      --scene-b: #f9fbfd;
+      --accent: #f59f0b;
+      --accent-2: #2f8cff;
+      --good: #28a66a;
+      --bad: #d64b42;
+      --pallet: #d8ad6a;
+      --box: #4f8df6;
+      --shadow: 0 14px 34px rgba(24, 35, 48, .12);
+      --radius: 8px;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #101722;
+      --ink: #edf4ff;
+      --muted: #aab7c7;
+      --line: #7f93aa;
+      --soft-line: #334255;
+      --panel: #172232;
+      --panel-2: #121b28;
+      --field: #0f1722;
+      --control: #182638;
+      --control-hover: #24344a;
+      --canvas-a: #111a26;
+      --canvas-b: #172535;
+      --scene-a: #0f1a27;
+      --scene-b: #182638;
+      --shadow: 0 14px 34px rgba(0, 0, 0, .36);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(38,50,65,.04) 1px, transparent 1px) 0 0 / 28px 28px,
+        linear-gradient(0deg, rgba(38,50,65,.04) 1px, transparent 1px) 0 0 / 28px 28px,
+        var(--bg);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 2px solid var(--line);
+      background: var(--control);
+      color: var(--ink);
+      min-height: 34px;
+      border-radius: 7px;
+      padding: 7px 10px;
+      box-shadow: 0 3px 0 rgba(29,38,51,.18);
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      white-space: nowrap;
+    }
+
+    button:hover { background: var(--control-hover); }
+    button:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(29,38,51,.2); }
+    button.primary { background: var(--accent); color: #21160b; }
+    button.blue { background: #dbeaff; }
+    button.green { background: #ddf7e9; }
+    button.danger { background: #ffe3de; }
+    :root[data-theme="dark"] button.blue { background: #193655; color: var(--ink); }
+    :root[data-theme="dark"] button.green { background: #153c2c; color: var(--ink); }
+    :root[data-theme="dark"] button.danger { background: #4a211c; color: var(--ink); }
+    button.small { min-height: 30px; padding: 5px 8px; font-size: 13px; }
+    button.icon { width: 34px; padding: 0; display: inline-grid; place-items: center; }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      height: 34px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      padding: 5px 8px;
+      background: var(--field);
+      color: var(--ink);
+      box-shadow: inset 0 2px 0 rgba(29,38,51,.06);
+    }
+
+    input[type="color"] {
+      width: 100%;
+      height: 34px;
+      padding: 2px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: var(--field);
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 20px 14px;
+      border-bottom: 3px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      box-shadow: 0 6px 0 rgba(29,38,51,.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border: 3px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(0deg, transparent 55%, rgba(255,255,255,.24) 55%),
+        linear-gradient(135deg, #f0bd74, #b66b2c);
+      box-shadow: 4px 4px 0 rgba(29,38,51,.14);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .mark::before, .mark::after {
+      content: "";
+      position: absolute;
+      bottom: 5px;
+      width: 10px;
+      height: 9px;
+      border: 2px solid var(--line);
+      background: #75461f;
+    }
+    .mark::before { left: 6px; }
+    .mark::after { right: 6px; }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .top-action {
+      min-width: 96px;
+      font-weight: 800;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 30px;
+      padding: 0 10px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--good);
+      border: 1px solid var(--line);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 330px minmax(560px, 1fr) 430px;
+      gap: 14px;
+      padding: 14px;
+      min-height: 0;
+      height: calc(100vh - 76px);
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow), 5px 5px 0 rgba(29,38,51,.10);
+      min-height: 0;
+    }
+
+    .side {
+      overflow: auto;
+      padding: 14px;
+    }
+
+    .section {
+      border-bottom: 2px dashed #d3dbe5;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+    .section:last-child { border-bottom: 0; margin-bottom: 0; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .section-title h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+    .stack { display: grid; gap: 9px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 6px 8px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+    .workspace-panel {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 3px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      overflow: auto;
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 25% 15%, rgba(245,159,11,.12), transparent 28%),
+        linear-gradient(135deg, var(--canvas-a), var(--canvas-b));
+    }
+
+    .pallet-board {
+      position: relative;
+      border: 4px solid var(--line);
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.18) 0 8px, transparent 8px 18px),
+        linear-gradient(135deg, rgba(255,255,255,.35), rgba(255,255,255,.08)),
+        var(--pallet);
+      box-shadow: 0 12px 0 rgba(100, 60, 23, .35), 0 22px 28px rgba(29,38,51,.18);
+      overflow: hidden;
+      transform-origin: center center;
+      flex: 0 0 auto;
+    }
+
+    .pallet-board::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, rgba(29,38,51,.16) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(29,38,51,.16) 1px, transparent 1px);
+      background-size: var(--grid-size, 25px) var(--grid-size, 25px);
+      opacity: var(--grid-opacity, .22);
+      pointer-events: none;
+    }
+
+    .pallet-board::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 0;
+      height: 100%;
+      border-left: 2px dashed rgba(29,38,51,.42);
+      box-shadow: 0 0 0 9999px transparent;
+      pointer-events: none;
+    }
+
+    .midline-y {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      border-top: 2px dashed rgba(29,38,51,.42);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .box-item {
+      position: absolute;
+      border: 3px solid var(--line);
+      border-radius: 7px;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255,255,255,.38) 0 3px, transparent 4px),
+        linear-gradient(135deg, rgba(255,255,255,.22), rgba(0,0,0,.08)),
+        var(--box);
+      box-shadow: 4px 4px 0 rgba(29,38,51,.18);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      user-select: none;
+      touch-action: none;
+      cursor: grab;
+      z-index: 10;
+      min-width: 22px;
+      min-height: 22px;
+    }
+
+    .box-item.rotated { background-color: var(--box); }
+    .box-item.selected {
+      outline: 4px solid #ffe15b;
+      outline-offset: 2px;
+      z-index: 15;
+    }
+    .box-item.overlap { box-shadow: 0 0 0 4px rgba(214,75,66,.55), 4px 4px 0 rgba(29,38,51,.18); }
+
+    .box-label {
+      display: grid;
+      gap: 1px;
+      font-weight: 800;
+      line-height: 1.05;
+      text-shadow: 0 1px 0 rgba(0,0,0,.25);
+      pointer-events: none;
+      font-size: clamp(10px, 1.4vw, 14px);
+    }
+    .box-label small { font-size: 11px; font-weight: 700; opacity: .92; }
+
+    .snap-line {
+      position: absolute;
+      background: #ff4d4d;
+      z-index: 30;
+      pointer-events: none;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.55);
+    }
+    .snap-line.x { width: 2px; top: 0; bottom: 0; }
+    .snap-line.y { height: 2px; left: 0; right: 0; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      border-top: 3px solid var(--line);
+      background: var(--panel);
+    }
+    .metric {
+      padding: 11px 12px;
+      border-right: 2px solid #d9e0e8;
+      min-width: 0;
+    }
+    .metric:last-child { border-right: 0; }
+    .metric span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .metric strong { display: block; margin-top: 3px; font-size: 18px; line-height: 1.1; }
+    .metric.warning strong { color: var(--bad); }
+
+    .plan-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .plan-card {
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: var(--panel);
+      display: grid;
+      gap: 7px;
+    }
+    .plan-card.active {
+      background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+      box-shadow: inset 0 0 0 3px rgba(245,159,11,.32);
+    }
+    .plan-card.active p { color: #44505e; }
+    :root[data-theme="dark"] .plan-card.active p { color: #d7e2ef; }
+    .plan-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .plan-head strong { font-size: 14px; line-height: 1.2; }
+    .plan-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .plan-mini {
+      height: 72px;
+      border: 2px solid #d5dde7;
+      border-radius: 6px;
+      background: var(--panel-2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .view-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0,1fr) auto;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .view-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 3px solid var(--line);
+      background: var(--panel-2);
+    }
+    .view-head h2 { margin: 0; font-size: 16px; }
+    .view-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+
+    #scene3d {
+      min-height: 0;
+      background:
+        linear-gradient(180deg, var(--scene-a) 0%, var(--scene-b) 64%),
+        var(--panel-2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #scene3d canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      min-height: 0;
+    }
+
+    .view-foot {
+      border-top: 3px solid var(--line);
+      padding: 12px;
+      background: var(--panel);
+      display: grid;
+      gap: 10px;
+    }
+
+    .legend {
+      display: none;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--line);
+      border-radius: 4px;
+      flex: 0 0 auto;
+    }
+
+    .selected-info {
+      min-height: 42px;
+      padding: 9px;
+      border: 2px solid #d6dee8;
+      border-radius: 7px;
+      background: var(--panel-2);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: #1d2633;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      padding: 9px 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 999;
+      font-size: 13px;
+      visibility: hidden;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); visibility: visible; }
+
+    @media (max-width: 1280px) {
+      .main { grid-template-columns: 310px minmax(520px, 1fr); }
+      .view-panel { grid-column: 1 / -1; min-height: 560px; }
+    }
+
+    @media (max-width: 880px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .main { grid-template-columns: 1fr; padding: 10px; height: auto; }
+      .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .toolbar, .view-head { align-items: flex-start; flex-direction: column; }
+      .canvas-wrap { min-height: 340px; padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>PHJY托盘箱子摆放规划器</h1>
+          <p>自动排布、手动拖拽、磁吸对齐、3D 检查</p>
+        </div>
+      </div>
+      <div class="statusbar">
+        <button class="top-action" id="langToggle" type="button">EN</button>
+        <button class="top-action" id="themeToggle" type="button">深色模式</button>
+        <span hidden id="fitStatus">布局正常</span>
+        <span hidden id="scaleReadout">比例 1:1</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <aside class="panel side">
+        <section class="section">
+          <div class="section-title">
+            <h2>托盘尺寸</h2>
+            <button class="small blue" id="generatePallet">生成托盘</button>
+          </div>
+          <div class="grid-3">
+            <label>长 mm <input type="number" id="palletW" min="100" value="1200"></label>
+            <label>宽 mm <input type="number" id="palletD" min="100" value="800"></label>
+            <label>高 mm <input type="number" id="palletH" min="10" value="140"></label>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            <h2>箱子尺寸</h2>
+            <button class="small green" id="addBox">生成箱子</button>
+          </div>
+          <div class="grid-3">
+            <label>长 mm <input type="number" id="boxW" min="10" value="360"></label>
+            <label>宽 mm <input type="number" id="boxD" min="10" value="215"></label>
+            <label>高 mm <input type="number" id="boxH" min="10" value="90"></label>
+          </div>
+          <div class="grid-2" style="margin-top:9px">
+            <label>层数 <input type="number" id="layers" min="1" max="12" value="3"></label>
+            <label>每箱数量 <input type="number" id="perBox" min="0" value="880"></label>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            <h2>颜色自定义</h2>
+          </div>
+          <div class="grid-2">
+            <label>托盘 <input type="color" id="palletColor" value="#d8ad6a"></label>
+            <label>箱子 <input type="color" id="boxColor" value="#4f8df6"></label>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            <h2>自动规划</h2>
+            <button class="small primary" id="autoPlan">计算方案</button>
+          </div>
+          <div class="plan-list" id="planList"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            <h2>手动辅助</h2>
+          </div>
+          <div class="stack">
+            <label class="toggle"><input type="checkbox" id="snapOn" checked> 磁吸开启</label>
+            <div class="grid-2">
+              <label>网格 mm <input type="number" id="gridSize" min="1" value="25"></label>
+              <label>磁吸阈值 mm <input type="number" id="snapRange" min="1" value="16"></label>
+            </div>
+            <div class="grid-3">
+              <button class="small" data-align="left">左齐</button>
+              <button class="small" data-align="hcenter">水平居中</button>
+              <button class="small" data-align="right">右齐</button>
+              <button class="small" data-align="top">上齐</button>
+              <button class="small" data-align="vcenter">垂直居中</button>
+              <button class="small" data-align="bottom">下齐</button>
+            </div>
+            <div class="row">
+              <button class="small blue" id="rotateBox">旋转选中</button>
+              <button class="small green" id="centerLayout">整体居中</button>
+              <button class="small danger" id="clearBoxes">清空箱子</button>
+            </div>
+            <div class="selected-info" id="selectedInfo">未选中箱子。点击箱子后可拖动、旋转或对齐。</div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="panel workspace-panel">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="primary" id="applyBest">应用最佳方案</button>
+            <button class="blue" id="addRow">补一排箱子</button>
+            <button id="resetView2d">视图归中</button>
+          </div>
+          <div class="toolbar-right">
+            <span class="status-pill">2D 俯视手动规划</span>
+          </div>
+        </div>
+
+        <div class="canvas-wrap" id="canvasWrap">
+          <div class="pallet-board" id="palletBoard">
+            <div class="midline-y"></div>
+          </div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric"><span>单层箱数</span><strong id="boxCount">0</strong></div>
+          <div class="metric"><span>整托箱数</span><strong id="totalBoxes">0</strong></div>
+          <div class="metric"><span>整托数量</span><strong id="totalQty">0</strong></div>
+          <div class="metric" id="overlapMetric"><span>检查</span><strong id="checkText">正常</strong></div>
+        </div>
+      </section>
+
+      <aside class="panel view-panel">
+        <div class="view-head">
+          <div>
+            <h2>3D 视角</h2>
+            <p>鼠标拖动旋转，滚轮缩放；托盘按两孔木托盘结构建模，整体同色、外形尺寸一致。</p>
+          </div>
+          <button class="small blue" id="export3d">导出3D图</button>
+        </div>
+        <div id="scene3d" role="img" aria-label="3D 预览"></div>
+        <div class="view-foot">
+          <label class="toggle"><input type="checkbox" id="palletOnly3d"> 只看托盘结构</label>
+          <div class="legend">
+            <div class="legend-item"><span class="swatch" id="legendPallet"></span>木托盘：同色顶板 + 三条纵向支撑，形成 2 个叉车孔</div>
+            <div class="legend-item"><span class="swatch" id="legendBox"></span>箱子：统一颜色，方向用箱内尺寸文字区分</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const els = {
+      palletW: document.querySelector("#palletW"),
+      palletD: document.querySelector("#palletD"),
+      palletH: document.querySelector("#palletH"),
+      boxW: document.querySelector("#boxW"),
+      boxD: document.querySelector("#boxD"),
+      boxH: document.querySelector("#boxH"),
+      layers: document.querySelector("#layers"),
+      perBox: document.querySelector("#perBox"),
+      palletColor: document.querySelector("#palletColor"),
+      boxColor: document.querySelector("#boxColor"),
+      board: document.querySelector("#palletBoard"),
+      wrap: document.querySelector("#canvasWrap"),
+      planList: document.querySelector("#planList"),
+      boxCount: document.querySelector("#boxCount"),
+      totalBoxes: document.querySelector("#totalBoxes"),
+      totalQty: document.querySelector("#totalQty"),
+      checkText: document.querySelector("#checkText"),
+      overlapMetric: document.querySelector("#overlapMetric"),
+      selectedInfo: document.querySelector("#selectedInfo"),
+      fitStatus: document.querySelector("#fitStatus"),
+      scaleReadout: document.querySelector("#scaleReadout"),
+      snapOn: document.querySelector("#snapOn"),
+      gridSize: document.querySelector("#gridSize"),
+      snapRange: document.querySelector("#snapRange"),
+      scene3d: document.querySelector("#scene3d"),
+      toast: document.querySelector("#toast"),
+      legendPallet: document.querySelector("#legendPallet"),
+      legendBox: document.querySelector("#legendBox"),
+      langToggle: document.querySelector("#langToggle"),
+      themeToggle: document.querySelector("#themeToggle"),
+    };
+
+    const state = {
+      pallet: { w: 1200, d: 800, h: 140 },
+      box: { w: 360, d: 215, h: 90 },
+      layers: 3,
+      perBox: 880,
+      colors: { pallet: "#d8ad6a", box: "#4f8df6" },
+      layout: [],
+      plans: [],
+      activePlan: null,
+      selectedId: null,
+      scale: 0.5,
+      dragging: null,
+      renderQueued: false,
+      lang: localStorage.getItem("palletPlannerLang") || "zh",
+      theme: localStorage.getItem("palletPlannerTheme") || "light",
+    };
+
+    const I18N = {
+      zh: {
+        appTitle: "PHJY托盘箱子摆放规划器",
+        tagline: "自动排布、手动拖拽、磁吸对齐、3D 检查",
+        langToggle: "EN",
+        themeDark: "深色模式",
+        themeLight: "浅色模式",
+        palletSize: "托盘尺寸",
+        boxSize: "箱子尺寸",
+        colorCustom: "颜色自定义",
+        autoPlan: "自动规划",
+        manualAssist: "手动辅助",
+        generatePallet: "生成托盘",
+        generateBox: "生成箱子",
+        lengthMm: "长 mm",
+        widthMm: "宽 mm",
+        heightMm: "高 mm",
+        layers: "层数",
+        perBox: "每箱数量",
+        pallet: "托盘",
+        box: "箱子",
+        calculatePlans: "计算方案",
+        snapOn: "磁吸开启",
+        gridMm: "网格 mm",
+        snapRangeMm: "磁吸阈值 mm",
+        alignLeft: "左齐",
+        alignHCenter: "水平居中",
+        alignRight: "右齐",
+        alignTop: "上齐",
+        alignVCenter: "垂直居中",
+        alignBottom: "下齐",
+        rotateSelected: "旋转选中",
+        centerLayout: "整体居中",
+        clearBoxes: "清空箱子",
+        applyBest: "应用最佳方案",
+        addRow: "补一排箱子",
+        resetView: "视图归中",
+        workspaceTitle: "2D 俯视手动规划",
+        boxesPerLayer: "单层箱数",
+        totalBoxes: "整托箱数",
+        totalQty: "整托数量",
+        check: "检查",
+        normal: "正常",
+        needsCheck: "需要检查",
+        overlap: "重叠 {count} 个",
+        outOfBounds: "越界",
+        view3d: "3D 视角",
+        scene3dLabel: "3D 预览",
+        view3dHelp: "鼠标拖动旋转，滚轮缩放；托盘按两孔木托盘结构建模，整体同色、外形尺寸一致。",
+        export3d: "导出3D图",
+        palletOnly: "只看托盘结构",
+        selectedNone: "未选中箱子。点击箱子后可拖动、旋转或对齐。",
+        selectedBox: "选中 #{index}：位置 {x} mm, {y} mm；尺寸 {w}×{d}；方向 {direction}。",
+        dirRotated: "竖向",
+        dirNormal: "横向",
+        emptyPlans: "点击“计算方案”生成可选摆法。",
+        apply: "应用",
+        planMeta: "单层 {count} 箱，三层 {total} 箱，利用率约 {util}%。",
+        planNormal: "全部同向摆",
+        planRotated: "全部旋转摆",
+        planMixedRows: "混合条带 {n}横+{r}竖",
+        planMixedRowsAlt: "混合条带 {r}竖+{n}横",
+        planMixedCols: "混合列 {n}横+{r}竖",
+        planMixedColsAlt: "混合列 {r}竖+{n}横",
+        noteNormal: "行列规整，现场最容易执行",
+        noteRotated: "所有箱子转 90°，常用于提高宽向利用率",
+        noteMixedRows: "每一排独立居中，兼顾容量和摆放秩序",
+        noteMixedRowsAlt: "旋转排放在前侧，便于叉车侧观察",
+        noteMixedCols: "按列切分，适合需要左右分区的托盘",
+        noteMixedColsAlt: "旋转列靠左，右侧按原方向补齐",
+        appliedPlan: "已应用：{name}",
+        selectBoxFirst: "请先选中一个箱子",
+        noSpaceRow: "当前尺寸下没有足够空间补一排",
+        centeredToast: "箱组已整体居中",
+        exported3d: "已导出 3D 图片",
+        scaleReadout: "比例 1 mm ≈ {scale} px",
+        legendPallet: "木托盘：同色顶板 + 三条纵向支撑，形成 2 个叉车孔",
+        legendBox: "箱子：统一颜色，方向用箱内尺寸文字区分",
+      },
+      en: {
+        appTitle: "PHJY Pallet Carton Layout Planner",
+        tagline: "Auto layout, manual drag, magnetic alignment, 3D inspection",
+        langToggle: "中文",
+        themeDark: "Dark Mode",
+        themeLight: "Light Mode",
+        palletSize: "Pallet Size",
+        boxSize: "Carton Size",
+        colorCustom: "Colors",
+        autoPlan: "Auto Planning",
+        manualAssist: "Manual Tools",
+        generatePallet: "Build Pallet",
+        generateBox: "Add Carton",
+        lengthMm: "Length mm",
+        widthMm: "Width mm",
+        heightMm: "Height mm",
+        layers: "Layers",
+        perBox: "Qty / Carton",
+        pallet: "Pallet",
+        box: "Carton",
+        calculatePlans: "Calculate",
+        snapOn: "Snap On",
+        gridMm: "Grid mm",
+        snapRangeMm: "Snap Range mm",
+        alignLeft: "Left",
+        alignHCenter: "Center X",
+        alignRight: "Right",
+        alignTop: "Top",
+        alignVCenter: "Center Y",
+        alignBottom: "Bottom",
+        rotateSelected: "Rotate",
+        centerLayout: "Center All",
+        clearBoxes: "Clear",
+        applyBest: "Apply Best Plan",
+        addRow: "Add Row",
+        resetView: "Reset View",
+        workspaceTitle: "2D Top View Planner",
+        boxesPerLayer: "Boxes / Layer",
+        totalBoxes: "Total Cartons",
+        totalQty: "Total Qty",
+        check: "Check",
+        normal: "OK",
+        needsCheck: "Review Needed",
+        overlap: "{count} Overlap",
+        outOfBounds: "Out of Bounds",
+        view3d: "3D View",
+        scene3dLabel: "3D preview",
+        view3dHelp: "Drag to rotate, scroll to zoom. The pallet uses a two-opening wooden pallet model with one color and consistent outer size.",
+        export3d: "Export 3D",
+        palletOnly: "Pallet Only",
+        selectedNone: "No carton selected. Click a carton to drag, rotate, or align it.",
+        selectedBox: "Selected #{index}: position {x} mm, {y} mm; size {w}×{d}; orientation {direction}.",
+        dirRotated: "rotated",
+        dirNormal: "normal",
+        emptyPlans: "Click Calculate to generate layout options.",
+        apply: "Apply",
+        planMeta: "{count} / layer, {total} total, about {util}% utilization.",
+        planNormal: "All Same Direction",
+        planRotated: "All Rotated",
+        planMixedRows: "Mixed Rows {n}N+{r}R",
+        planMixedRowsAlt: "Mixed Rows {r}R+{n}N",
+        planMixedCols: "Mixed Columns {n}N+{r}R",
+        planMixedColsAlt: "Mixed Columns {r}R+{n}N",
+        noteNormal: "Regular rows and columns; easiest to execute on site",
+        noteRotated: "All cartons rotated 90 degrees to improve width usage",
+        noteMixedRows: "Each row is centered independently for capacity and order",
+        noteMixedRowsAlt: "Rotated rows placed forward for easier side inspection",
+        noteMixedCols: "Column split, useful when left/right zones are needed",
+        noteMixedColsAlt: "Rotated columns on the left, normal direction on the right",
+        appliedPlan: "Applied: {name}",
+        selectBoxFirst: "Select a carton first",
+        noSpaceRow: "No available space for another row at the current size",
+        centeredToast: "Carton group centered",
+        exported3d: "3D image exported",
+        scaleReadout: "Scale 1 mm ≈ {scale} px",
+        legendPallet: "Wood pallet: one-color top deck plus three lengthwise supports, forming two fork openings",
+        legendBox: "Carton: one color; orientation is shown by the size text",
+      },
+    };
+
+    const uid = () => Math.random().toString(36).slice(2, 9);
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const mm = value => `${Math.round(value)} mm`;
+    const fmt = value => Number(value).toLocaleString("zh-CN");
+
+    function t(key, vars = {}) {
+      const source = I18N[state.lang] || I18N.zh;
+      let text = source[key] || I18N.zh[key] || key;
+      Object.entries(vars).forEach(([name, value]) => {
+        text = text.replaceAll(`{${name}}`, value);
+      });
+      return text;
+    }
+
+    function setText(selector, key, vars) {
+      const node = document.querySelector(selector);
+      if (node) node.textContent = t(key, vars);
+    }
+
+    function setInputLabel(inputId, key) {
+      const input = document.querySelector(`#${inputId}`);
+      const label = input?.closest("label");
+      if (!label) return;
+      let textNode = [...label.childNodes].find(node => node.nodeType === Node.TEXT_NODE);
+      if (!textNode) {
+        textNode = document.createTextNode("");
+        label.insertBefore(textNode, input);
+      }
+      const prefix = label.firstElementChild === input ? " " : "";
+      const suffix = label.firstElementChild === input ? "" : " ";
+      textNode.nodeValue = `${prefix}${t(key)}${suffix}`;
+    }
+
+    function applyLanguage({ rerender = true } = {}) {
+      document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+      document.title = t("appTitle");
+      setText(".brand h1", "appTitle");
+      setText(".brand p", "tagline");
+      els.langToggle.textContent = t("langToggle");
+      els.themeToggle.textContent = t(state.theme === "dark" ? "themeLight" : "themeDark");
+
+      setText(".side .section:nth-of-type(1) h2", "palletSize");
+      setText(".side .section:nth-of-type(2) h2", "boxSize");
+      setText(".side .section:nth-of-type(3) h2", "colorCustom");
+      setText(".side .section:nth-of-type(4) h2", "autoPlan");
+      setText(".side .section:nth-of-type(5) h2", "manualAssist");
+      setText("#generatePallet", "generatePallet");
+      setText("#addBox", "generateBox");
+      setText("#autoPlan", "calculatePlans");
+      setInputLabel("palletW", "lengthMm");
+      setInputLabel("palletD", "widthMm");
+      setInputLabel("palletH", "heightMm");
+      setInputLabel("boxW", "lengthMm");
+      setInputLabel("boxD", "widthMm");
+      setInputLabel("boxH", "heightMm");
+      setInputLabel("layers", "layers");
+      setInputLabel("perBox", "perBox");
+      setInputLabel("palletColor", "pallet");
+      setInputLabel("boxColor", "box");
+      setInputLabel("snapOn", "snapOn");
+      setInputLabel("gridSize", "gridMm");
+      setInputLabel("snapRange", "snapRangeMm");
+      setInputLabel("palletOnly3d", "palletOnly");
+      setText('[data-align="left"]', "alignLeft");
+      setText('[data-align="hcenter"]', "alignHCenter");
+      setText('[data-align="right"]', "alignRight");
+      setText('[data-align="top"]', "alignTop");
+      setText('[data-align="vcenter"]', "alignVCenter");
+      setText('[data-align="bottom"]', "alignBottom");
+      setText("#rotateBox", "rotateSelected");
+      setText("#centerLayout", "centerLayout");
+      setText("#clearBoxes", "clearBoxes");
+      setText("#applyBest", "applyBest");
+      setText("#addRow", "addRow");
+      setText("#resetView2d", "resetView");
+      setText(".toolbar-right .status-pill", "workspaceTitle");
+      setText(".metrics .metric:nth-child(1) span", "boxesPerLayer");
+      setText(".metrics .metric:nth-child(2) span", "totalBoxes");
+      setText(".metrics .metric:nth-child(3) span", "totalQty");
+      setText(".metrics .metric:nth-child(4) span", "check");
+      setText(".view-head h2", "view3d");
+      setText(".view-head p", "view3dHelp");
+      els.scene3d.setAttribute("aria-label", t("scene3dLabel"));
+      setText("#export3d", "export3d");
+      const legendItems = document.querySelectorAll(".legend-item");
+      if (legendItems[0]) legendItems[0].lastChild.textContent = t("legendPallet");
+      if (legendItems[1]) legendItems[1].lastChild.textContent = t("legendBox");
+      if (rerender) {
+        renderPlans();
+        render2D();
+      }
+    }
+
+    function applyTheme() {
+      document.documentElement.dataset.theme = state.theme;
+      localStorage.setItem("palletPlannerTheme", state.theme);
+      els.themeToggle.textContent = t(state.theme === "dark" ? "themeLight" : "themeDark");
+      if (scene) {
+        scene.background = new THREE.Color(state.theme === "dark" ? 0x0f1a27 : 0xeaf4ff);
+      }
+      if (floorMesh) {
+        floorMesh.material.color.set(state.theme === "dark" ? 0x162333 : 0xdfe7ee);
+      }
+      schedule3D();
+    }
+
+    function readForm() {
+      state.pallet.w = Math.max(100, Number(els.palletW.value) || 1200);
+      state.pallet.d = Math.max(100, Number(els.palletD.value) || 800);
+      state.pallet.h = Math.max(10, Number(els.palletH.value) || 140);
+      state.box.w = Math.max(10, Number(els.boxW.value) || 360);
+      state.box.d = Math.max(10, Number(els.boxD.value) || 215);
+      state.box.h = Math.max(10, Number(els.boxH.value) || 90);
+      state.layers = clamp(Number(els.layers.value) || 1, 1, 12);
+      state.perBox = Math.max(0, Number(els.perBox.value) || 0);
+      state.colors.pallet = els.palletColor.value;
+      state.colors.box = els.boxColor.value;
+      document.documentElement.style.setProperty("--pallet", state.colors.pallet);
+      document.documentElement.style.setProperty("--box", state.colors.box);
+      els.legendPallet.style.background = state.colors.pallet;
+      els.legendBox.style.background = state.colors.box;
+    }
+
+    function fitScale() {
+      const maxW = Math.max(360, els.wrap.clientWidth - 80);
+      const maxH = Math.max(280, els.wrap.clientHeight - 80);
+      state.scale = Math.min(maxW / state.pallet.w, maxH / state.pallet.d, 0.82);
+      els.board.style.width = `${state.pallet.w * state.scale}px`;
+      els.board.style.height = `${state.pallet.d * state.scale}px`;
+      const gridPx = Math.max(5, Number(els.gridSize.value || 25) * state.scale);
+      els.board.style.setProperty("--grid-size", `${gridPx}px`);
+      els.scaleReadout.textContent = t("scaleReadout", { scale: state.scale.toFixed(2) });
+    }
+
+    function boxColor(box) {
+      return state.colors.box;
+    }
+
+    function render2D() {
+      fitScale();
+      els.board.querySelectorAll(".box-item,.snap-line").forEach(node => node.remove());
+      const overlaps = collectOverlaps();
+
+      state.layout.forEach((box, index) => {
+        const div = document.createElement("div");
+        div.className = `box-item ${box.rotated ? "rotated" : ""} ${box.id === state.selectedId ? "selected" : ""} ${overlaps.has(box.id) ? "overlap" : ""}`;
+        div.dataset.id = box.id;
+        div.style.left = `${box.x * state.scale}px`;
+        div.style.top = `${box.y * state.scale}px`;
+        div.style.width = `${box.w * state.scale}px`;
+        div.style.height = `${box.d * state.scale}px`;
+        div.style.backgroundColor = boxColor(box);
+        div.innerHTML = `<span class="box-label">${index + 1}<small>${Math.round(box.w)}×${Math.round(box.d)}</small></span>`;
+        div.addEventListener("pointerdown", startDrag);
+        div.addEventListener("dblclick", () => rotateBox(box.id));
+        els.board.appendChild(div);
+      });
+
+      updateMetrics(overlaps);
+      updateSelectedInfo();
+      schedule3D();
+    }
+
+    function showSnapLines(lines) {
+      els.board.querySelectorAll(".snap-line").forEach(node => node.remove());
+      lines.forEach(line => {
+        const div = document.createElement("div");
+        div.className = `snap-line ${line.axis}`;
+        if (line.axis === "x") div.style.left = `${line.value * state.scale}px`;
+        if (line.axis === "y") div.style.top = `${line.value * state.scale}px`;
+        els.board.appendChild(div);
+      });
+    }
+
+    function startDrag(event) {
+      const id = event.currentTarget.dataset.id;
+      const box = state.layout.find(item => item.id === id);
+      if (!box) return;
+      state.selectedId = id;
+      const rect = els.board.getBoundingClientRect();
+      state.dragging = {
+        id,
+        offsetX: (event.clientX - rect.left) / state.scale - box.x,
+        offsetY: (event.clientY - rect.top) / state.scale - box.y,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      window.addEventListener("pointermove", dragMove);
+      window.addEventListener("pointerup", endDrag, { once: true });
+      render2D();
+    }
+
+    function dragMove(event) {
+      if (!state.dragging) return;
+      const box = state.layout.find(item => item.id === state.dragging.id);
+      if (!box) return;
+      const rect = els.board.getBoundingClientRect();
+      let x = (event.clientX - rect.left) / state.scale - state.dragging.offsetX;
+      let y = (event.clientY - rect.top) / state.scale - state.dragging.offsetY;
+      x = clamp(x, 0, state.pallet.w - box.w);
+      y = clamp(y, 0, state.pallet.d - box.d);
+
+      let lines = [];
+      if (els.snapOn.checked) {
+        const snapped = snapPosition(box, x, y);
+        x = snapped.x;
+        y = snapped.y;
+        lines = snapped.lines;
+      }
+      box.x = x;
+      box.y = y;
+      const node = els.board.querySelector(`[data-id="${box.id}"]`);
+      if (node) {
+        node.style.left = `${box.x * state.scale}px`;
+        node.style.top = `${box.y * state.scale}px`;
+      }
+      showSnapLines(lines);
+      updateMetrics(collectOverlaps());
+      updateSelectedInfo();
+      schedule3D();
+    }
+
+    function endDrag() {
+      state.dragging = null;
+      els.board.querySelectorAll(".snap-line").forEach(node => node.remove());
+      render2D();
+    }
+
+    function snapPosition(box, x, y) {
+      const range = Math.max(1, Number(els.snapRange.value) || 16);
+      const grid = Math.max(1, Number(els.gridSize.value) || 25);
+      const lines = [];
+
+      x = Math.round(x / grid) * grid;
+      y = Math.round(y / grid) * grid;
+
+      const xAnchors = [
+        { value: 0, type: "left" },
+        { value: state.pallet.w / 2, type: "center" },
+        { value: state.pallet.w, type: "right" },
+      ];
+      const yAnchors = [
+        { value: 0, type: "top" },
+        { value: state.pallet.d / 2, type: "middle" },
+        { value: state.pallet.d, type: "bottom" },
+      ];
+
+      state.layout.forEach(other => {
+        if (other.id === box.id) return;
+        xAnchors.push({ value: other.x, type: "left" }, { value: other.x + other.w / 2, type: "center" }, { value: other.x + other.w, type: "right" });
+        yAnchors.push({ value: other.y, type: "top" }, { value: other.y + other.d / 2, type: "middle" }, { value: other.y + other.d, type: "bottom" });
+      });
+
+      const xPoints = [
+        { type: "left", value: x, offset: 0 },
+        { type: "center", value: x + box.w / 2, offset: box.w / 2 },
+        { type: "right", value: x + box.w, offset: box.w },
+      ];
+      const yPoints = [
+        { type: "top", value: y, offset: 0 },
+        { type: "middle", value: y + box.d / 2, offset: box.d / 2 },
+        { type: "bottom", value: y + box.d, offset: box.d },
+      ];
+
+      let bestX = null;
+      for (const p of xPoints) {
+        for (const a of xAnchors) {
+          const diff = Math.abs(p.value - a.value);
+          if (diff <= range && (!bestX || diff < bestX.diff)) bestX = { diff, x: a.value - p.offset, line: a.value };
+        }
+      }
+      let bestY = null;
+      for (const p of yPoints) {
+        for (const a of yAnchors) {
+          const diff = Math.abs(p.value - a.value);
+          if (diff <= range && (!bestY || diff < bestY.diff)) bestY = { diff, y: a.value - p.offset, line: a.value };
+        }
+      }
+
+      if (bestX) {
+        x = bestX.x;
+        lines.push({ axis: "x", value: bestX.line });
+      }
+      if (bestY) {
+        y = bestY.y;
+        lines.push({ axis: "y", value: bestY.line });
+      }
+
+      x = clamp(x, 0, state.pallet.w - box.w);
+      y = clamp(y, 0, state.pallet.d - box.d);
+      return { x, y, lines };
+    }
+
+    function collectOverlaps() {
+      const bad = new Set();
+      for (let i = 0; i < state.layout.length; i++) {
+        const a = state.layout[i];
+        for (let j = i + 1; j < state.layout.length; j++) {
+          const b = state.layout[j];
+          const overlap = !(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.d <= b.y || b.y + b.d <= a.y);
+          if (overlap) {
+            bad.add(a.id);
+            bad.add(b.id);
+          }
+        }
+      }
+      return bad;
+    }
+
+    function updateMetrics(overlaps) {
+      const layerCount = state.layout.length;
+      const totalBoxes = layerCount * state.layers;
+      els.boxCount.textContent = fmt(layerCount);
+      els.totalBoxes.textContent = fmt(totalBoxes);
+      els.totalQty.textContent = fmt(totalBoxes * state.perBox);
+
+      const outside = state.layout.some(box => box.x < -0.01 || box.y < -0.01 || box.x + box.w > state.pallet.w + 0.01 || box.y + box.d > state.pallet.d + 0.01);
+      if (overlaps.size || outside) {
+        els.checkText.textContent = overlaps.size ? t("overlap", { count: overlaps.size }) : t("outOfBounds");
+        els.overlapMetric.classList.add("warning");
+        els.fitStatus.textContent = t("needsCheck");
+      } else {
+        els.checkText.textContent = t("normal");
+        els.overlapMetric.classList.remove("warning");
+        els.fitStatus.textContent = t("normal");
+      }
+    }
+
+    function updateSelectedInfo() {
+      const box = state.layout.find(item => item.id === state.selectedId);
+      if (!box) {
+        els.selectedInfo.textContent = t("selectedNone");
+        return;
+      }
+      const idx = state.layout.indexOf(box) + 1;
+      els.selectedInfo.textContent = t("selectedBox", {
+        index: idx,
+        x: Math.round(box.x),
+        y: Math.round(box.y),
+        w: Math.round(box.w),
+        d: Math.round(box.d),
+        direction: box.rotated ? t("dirRotated") : t("dirNormal"),
+      });
+    }
+
+    function addBox(rotated = false, x = null, y = null) {
+      const w = rotated ? state.box.d : state.box.w;
+      const d = rotated ? state.box.w : state.box.d;
+      const box = {
+        id: uid(),
+        x: x ?? clamp((state.pallet.w - w) / 2, 0, Math.max(0, state.pallet.w - w)),
+        y: y ?? clamp((state.pallet.d - d) / 2, 0, Math.max(0, state.pallet.d - d)),
+        w,
+        d,
+        rotated,
+      };
+      state.layout.push(box);
+      state.selectedId = box.id;
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+    }
+
+    function rotateBox(id = state.selectedId) {
+      const box = state.layout.find(item => item.id === id);
+      if (!box) return showToast(t("selectBoxFirst"));
+      const centerX = box.x + box.w / 2;
+      const centerY = box.y + box.d / 2;
+      box.rotated = !box.rotated;
+      box.w = box.rotated ? state.box.d : state.box.w;
+      box.d = box.rotated ? state.box.w : state.box.d;
+      box.x = clamp(centerX - box.w / 2, 0, Math.max(0, state.pallet.w - box.w));
+      box.y = clamp(centerY - box.d / 2, 0, Math.max(0, state.pallet.d - box.d));
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+    }
+
+    function alignSelected(type) {
+      const box = state.layout.find(item => item.id === state.selectedId);
+      if (!box) return showToast(t("selectBoxFirst"));
+      if (type === "left") box.x = 0;
+      if (type === "right") box.x = state.pallet.w - box.w;
+      if (type === "hcenter") box.x = (state.pallet.w - box.w) / 2;
+      if (type === "top") box.y = 0;
+      if (type === "bottom") box.y = state.pallet.d - box.d;
+      if (type === "vcenter") box.y = (state.pallet.d - box.d) / 2;
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+    }
+
+    function centerLayout() {
+      if (!state.layout.length) return;
+      const minX = Math.min(...state.layout.map(b => b.x));
+      const minY = Math.min(...state.layout.map(b => b.y));
+      const maxX = Math.max(...state.layout.map(b => b.x + b.w));
+      const maxY = Math.max(...state.layout.map(b => b.y + b.d));
+      const dx = (state.pallet.w - (maxX - minX)) / 2 - minX;
+      const dy = (state.pallet.d - (maxY - minY)) / 2 - minY;
+      state.layout.forEach(box => {
+        box.x = clamp(box.x + dx, 0, Math.max(0, state.pallet.w - box.w));
+        box.y = clamp(box.y + dy, 0, Math.max(0, state.pallet.d - box.d));
+      });
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+      showToast(t("centeredToast"));
+    }
+
+    function addRow() {
+      const y = findNextRowY();
+      if (y == null) return showToast(t("noSpaceRow"));
+      const count = Math.floor(state.pallet.w / state.box.w);
+      const rowW = count * state.box.w;
+      const x0 = (state.pallet.w - rowW) / 2;
+      for (let i = 0; i < count; i++) addSilentBox(false, x0 + i * state.box.w, y);
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+    }
+
+    function findNextRowY() {
+      const usedBottom = state.layout.length ? Math.max(...state.layout.map(b => b.y + b.d)) : 0;
+      if (usedBottom + state.box.d <= state.pallet.d) return usedBottom;
+      const usedTop = state.layout.length ? Math.min(...state.layout.map(b => b.y)) : state.pallet.d;
+      if (usedTop - state.box.d >= 0) return usedTop - state.box.d;
+      return null;
+    }
+
+    function addSilentBox(rotated, x, y) {
+      state.layout.push({
+        id: uid(),
+        x,
+        y,
+        w: rotated ? state.box.d : state.box.w,
+        d: rotated ? state.box.w : state.box.d,
+        rotated,
+      });
+    }
+
+    function calculatePlans() {
+      readForm();
+      const plans = [];
+      const addPlan = (nameKey, noteKey, rects, strategy, vars = {}) => {
+        if (!rects.length) return;
+        const count = rects.length;
+        const signature = rects.map(r => `${Math.round(r.x)}:${Math.round(r.y)}:${Math.round(r.w)}:${Math.round(r.d)}:${r.rotated ? 1 : 0}`).join("|");
+        if (plans.some(p => p.signature === signature)) return;
+        const used = count * state.box.w * state.box.d;
+        plans.push({ id: uid(), nameKey, noteKey, vars, rects, count, util: used / (state.pallet.w * state.pallet.d), strategy, signature });
+      };
+
+      const normalRows = buildRows([{ rotated: false, rows: Math.floor(state.pallet.d / state.box.d) }]).rects;
+      addPlan("planNormal", "noteNormal", normalRows, "rows-normal");
+
+      const rotatedRows = buildRows([{ rotated: true, rows: Math.floor(state.pallet.d / state.box.w) }]).rects;
+      addPlan("planRotated", "noteRotated", rotatedRows, "rows-rotated");
+
+      const maxNormalRows = Math.floor(state.pallet.d / state.box.d);
+      const maxRotRows = Math.floor(state.pallet.d / state.box.w);
+      for (let n = 0; n <= maxNormalRows; n++) {
+        for (let r = 0; r <= maxRotRows; r++) {
+          if (!n && !r) continue;
+          const h = n * state.box.d + r * state.box.w;
+          if (h > state.pallet.d + 0.01) continue;
+          addPlan("planMixedRows", "noteMixedRows", buildRows([{ rotated: false, rows: n }, { rotated: true, rows: r }]).rects, "rows-mixed", { n, r });
+          addPlan("planMixedRowsAlt", "noteMixedRowsAlt", buildRows([{ rotated: true, rows: r }, { rotated: false, rows: n }]).rects, "rows-mixed-alt", { n, r });
+        }
+      }
+
+      const maxNormalCols = Math.floor(state.pallet.w / state.box.w);
+      const maxRotCols = Math.floor(state.pallet.w / state.box.d);
+      for (let n = 0; n <= maxNormalCols; n++) {
+        for (let r = 0; r <= maxRotCols; r++) {
+          if (!n && !r) continue;
+          const w = n * state.box.w + r * state.box.d;
+          if (w > state.pallet.w + 0.01) continue;
+          addPlan("planMixedCols", "noteMixedCols", buildColumns([{ rotated: false, cols: n }, { rotated: true, cols: r }]).rects, "cols-mixed", { n, r });
+          addPlan("planMixedColsAlt", "noteMixedColsAlt", buildColumns([{ rotated: true, cols: r }, { rotated: false, cols: n }]).rects, "cols-mixed-alt", { n, r });
+        }
+      }
+
+      plans.sort((a, b) => b.count - a.count || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
+      state.plans = plans.slice(0, 7);
+      state.activePlan = state.plans[0]?.id ?? null;
+      renderPlans();
+      if (state.plans[0]) applyPlan(state.plans[0].id);
+    }
+
+    function buildRows(parts) {
+      const totalH = parts.reduce((sum, part) => sum + part.rows * (part.rotated ? state.box.w : state.box.d), 0);
+      let y = (state.pallet.d - totalH) / 2;
+      const rects = [];
+      parts.forEach(part => {
+        const rowH = part.rotated ? state.box.w : state.box.d;
+        const itemW = part.rotated ? state.box.d : state.box.w;
+        const itemD = rowH;
+        const count = Math.floor(state.pallet.w / itemW);
+        const rowW = count * itemW;
+        const x0 = (state.pallet.w - rowW) / 2;
+        for (let row = 0; row < part.rows; row++) {
+          for (let i = 0; i < count; i++) rects.push({ x: x0 + i * itemW, y, w: itemW, d: itemD, rotated: part.rotated });
+          y += rowH;
+        }
+      });
+      return { rects };
+    }
+
+    function buildColumns(parts) {
+      const totalW = parts.reduce((sum, part) => sum + part.cols * (part.rotated ? state.box.d : state.box.w), 0);
+      let x = (state.pallet.w - totalW) / 2;
+      const rects = [];
+      parts.forEach(part => {
+        const colW = part.rotated ? state.box.d : state.box.w;
+        const itemD = part.rotated ? state.box.w : state.box.d;
+        const count = Math.floor(state.pallet.d / itemD);
+        const colD = count * itemD;
+        const y0 = (state.pallet.d - colD) / 2;
+        for (let col = 0; col < part.cols; col++) {
+          for (let i = 0; i < count; i++) rects.push({ x, y: y0 + i * itemD, w: colW, d: itemD, rotated: part.rotated });
+          x += colW;
+        }
+      });
+      return { rects };
+    }
+
+    function renderPlans() {
+      els.planList.innerHTML = "";
+      if (!state.plans.length) {
+        const empty = document.createElement("p");
+        empty.style.margin = "0";
+        empty.style.color = "var(--muted)";
+        empty.textContent = t("emptyPlans");
+        els.planList.appendChild(empty);
+        return;
+      }
+
+      state.plans.forEach((plan, index) => {
+        const card = document.createElement("div");
+        card.className = `plan-card ${plan.id === state.activePlan ? "active" : ""}`;
+        card.innerHTML = `
+          <div class="plan-head">
+            <strong>${index + 1}. ${t(plan.nameKey, plan.vars)}</strong>
+            <button class="small" data-plan="${plan.id}">${t("apply")}</button>
+          </div>
+          <p>${t("planMeta", { count: plan.count, total: plan.count * state.layers, util: (plan.util * 100).toFixed(1) })}</p>
+          <div class="plan-mini" aria-hidden="true"></div>
+        `;
+        drawMini(card.querySelector(".plan-mini"), plan.rects);
+        card.querySelector("button").addEventListener("click", () => applyPlan(plan.id));
+        els.planList.appendChild(card);
+      });
+    }
+
+    function drawMini(host, rects) {
+      rects.forEach(rect => {
+        const item = document.createElement("span");
+        item.style.position = "absolute";
+        item.style.left = `${(rect.x / state.pallet.w) * 100}%`;
+        item.style.top = `${(rect.y / state.pallet.d) * 100}%`;
+        item.style.width = `${(rect.w / state.pallet.w) * 100}%`;
+        item.style.height = `${(rect.d / state.pallet.d) * 100}%`;
+        item.style.background = state.colors.box;
+        item.style.border = "1px solid rgba(29,38,51,.45)";
+        host.appendChild(item);
+      });
+    }
+
+    function applyPlan(id) {
+      const plan = state.plans.find(item => item.id === id);
+      if (!plan) return;
+      state.layout = plan.rects.map(rect => ({ id: uid(), ...rect }));
+      state.selectedId = state.layout[0]?.id ?? null;
+      state.activePlan = id;
+      renderPlans();
+      render2D();
+      showToast(t("appliedPlan", { name: t(plan.nameKey, plan.vars) }));
+    }
+
+    function rebuildForNewSize() {
+      readForm();
+      state.layout = state.layout.map(box => {
+        const rotated = box.rotated;
+        const w = rotated ? state.box.d : state.box.w;
+        const d = rotated ? state.box.w : state.box.d;
+        return { ...box, w, d, x: clamp(box.x, 0, Math.max(0, state.pallet.w - w)), y: clamp(box.y, 0, Math.max(0, state.pallet.d - d)) };
+      });
+      state.plans = [];
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+    }
+
+    function showToast(text) {
+      els.toast.textContent = text;
+      els.toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1700);
+    }
+
+    let scene, camera, renderer, controls, modelGroup, floorMesh;
+    const UNIT = 0.004;
+
+    function init3D() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xeaf4ff);
+      camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+      camera.position.set(4.8, 4.2, 5.6);
+      renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      els.scene3d.appendChild(renderer.domElement);
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.target.set(0, 0.55, 0);
+      controls.maxPolarAngle = Math.PI * 0.48;
+
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x7d8a94, 2.1);
+      scene.add(hemi);
+      const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+      sun.position.set(3, 6, 4);
+      sun.castShadow = true;
+      scene.add(sun);
+      floorMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(18, 18),
+        new THREE.MeshStandardMaterial({ color: 0xdfe7ee, roughness: 0.9 })
+      );
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.position.y = -0.02;
+      floorMesh.receiveShadow = true;
+      scene.add(floorMesh);
+
+      modelGroup = new THREE.Group();
+      scene.add(modelGroup);
+
+      const resize = () => {
+        const rect = els.scene3d.getBoundingClientRect();
+        const width = Math.max(200, rect.width);
+        const height = Math.max(260, rect.height);
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      };
+      new ResizeObserver(resize).observe(els.scene3d);
+      resize();
+
+      renderer.setAnimationLoop(() => {
+        controls.update();
+        renderer.render(scene, camera);
+      });
+    }
+
+    function material(color, roughness = 0.72) {
+      return new THREE.MeshStandardMaterial({ color, roughness, metalness: 0.02 });
+    }
+
+    function addCuboid(group, x, y, z, w, h, d, color, name = "") {
+      const geo = new THREE.BoxGeometry(w * UNIT, h * UNIT, d * UNIT);
+      const mesh = new THREE.Mesh(geo, material(color));
+      mesh.position.set(x * UNIT, y * UNIT, z * UNIT);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      mesh.name = name;
+      group.add(mesh);
+
+      const edge = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({ color: 0x263241, linewidth: 1 })
+      );
+      edge.position.copy(mesh.position);
+      group.add(edge);
+      return mesh;
+    }
+
+    function addTopLine(group, x1, z1, x2, z2, y, color, opacity = 0.45) {
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x1 * UNIT, y * UNIT, z1 * UNIT),
+        new THREE.Vector3(x2 * UNIT, y * UNIT, z2 * UNIT),
+      ]);
+      const line = new THREE.Line(
+        geometry,
+        new THREE.LineBasicMaterial({ color, transparent: true, opacity })
+      );
+      group.add(line);
+      return line;
+    }
+
+    function addNail(group, x, z, y, radius = 4) {
+      const nail = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius * UNIT, radius * UNIT, 1.6 * UNIT, 14),
+        new THREE.MeshStandardMaterial({ color: 0x7b5a36, roughness: 0.85 })
+      );
+      nail.position.set(x * UNIT, y * UNIT, z * UNIT);
+      group.add(nail);
+      return nail;
+    }
+
+    function redraw3D() {
+      if (!modelGroup) return;
+      modelGroup.clear();
+
+      const p = state.pallet;
+      const deckH = Math.min(42, Math.max(28, p.h * 0.32));
+      const supportH = Math.max(44, p.h - deckH);
+      const w = p.w;
+      const dpth = p.d;
+      const x0 = -w / 2;
+      const z0 = -dpth / 2;
+      const wood = state.colors.pallet;
+
+      addCuboid(modelGroup, 0, p.h - deckH / 2, 0, w, deckH, dpth, wood, "single plywood deck");
+
+      const sideStringerW = Math.max(130, w * 0.16);
+      const centerStringerW = Math.max(120, w * 0.14);
+      const supportY = supportH / 2;
+      addCuboid(modelGroup, x0 + sideStringerW / 2, supportY, 0, sideStringerW, supportH, dpth, wood, "left stringer");
+      addCuboid(modelGroup, 0, supportY, 0, centerStringerW, supportH, dpth, wood, "center stringer");
+      addCuboid(modelGroup, -x0 - sideStringerW / 2, supportY, 0, sideStringerW, supportH, dpth, wood, "right stringer");
+
+      const grainY = p.h + 1.2;
+      for (let i = 1; i <= 9; i++) {
+        const z = z0 + (dpth * i) / 10;
+        addTopLine(modelGroup, x0 + 38, z, x0 + w - 38, z + (i % 2 ? 8 : -6), grainY, 0x8f683a, 0.28);
+      }
+      [-w * 0.43, -w * 0.18, w * 0.18, w * 0.43].forEach(x => {
+        [-dpth * 0.42, -dpth * 0.18, dpth * 0.18, dpth * 0.42].forEach(z => {
+          addNail(modelGroup, x, z, grainY + 0.4, Math.max(3.5, Math.min(w, dpth) * 0.004));
+        });
+      });
+
+      if (!document.querySelector("#palletOnly3d")?.checked) {
+        state.layout.forEach(box => {
+          for (let layer = 0; layer < state.layers; layer++) {
+            const cx = x0 + box.x + box.w / 2;
+            const cz = z0 + box.y + box.d / 2;
+            const cy = p.h + layer * state.box.h + state.box.h / 2;
+            addCuboid(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, boxColor(box), "carton");
+          }
+        });
+      }
+
+      modelGroup.rotation.y = -0.25;
+      const maxDim = Math.max(p.w, p.d, p.h + state.layers * state.box.h) * UNIT;
+      camera.position.set(maxDim * 1.4, maxDim * 1.05, maxDim * 1.55);
+      controls.target.set(0, (p.h + state.layers * state.box.h) * UNIT * 0.45, 0);
+      camera.updateProjectionMatrix();
+    }
+
+    function shadeHex(hex, factor) {
+      const value = hex.replace("#", "");
+      const r = Math.round(parseInt(value.slice(0, 2), 16) * factor);
+      const g = Math.round(parseInt(value.slice(2, 4), 16) * factor);
+      const b = Math.round(parseInt(value.slice(4, 6), 16) * factor);
+      return `rgb(${clamp(r, 0, 255)}, ${clamp(g, 0, 255)}, ${clamp(b, 0, 255)})`;
+    }
+
+    function schedule3D() {
+      if (state.renderQueued) return;
+      state.renderQueued = true;
+      requestAnimationFrame(() => {
+        state.renderQueued = false;
+        redraw3D();
+      });
+    }
+
+    function export3D() {
+      renderer.render(scene, camera);
+      const link = document.createElement("a");
+      link.download = "pallet-3d-view.png";
+      link.href = renderer.domElement.toDataURL("image/png");
+      link.click();
+      showToast(t("exported3d"));
+    }
+
+    function attachEvents() {
+      ["palletW","palletD","palletH","boxW","boxD","boxH","layers","perBox","palletColor","boxColor","gridSize"].forEach(id => {
+        document.querySelector(`#${id}`).addEventListener("input", rebuildForNewSize);
+      });
+      document.querySelector("#generatePallet").addEventListener("click", rebuildForNewSize);
+      document.querySelector("#addBox").addEventListener("click", () => addBox(false));
+      document.querySelector("#autoPlan").addEventListener("click", calculatePlans);
+      document.querySelector("#applyBest").addEventListener("click", () => {
+        if (!state.plans.length) calculatePlans();
+        else applyPlan(state.plans[0].id);
+      });
+      document.querySelector("#clearBoxes").addEventListener("click", () => {
+        state.layout = [];
+        state.selectedId = null;
+        state.activePlan = null;
+        renderPlans();
+        render2D();
+      });
+      document.querySelector("#rotateBox").addEventListener("click", () => rotateBox());
+      document.querySelector("#centerLayout").addEventListener("click", centerLayout);
+      document.querySelector("#addRow").addEventListener("click", addRow);
+      document.querySelector("#resetView2d").addEventListener("click", () => els.wrap.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
+      document.querySelector("#export3d").addEventListener("click", export3D);
+      document.querySelector("#palletOnly3d").addEventListener("change", schedule3D);
+      document.querySelector("#langToggle").addEventListener("click", () => {
+        state.lang = state.lang === "zh" ? "en" : "zh";
+        localStorage.setItem("palletPlannerLang", state.lang);
+        applyLanguage();
+      });
+      document.querySelector("#themeToggle").addEventListener("click", () => {
+        state.theme = state.theme === "dark" ? "light" : "dark";
+        applyTheme();
+      });
+      document.querySelectorAll("[data-align]").forEach(button => button.addEventListener("click", () => alignSelected(button.dataset.align)));
+      els.board.addEventListener("pointerdown", event => {
+        if (event.target === els.board) {
+          state.selectedId = null;
+          render2D();
+        }
+      });
+      window.addEventListener("resize", render2D);
+    }
+
+    readForm();
+    init3D();
+    attachEvents();
+    applyTheme();
+    applyLanguage({ rerender: false });
+    calculatePlans();
+    applyLanguage();
+  </script>
+</body>
+</html>
