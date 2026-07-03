@@ -10,8 +10,9 @@
   /* ── LIGHT THEME (default) ── */
   :root{
     --bg:#f2f5fc;--surface:#ffffff;--surface2:#eef2fa;--border:#dde3f0;
+    --card-bg:#ffffff;
     --accent:#2563eb;
-    --text:#1e2a45;--text-sub:#4b5a7a;--text-muted:#8a98b8;
+    --text:#1e2a45;--text-sub:#4b5a7a;--text-muted:#74839f;
     --shadow:0 1px 4px rgba(30,42,69,0.07),0 4px 16px rgba(30,42,69,0.05);
     --shadow-md:0 2px 8px rgba(30,42,69,0.09),0 8px 28px rgba(30,42,69,0.07);
     --thead-bg:#f0f4ff;--tbody-hover:#f7f9ff;--tbody-border:#f0f2f8;
@@ -22,7 +23,8 @@
   /* ── DARK MODE ── */
   body.dark{
     --bg:#0e1118;--surface:#181c28;--surface2:#1f2435;--border:#2c3250;
-    --text:#dde4f0;--text-sub:#8a96b8;--text-muted:#4e5878;
+    --card-bg:#181c28;
+    --text:#dde4f0;--text-sub:#8a96b8;--text-muted:#6a76a0;
     --shadow:0 1px 4px rgba(0,0,0,0.4),0 4px 16px rgba(0,0,0,0.3);
     --shadow-md:0 2px 8px rgba(0,0,0,0.45),0 8px 28px rgba(0,0,0,0.35);
     --thead-bg:#1c2138;--tbody-hover:#1e2338;--tbody-border:#232840;
@@ -31,7 +33,8 @@
     --chart-grid:#2a2f48;--chart-text:#8a96b8;
   }
   /* ── BASE ── */
-  body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;font-size:14px;transition:background .25s,color .25s;}
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;font-size:14px;transition:background .25s,color .25s;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
 
 
   /* CONTROL BAR BUTTONS */
@@ -303,6 +306,59 @@
   .cmp-chart-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
   .cmp-chart-wrap{position:relative;height:240px;}
   .cmp-chart-wrap.tall{height:300px;}
+
+  /* ══════ UI POLISH PASS (2026-07) — additive refinements, no structural change ══════ */
+
+  /* Accessibility: visible keyboard focus (light surfaces vs. dark blue bars) */
+  button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+  .module-bar button:focus-visible,.month-bar button:focus-visible,#ctrl-bar button:focus-visible,header button:focus-visible{outline-color:#93c5fd;}
+  button{touch-action:manipulation;}
+
+  /* Text selection + subtle page scrollbar */
+  ::selection{background:rgba(37,99,235,0.22);}
+  body.dark ::selection{background:rgba(96,165,250,0.30);}
+  body{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+  body::-webkit-scrollbar{width:10px;}
+  body::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;border:2px solid var(--bg);}
+  .table-wrap{scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+  .table-wrap::-webkit-scrollbar{height:6px;}
+  .table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+  /* Numerals: keep digits aligned in tables & KPIs */
+  .num,.kpi-value,.proc-kpi-val,.defect-val,.mini-bar-val{font-variant-numeric:tabular-nums;}
+
+  /* Section titles: short accent underline over a hairline (modern hierarchy) */
+  .section-title{border-bottom:1px solid var(--border);position:relative;}
+  .section-title::after{content:'';position:absolute;left:0;bottom:-1px;width:46px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--accent),rgba(37,99,235,0));}
+
+  /* KPI cards: gentle tinted wash from the card's own accent (progressive enhancement) */
+  .kpi-card{background:linear-gradient(180deg,color-mix(in srgb,var(--kpi-color,var(--accent)) 5%,var(--surface)) 0%,var(--surface) 46%);}
+  .kpi-card::before{height:3px;background:linear-gradient(90deg,var(--kpi-color,var(--accent)),color-mix(in srgb,var(--kpi-color,var(--accent)) 30%,transparent));}
+  .kpi-label{letter-spacing:.4px;text-transform:uppercase;font-size:10.5px;}
+
+  /* Chart cards: match KPI hover elevation for a consistent surface language */
+  .chart-card{transition:box-shadow .2s;}
+  .chart-card:hover{box-shadow:var(--shadow-md);}
+
+  /* Tables: faint zebra (kept below hover) + dark-mode fix for inline-styled TOTAL rows */
+  tbody tr:nth-child(even):not(:hover){background:color-mix(in srgb,var(--surface2) 42%,transparent);}
+  body.dark tbody tr[style*="#f0f4ff"]{background:#222a4a !important;}
+
+  /* Insight cards: hairline top highlight for depth on dark surfaces */
+  body.dark .insight-card,body.dark .kpi-card,body.dark .chart-card{border-color:#333a5c;}
+
+  /* Mobile: 16px selects prevent iOS auto-zoom; slightly taller touch targets */
+  @media(max-width:768px){
+    .compare-sel-group select{font-size:16px;}
+    .month-btn{padding:8px 14px;}
+    .ctrl-btn{padding:6px 12px;}
+  }
+
+  /* Motion: honor user preference */
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+    html{scroll-behavior:auto;}
+  }
 
 </style>
 </head>
