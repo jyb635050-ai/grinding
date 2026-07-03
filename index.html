@@ -465,12 +465,15 @@
       line-height: 1.35;
     }
     .plan-mini {
-      height: 72px;
+      width: 100%;
+      aspect-ratio: var(--mini-ratio, 1.5);
+      min-height: 118px;
       border: 2px solid #d5dde7;
       border-radius: 6px;
       background: var(--panel-2);
       position: relative;
       overflow: hidden;
+      box-sizing: border-box;
     }
 
     .view-panel {
@@ -1572,6 +1575,7 @@
     }
 
     function drawMini(host, rects) {
+      host.style.setProperty("--mini-ratio", `${state.pallet.w} / ${state.pallet.d}`);
       rects.forEach(rect => {
         const item = document.createElement("span");
         item.style.position = "absolute";
