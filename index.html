@@ -464,6 +464,15 @@
       font-size: 12px;
       line-height: 1.35;
     }
+    .plan-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+      color: var(--good);
+      font-weight: 800;
+    }
+    .plan-proof::before { content: "\2713"; }
     .plan-mini {
       width: 100%;
       aspect-ratio: var(--mini-ratio, 1.5);
@@ -704,7 +713,7 @@
       <section class="panel workspace-panel">
         <div class="toolbar">
           <div class="toolbar-left">
-            <button class="primary" id="applyBest">应用最佳方案</button>
+            <button class="primary" id="applyBest">应用首选方案</button>
             <button class="blue" id="addRow">补一排箱子</button>
             <button id="resetView2d">视图归中</button>
           </div>
@@ -811,6 +820,7 @@
       colors: { pallet: "#d8ad6a", box: "#4f8df6" },
       layout: [],
       plans: [],
+      planMessageKey: null,
       activePlan: null,
       selectedId: null,
       scale: 0.5,
@@ -857,7 +867,7 @@
         rotateSelected: "旋转选中",
         centerLayout: "整体居中",
         clearBoxes: "清空箱子",
-        applyBest: "应用最佳方案",
+        applyBest: "应用首选方案",
         addRow: "补一排箱子",
         resetView: "视图归中",
         workspaceTitle: "2D 俯视手动规划",
@@ -884,8 +894,11 @@
         dirRotated: "竖向",
         dirNormal: "横向",
         emptyPlans: "点击“计算方案”生成可选摆法。",
+        noFitPlan: "当前箱子尺寸无法放入托盘。",
         apply: "应用",
         planMeta: "单层 {count} 箱，三层 {total} 箱，利用率约 {util}%。",
+        optimalProof: "已验证最优",
+        planOptimized: "空间搜索优化",
         planNormal: "全部同向摆",
         planRotated: "全部旋转摆",
         planMixedRows: "混合条带 {n}横+{r}竖",
@@ -898,6 +911,7 @@
         noteMixedRowsAlt: "旋转排放在前侧，便于叉车侧观察",
         noteMixedCols: "按列切分，适合需要左右分区的托盘",
         noteMixedColsAlt: "旋转列靠左，右侧按原方向补齐",
+        noteOptimized: "搜索箱体边缘形成的可用角点，可覆盖风车形等非条带布局",
         appliedPlan: "已应用：{name}",
         selectBoxFirst: "请先选中一个箱子",
         noSpaceRow: "当前尺寸下没有足够空间补一排",
@@ -942,7 +956,7 @@
         rotateSelected: "Rotate",
         centerLayout: "Center All",
         clearBoxes: "Clear",
-        applyBest: "Apply Best Plan",
+        applyBest: "Apply Top Plan",
         addRow: "Add Row",
         resetView: "Reset View",
         workspaceTitle: "2D Top View Planner",
@@ -969,8 +983,11 @@
         dirRotated: "rotated",
         dirNormal: "normal",
         emptyPlans: "Click Calculate to generate layout options.",
+        noFitPlan: "The current carton size does not fit on the pallet.",
         apply: "Apply",
         planMeta: "{count} / layer, {total} total, about {util}% utilization.",
+        optimalProof: "Proven optimal",
+        planOptimized: "Spatial Search",
         planNormal: "All Same Direction",
         planRotated: "All Rotated",
         planMixedRows: "Mixed Rows {n}N+{r}R",
@@ -983,6 +1000,7 @@
         noteMixedRowsAlt: "Rotated rows placed forward for easier side inspection",
         noteMixedCols: "Column split, useful when left/right zones are needed",
         noteMixedColsAlt: "Rotated columns on the left, normal direction on the right",
+        noteOptimized: "Searches edge-defined corners to cover pinwheel and other non-strip layouts",
         appliedPlan: "Applied: {name}",
         selectBoxFirst: "Select a carton first",
         noSpaceRow: "No available space for another row at the current size",
@@ -1460,16 +1478,146 @@
       });
     }
 
+    function rectanglesOverlap(a, b) {
+      const epsilon = 0.001;
+      return !(
+        a.x + a.w <= b.x + epsilon ||
+        b.x + b.w <= a.x + epsilon ||
+        a.y + a.d <= b.y + epsilon ||
+        b.y + b.d <= a.y + epsilon
+      );
+    }
+
+    function centerRectangles(rects) {
+      if (!rects.length) return [];
+      const minX = Math.min(...rects.map(rect => rect.x));
+      const minY = Math.min(...rects.map(rect => rect.y));
+      const maxX = Math.max(...rects.map(rect => rect.x + rect.w));
+      const maxY = Math.max(...rects.map(rect => rect.y + rect.d));
+      const offsetX = (state.pallet.w - (maxX - minX)) / 2 - minX;
+      const offsetY = (state.pallet.d - (maxY - minY)) / 2 - minY;
+      return rects.map(rect => ({ ...rect, x: rect.x + offsetX, y: rect.y + offsetY }));
+    }
+
+    function searchSpatialLayout(seedRects) {
+      const palletW = state.pallet.w;
+      const palletD = state.pallet.d;
+      const boxArea = state.box.w * state.box.d;
+      const upperBound = Math.floor((palletW * palletD + 0.001) / boxArea);
+      const seedCount = seedRects.length;
+      const maxSearchBoxes = 60;
+      const maxNodes = 30000;
+      const timeLimitMs = 140;
+      const startedAt = performance.now();
+      const epsilon = 0.001;
+      let best = seedRects.map(rect => ({ ...rect }));
+      let nodes = 0;
+      let timedOut = false;
+      const seen = new Set();
+
+      if (seedCount >= upperBound || upperBound > maxSearchBoxes) {
+        return {
+          rects: centerRectangles(best),
+          upperBound,
+          provenOptimal: seedCount >= upperBound,
+          improved: false,
+          timedOut: false,
+        };
+      }
+
+      const orientations = state.box.w === state.box.d
+        ? [{ w: state.box.w, d: state.box.d, rotated: false }]
+        : [
+            { w: state.box.w, d: state.box.d, rotated: false },
+            { w: state.box.d, d: state.box.w, rotated: true },
+          ];
+      const coordinateKey = value => Math.round(value * 1000);
+      const rectangleKey = rect => `${coordinateKey(rect.x)}:${coordinateKey(rect.y)}:${coordinateKey(rect.w)}:${coordinateKey(rect.d)}`;
+      const layoutKey = rects => rects.map(rectangleKey).sort().join("|");
+
+      const search = placed => {
+        nodes += 1;
+        if (nodes > maxNodes || ((nodes & 127) === 0 && performance.now() - startedAt > timeLimitMs)) {
+          timedOut = true;
+          return true;
+        }
+
+        if (placed.length > best.length) {
+          best = placed.map(rect => ({ ...rect }));
+          if (best.length >= upperBound) return true;
+        }
+
+        const signature = layoutKey(placed);
+        if (seen.has(signature)) return false;
+        seen.add(signature);
+
+        const xPositions = [...new Set([0, ...placed.map(rect => rect.x + rect.w)])];
+        const yPositions = [...new Set([0, ...placed.map(rect => rect.y + rect.d)])];
+        const candidateMap = new Map();
+
+        orientations.forEach(orientation => {
+          xPositions.forEach(x => {
+            yPositions.forEach(y => {
+              if (x + orientation.w > palletW + epsilon || y + orientation.d > palletD + epsilon) return;
+              const rect = { x, y, ...orientation };
+              if (placed.some(other => rectanglesOverlap(rect, other))) return;
+
+              let contacts = Number(x <= epsilon) + Number(y <= epsilon);
+              contacts += Number(Math.abs(x + rect.w - palletW) <= epsilon);
+              contacts += Number(Math.abs(y + rect.d - palletD) <= epsilon);
+              placed.forEach(other => {
+                contacts += Number(Math.abs(x - (other.x + other.w)) <= epsilon);
+                contacts += Number(Math.abs(y - (other.y + other.d)) <= epsilon);
+              });
+
+              const key = rectangleKey(rect);
+              const score = contacts * 1000000 - y * palletW - x;
+              const current = candidateMap.get(key);
+              if (!current || current.score < score) candidateMap.set(key, { rect, score });
+            });
+          });
+        });
+
+        const candidates = [...candidateMap.values()].sort((a, b) => b.score - a.score);
+        for (const candidate of candidates) {
+          placed.push(candidate.rect);
+          const shouldStop = search(placed);
+          placed.pop();
+          if (shouldStop && (best.length >= upperBound || timedOut)) return true;
+        }
+        return false;
+      };
+
+      for (const orientation of orientations) {
+        search([{ x: 0, y: 0, ...orientation }]);
+        if (best.length >= upperBound || timedOut) break;
+      }
+
+      return {
+        rects: centerRectangles(best),
+        upperBound,
+        provenOptimal: best.length >= upperBound,
+        improved: best.length > seedCount,
+        timedOut,
+      };
+    }
+
     function calculatePlans() {
       readForm();
       const plans = [];
-      const addPlan = (nameKey, noteKey, rects, strategy, vars = {}) => {
+      const addPlan = (nameKey, noteKey, rects, strategy, vars = {}, options = {}) => {
         if (!rects.length) return;
         const count = rects.length;
         const signature = rects.map(r => `${Math.round(r.x)}:${Math.round(r.y)}:${Math.round(r.w)}:${Math.round(r.d)}:${r.rotated ? 1 : 0}`).join("|");
-        if (plans.some(p => p.signature === signature)) return;
+        const duplicate = plans.find(plan => plan.signature === signature);
+        if (duplicate) {
+          duplicate.provenOptimal ||= Boolean(options.provenOptimal);
+          return duplicate;
+        }
         const used = count * state.box.w * state.box.d;
-        plans.push({ id: uid(), nameKey, noteKey, vars, rects, count, util: used / (state.pallet.w * state.pallet.d), strategy, signature });
+        const plan = { id: uid(), nameKey, noteKey, vars, rects, count, util: used / (state.pallet.w * state.pallet.d), strategy, signature, provenOptimal: Boolean(options.provenOptimal) };
+        plans.push(plan);
+        return plan;
       };
 
       const normalRows = buildRows([{ rotated: false, rows: Math.floor(state.pallet.d / state.box.d) }]).rects;
@@ -1502,11 +1650,27 @@
         }
       }
 
-      plans.sort((a, b) => b.count - a.count || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
+      const seedPlan = plans.reduce((best, plan) => !best || plan.count > best.count ? plan : best, null);
+      const spatial = searchSpatialLayout(seedPlan?.rects || []);
+      if (spatial.improved) {
+        addPlan("planOptimized", "noteOptimized", spatial.rects, "spatial-search", {}, { provenOptimal: spatial.provenOptimal });
+      } else if (spatial.provenOptimal && seedPlan) {
+        seedPlan.provenOptimal = true;
+      }
+
+      plans.sort((a, b) => b.count - a.count || Number(b.provenOptimal) - Number(a.provenOptimal) || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
       state.plans = plans.slice(0, 7);
       state.activePlan = state.plans[0]?.id ?? null;
+      state.planMessageKey = state.plans.length ? null : "noFitPlan";
       renderPlans();
-      if (state.plans[0]) applyPlan(state.plans[0].id);
+      if (state.plans[0]) {
+        applyPlan(state.plans[0].id);
+      } else {
+        state.layout = [];
+        state.selectedId = null;
+        render2D();
+        showToast(t("noFitPlan"));
+      }
     }
 
     function buildRows(parts) {
@@ -1552,7 +1716,7 @@
         const empty = document.createElement("p");
         empty.style.margin = "0";
         empty.style.color = "var(--muted)";
-        empty.textContent = t("emptyPlans");
+        empty.textContent = t(state.planMessageKey || "emptyPlans");
         els.planList.appendChild(empty);
         return;
       }
@@ -1565,7 +1729,7 @@
             <strong>${index + 1}. ${t(plan.nameKey, plan.vars)}</strong>
             <button class="small" data-plan="${plan.id}">${t("apply")}</button>
           </div>
-          <p>${t("planMeta", { count: plan.count, total: plan.count * state.layers, util: (plan.util * 100).toFixed(1) })}</p>
+          <p>${t("planMeta", { count: plan.count, total: plan.count * state.layers, util: (plan.util * 100).toFixed(1) })}${plan.provenOptimal ? `<span class="plan-proof">${t("optimalProof")}</span>` : ""}</p>
           <div class="plan-mini" aria-hidden="true"></div>
         `;
         drawMini(card.querySelector(".plan-mini"), plan.rects);
@@ -1609,6 +1773,7 @@
         return { ...box, w, d, x: clamp(box.x, 0, Math.max(0, state.pallet.w - w)), y: clamp(box.y, 0, Math.max(0, state.pallet.d - d)) };
       });
       state.plans = [];
+      state.planMessageKey = null;
       state.activePlan = null;
       renderPlans();
       render2D();
