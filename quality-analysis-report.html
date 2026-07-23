@@ -391,6 +391,9 @@
   header::before{border:10px solid rgba(255,255,255,0.07);background:none;}
   header::after{border:6px solid rgba(255,255,255,0.06);background:none;}
 
+  /* SPC control-chart caption */
+  .spc-note{font-size:11px;color:var(--text-muted);line-height:1.55;margin-top:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;border-left:3px solid #059669;}
+
   /* Executive overview module cards */
   .exec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;}
   .exec-card{display:flex;flex-direction:column;}
@@ -674,9 +677,9 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
   <div class="kpi-grid">
     <div class="kpi-card" style="--kpi-color:#2563eb;">
       <span class="kpi-icon"><svg class="ic"><use href="#i-gear"/></svg></span>
-      <div class="kpi-label"><span data-zh>磨工废品总数</span><span data-en>Grinder Waste</span></div>
-      <div class="kpi-value" data-exec-kpi="grinderWaste">—</div>
-      <div class="kpi-sub"><span data-zh>责任废品+料废 (pcs)</span><span data-en>Resp. + material (pcs)</span></div>
+      <div class="kpi-label"><span data-zh>磨工缺陷率 (每十万件)</span><span data-en>Grinder Defect Rate (per 100K)</span></div>
+      <div class="kpi-value" data-exec-kpi="grinderRate">—</div>
+      <div class="kpi-sub" data-exec-sub="grinderRate"><span data-zh>废品 — 件 ÷ 后磨产量</span><span data-en>waste ÷ superfinish output</span></div>
     </div>
     <div class="kpi-card" style="--kpi-color:#dc2626;">
       <span class="kpi-icon"><svg class="ic"><use href="#i-wrench"/></svg></span>
@@ -713,6 +716,49 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
 
 <section>
   <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
+  <div class="section-title"><span data-zh>年度累计 (YTD, 1-6月)</span><span data-en>Year-to-Date (Jan–Jun)</span></div>
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:#2563eb;">
+      <span class="kpi-icon"><svg class="ic"><use href="#i-gear"/></svg></span>
+      <div class="kpi-label"><span data-zh>YTD 磨工缺陷率</span><span data-en>YTD Grinder Defect Rate</span></div>
+      <div class="kpi-value" data-ytd="grinder">—</div>
+      <div class="kpi-sub"><span data-zh>每十万件 · 后磨产量口径</span><span data-en>per 100K · superfinish basis</span></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#dc2626;">
+      <span class="kpi-icon"><svg class="ic"><use href="#i-wrench"/></svg></span>
+      <div class="kpi-label"><span data-zh>YTD 装配不良率</span><span data-en>YTD Assembly NG Rate</span></div>
+      <div class="kpi-value" data-ytd="asm">—</div>
+      <div class="kpi-sub"><span data-zh>ΣNG ÷ Σ(产量+NG)</span><span data-en>ΣNG ÷ Σ(output+NG)</span></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#7c3aed;">
+      <span class="kpi-icon"><svg class="ic"><use href="#i-scope"/></svg></span>
+      <div class="kpi-label"><span data-zh>YTD GP12 不良率</span><span data-en>YTD GP12 Defect Rate</span></div>
+      <div class="kpi-value" data-ytd="gp12">—</div>
+      <div class="kpi-sub"><span data-zh>Σ不良 ÷ Σ检验量</span><span data-en>Σdefects ÷ Σinspected</span></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#059669;">
+      <span class="kpi-icon"><svg class="ic"><use href="#i-box"/></svg></span>
+      <div class="kpi-label"><span data-zh>YTD 装配产量</span><span data-en>YTD Assembly Output</span></div>
+      <div class="kpi-value" data-ytd="asmOut">—</div>
+      <div class="kpi-sub"><span data-zh>1-6月累计成品 (pcs)</span><span data-en>Jan–Jun finished (pcs)</span></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#d97706;">
+      <span class="kpi-icon"><svg class="ic"><use href="#i-money"/></svg></span>
+      <div class="kpi-label"><span data-zh>YTD 销售额</span><span data-en>YTD Sales Value</span></div>
+      <div class="kpi-value" data-ytd="sales">—</div>
+      <div class="kpi-sub"><span data-zh>累计发货 (5月起有数据)</span><span data-en>cumulative (from May)</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
+  <div class="section-title"><span data-zh>🤖 自动洞察（所选月份，数据驱动）</span><span data-en>🤖 Auto Insights (selected month, data-driven)</span></div>
+  <div class="insights" id="exec-auto-insights"></div>
+</section>
+
+<section>
+  <div class="section-label"><span data-zh>第四节</span><span data-en>SECTION 04</span></div>
   <div class="section-title"><span data-zh>各模块速览（点击跳转详情）</span><span data-en>Module Snapshots (click for details)</span></div>
   <div class="exec-grid">
     <div class="chart-card exec-card">
@@ -770,6 +816,33 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <button class="exec-go" onclick="switchModule('prec',document.getElementById('mod-prec'))"><span data-zh>查看详情 →</span><span data-en>Details →</span></button>
     </div>
   </div>
+</section>
+
+<section>
+  <div class="section-label"><span data-zh>第五节</span><span data-en>SECTION 05</span></div>
+  <div class="section-title"><span data-zh>🔗 TOP缺陷全链路追踪 · 锈蚀 Rust</span><span data-en>🔗 Top-Defect Chain Tracking · Rust</span></div>
+  <div class="insight-card" style="--ic-color:#0891b2;margin-bottom:16px;">
+    <div class="insight-body"><span data-zh>同一缺陷（锈蚀）在<b>磨削 → 装配 → 终检 → GP12</b>四个环节各自的月度出现情况，用于定位问题在链路哪一环失控。<b>注意口径不同</b>：磨削/装配为缺陷<b>件数</b>，终检/GP12 为出现<b>批次数</b>，故各图独立纵轴、不可横向比数值大小，只看各自趋势。</span><span data-en>The same defect (Rust) across <b>Grinding → Assembly → Final → GP12</b>, to locate where in the chain it goes out of control. <b>Units differ</b>: Grinding/Assembly are defect <b>pieces</b>; Final/GP12 are <b>batch</b> occurrences — each chart has its own axis; compare trends, not absolute magnitudes.</span></div>
+  </div>
+  <div class="charts-grid three">
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>① 磨削环节（料废件数）</span><span data-en>① Grinding (waste pcs)</span></div>
+      <div class="chart-wrap short"><canvas id="chainGrinder"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>② 装配环节（外观件数）</span><span data-en>② Assembly (appearance pcs)</span></div>
+      <div class="chart-wrap short"><canvas id="chainAsm"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>③ 终检环节（出现批次）</span><span data-en>③ Final Insp. (batches)</span></div>
+      <div class="chart-wrap short"><canvas id="chainFin"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>④ GP12环节（出现批次）</span><span data-en>④ GP12 (batches)</span></div>
+      <div class="chart-wrap short"><canvas id="chainGp12"></canvas></div>
+    </div>
+  </div>
+  <div class="spc-note" id="chain-insight" style="border-left-color:#0891b2;"></div>
 </section>
 
 </main>
@@ -1351,6 +1424,17 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <div class="proc-grid" id="asmModelCards"></div>
   </section>
   <section>
+    <div class="section-label">SPC</div>
+    <div class="section-title"><span data-zh>装配不良率 · 统计过程控制</span><span data-en>Assembly NG Rate · Statistical Process Control</span></div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>月度不良率控制图（1-6月，全厂装配）</span><span data-en>Monthly NG Rate Control Chart (Jan-Jun)</span></div>
+        <div class="chart-wrap tall"><canvas id="asmSpcChart"></canvas></div>
+        <div class="spc-note"><span data-zh>控制中线=各月加权均值不良率，±3σ 为控制限（σ 随当月产量变化）。<b style="color:#dc2626;">红点(超上限)=恶化特殊原因</b>需追查根因；<b style="color:#059669;">绿点(低于下限)=改善特殊原因</b>应固化经验；蓝点=共因波动属工艺常态，勿逐月过度反应。此图展示全年趋势，不随上方月份切换。</span><span data-en>Centre line = weighted-mean NG rate; ±3σ limits (σ varies with output). <b style="color:#dc2626;">Red = adverse special cause</b>, find root cause; <b style="color:#059669;">Green = favourable — lock in</b>; blue = common cause, don't over-react. Full-year trend; does not follow the month switcher.</span></div>
+      </div>
+    </div>
+  </section>
+  <section>
     <div class="charts-grid">
       <div class="chart-card">
         <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>各型号NG率对比（%）</span><span data-en>NG Rate by Model (%)</span></div>
@@ -1586,8 +1670,9 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
         <div class="chart-wrap tall"><canvas id="finTrendChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>抽样不良率（%）</span><span data-en>Sampling Defect Rate (%)</span></div>
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>抽样不良率 · SPC 控制图</span><span data-en>Sampling Defect Rate · SPC</span></div>
         <div class="chart-wrap tall"><canvas id="finDefRateChart"></canvas></div>
+        <div class="spc-note"><span data-zh>±3σ 控制限（σ 随检验量变化）。<b style="color:#dc2626;">红点=恶化</b>需查；<b style="color:#059669;">绿点=改善</b>应固化；蓝点=共因正常。</span><span data-en>±3σ limits (σ varies with n). <b style="color:#dc2626;">Red = adverse</b>; <b style="color:#059669;">Green = improvement</b>; blue = common cause.</span></div>
       </div>
     </div>
   </section>
@@ -1875,8 +1960,9 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
         <div class="chart-wrap tall"><canvas id="qsdTrendChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>抽检不良率（%）</span><span data-en>Sampling Defect Rate (%)</span></div>
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>抽检不良率 · SPC 控制图</span><span data-en>Sampling Defect Rate · SPC</span></div>
         <div class="chart-wrap tall"><canvas id="qsdDefRateChart"></canvas></div>
+        <div class="spc-note"><span data-zh>±3σ 控制限（σ 随检验量变化）。<b style="color:#dc2626;">红点=恶化</b>需查；<b style="color:#059669;">绿点=改善</b>应固化；蓝点=共因正常。</span><span data-en>±3σ limits (σ varies with n). <b style="color:#dc2626;">Red = adverse</b>; <b style="color:#059669;">Green = improvement</b>; blue = common cause.</span></div>
       </div>
     </div>
   </section>
@@ -2553,8 +2639,9 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
     <div class="section-title"><span data-zh>月度合格率趋势</span><span data-en>Monthly Pass Rate Trend</span></div>
     <div class="chart-card">
-      <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>2026年1-6月：单件不良率（合格率 = 100% − 不良率，见悬浮提示）</span><span data-en>2026 Jan-Jun: Unit Defect Rate (pass rate = 100% − defect rate, see tooltip)</span></div>
+      <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>单件不良率 · SPC 控制图（1-6月）</span><span data-en>Unit Defect Rate · SPC Control Chart (Jan-Jun)</span></div>
       <div class="chart-wrap tall"><canvas id="gp12TrendChart"></canvas></div>
+      <div class="spc-note"><span data-zh>控制中线=各月加权均值，±3σ 为控制限（σ 随检验量变化）。<b style="color:#dc2626;">红点(超上限)=恶化特殊原因</b>需追查；<b style="color:#059669;">绿点(低于下限)=改善特殊原因</b>应固化经验；蓝点=共因波动属正常。本例近月多为绿点，反映不良率持续显著改善。</span><span data-en>Centre line = weighted mean; ±3σ limits (σ varies with n). <b style="color:#dc2626;">Red (above UCL) = adverse special cause</b>; <b style="color:#059669;">Green (below LCL) = favourable — lock in the gain</b>; blue = common-cause noise. Recent green points here reflect sustained improvement.</span></div>
     </div>
   </section>
 
@@ -2665,6 +2752,13 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="chart-card full">
         <div class="chart-title" style="--ct-color:#059669;"><span data-zh>主要缺陷 × 月份热力图（出现批次数）</span><span data-en>Top Defects × Month Heatmap (Batch Occurrences)</span></div>
         <div class="heatmap-wrap"><table class="heatmap-table" id="gp12DefectHeatmap"></table></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-top:18px;">
+      <div class="chart-card full">
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>缺陷帕累托图（80/20 分析）</span><span data-en>Defect Pareto (80/20 Analysis)</span></div>
+        <div class="chart-wrap tall"><canvas id="gp12ParetoChart"></canvas></div>
+        <div class="spc-note" style="border-left-color:#dc2626;"><span data-zh>柱=各缺陷出现批次占比，橙线=累计占比。找到累计线穿过 <b>80%</b> 处的缺陷，即为需优先攻关的"关键少数"。</span><span data-en>Bars = each defect's share; orange line = cumulative %. Defects left of the <b>80%</b> crossing are the "vital few" to tackle first.</span></div>
       </div>
     </div>
   </section>
@@ -3992,6 +4086,39 @@ function mk(id, type, data, opts={}) {
   return c;
 }
 
+// ── SPC p-chart: rate line + centre line + variable 3σ control limits ──
+// rates[] in %, counts[] = per-point sample size n. Points beyond limits turn red.
+function mkSpc(id, rates, counts, labels, seriesLabel){
+  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
+  const valid = rates.map((r,i)=>({r,n:counts[i]})).filter(x=>x.r!=null && x.n>0);
+  const totN = valid.reduce((s,x)=>s+x.n,0);
+  const pbar = totN>0 ? valid.reduce((s,x)=>s+x.r*x.n,0)/totN : 0;   // count-weighted mean rate (%)
+  const sigma = n => n>0 ? Math.sqrt(Math.max(pbar*(100-pbar),0)/n) : 0;
+  const ucl = counts.map(n=>+(pbar+3*sigma(n)).toFixed(4));
+  const lcl = counts.map(n=>+Math.max(0,pbar-3*sigma(n)).toFixed(4));
+  const cl  = rates.map(()=>+pbar.toFixed(4));
+  // defect-rate metrics: above UCL = adverse special cause (red); below LCL = favourable (green); within = blue
+  const ptColor = rates.map((r,i)=> r==null ? '#2563eb' : (r>ucl[i] ? '#dc2626' : (r<lcl[i] ? '#059669' : '#2563eb')));
+  const ptSize  = rates.map((r,i)=> (r!=null && (r>ucl[i] || r<lcl[i])) ? 6.5 : 4);
+  return mk(id,'line',{
+    labels,
+    datasets:[
+      {label:seriesLabel||'不良率 %', data:rates, borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,0.08)',
+       borderWidth:2.5, pointBackgroundColor:ptColor, pointBorderColor:'#fff', pointBorderWidth:1.5, pointRadius:ptSize, tension:0.25, fill:false, order:0},
+      {label:'控制中线 CL', data:cl, borderColor:'#059669', borderWidth:1.5, borderDash:[6,4], pointRadius:0, fill:false, order:3},
+      {label:'上控制限 UCL (3σ)', data:ucl, borderColor:'#dc2626', borderWidth:1.5, borderDash:[3,3], pointRadius:0, stepped:true, fill:false, order:2},
+      {label:'下控制限 LCL', data:lcl, borderColor:'#d97706', borderWidth:1.5, borderDash:[3,3], pointRadius:0, stepped:true, fill:false, order:2},
+    ]
+  },{
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:10,font:{size:10},filter:it=>it.text!=='下控制限 LCL'}},
+      tooltip:{mode:'index',intersect:false,filter:it=>it.datasetIndex===0,callbacks:{
+        label:c=>` ${c.dataset.label}: ${c.parsed.y}%`,
+        afterBody:items=>{const i=items[0].dataIndex; return `样本 n=${(counts[i]||0).toLocaleString()}\nCL=${pbar.toFixed(3)}%  UCL=${ucl[i]}%  LCL=${lcl[i]}%`;}}}},
+    scales:{x:{grid:{display:false}}, y:{grid:{color:gridC}, beginAtZero:true, ticks:{callback:v=>v+'%'}}}
+  });
+}
+window.mkSpc = mkSpc;
+
 // ── Grinder charts: month-switchable ──
 let _grinderMonth = 5;
 const _grinderChartIds = ['dailyChart','afterProcPie','beforeProcPie','matWasteProcPie','beforeProcModel','beforeOperProc','afterProcBar','afterMatByProc','afterProcLine','dailyProcStack','operTotalBar','operMatRatio','beforeOperBar'];
@@ -4764,6 +4891,11 @@ function initAsmCharts() {
   if (asmChartsInited) return;
   asmChartsInited = true;
   _renderAsmMonth(_asmMonth);
+  // month-invariant plant-level NG-rate control chart (1-6月), built once
+  const MONTHS=['1月 Jan','2月 Feb','3月 Mar','4月 Apr','5月 May','6月 Jun'];
+  const asmRates=[1,2,3,4,5,6].map(m=>{const d=window._asmMonthData[String(m)];return d?d.ngRate:null;});
+  const asmN=[1,2,3,4,5,6].map(m=>{const d=window._asmMonthData[String(m)];return d?(d.output+d.ng):0;});
+  mkSpc('asmSpcChart', asmRates, asmN, MONTHS, '装配不良率 NG %');
 }
 window._renderAsmMonth = _renderAsmMonth;
 
@@ -4790,15 +4922,7 @@ function initFinCharts() {
       y:{grid:{color:gridC},min:60,max:100,ticks:{callback:v=>v+'%'}}}
   });
   // F1b. Sampling defect rate (single axis)
-  mk('finDefRateChart','bar',{
-    labels: MONTHS,
-    datasets:[{label:'抽样不良率 Defect Rate %', data:defRate,
-      backgroundColor:'rgba(220,38,38,0.7)', borderColor:'#dc2626', borderWidth:1, borderRadius:4}]
-  },{
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}%`}}},
-    scales:{x:{grid:{display:false}},
-      y:{grid:{color:gridC},min:0,max:2,ticks:{callback:v=>v+'%'}}}
-  });
+  mkSpc('finDefRateChart', window._finM.def, window._finM.insp, MONTHS, '抽样不良率 Defect %');
 
   // F4. Volume chart
   const finBatches=window._finM.batch;
@@ -4904,15 +5028,7 @@ function initQsdCharts() {
       y:{grid:{color:gridC},min:80,max:100,ticks:{callback:v=>v+'%'}}}
   });
   // Q1b. Sampling defect rate (single axis)
-  mk('qsdDefRateChart','bar',{
-    labels: MONTHS,
-    datasets:[{label:'抽检不良率 Defect Rate %', data:defRate,
-      backgroundColor:'rgba(220,38,38,0.7)', borderColor:'#dc2626', borderWidth:1, borderRadius:4}]
-  },{
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}%`}}},
-    scales:{x:{grid:{display:false}},
-      y:{grid:{color:gridC},min:0,max:0.5,ticks:{callback:v=>v+'%'}}}
-  });
+  mkSpc('qsdDefRateChart', window._qsdM.def, window._qsdM.insp, MONTHS, '抽检不良率 Defect %');
 
   // Q4. Volume chart
   const qsdBatches=window._qsdM.batch;
@@ -5323,17 +5439,7 @@ function initGp12Charts() {
   const defRate  = window._gp12M.def;
 
   // G1. Monthly defect-rate trend (pass rate = 100 − defect rate, shown in tooltip)
-  mk('gp12TrendChart','bar',{
-    labels: MONTHS,
-    datasets:[
-      {label:'不良率 Defect %', data:defRate,
-       backgroundColor:'rgba(220,38,38,0.7)', borderColor:'#dc2626', borderWidth:1, borderRadius:4},
-    ]
-  },{plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>` 不良率 Defect: ${c.parsed.y}%`,
-        afterLabel:c=>` 合格率 Pass: ${unitPass[c.dataIndex]}%`}}},
-    scales:{x:{grid:{display:false}},
-      y:{grid:{color:gridC},min:0,max:3,title:{display:true,text:'Defect %'},ticks:{callback:v=>v+'%'}}}});
+  mkSpc('gp12TrendChart', window._gp12M.def, window._gp12M.insp, MONTHS, '单件不良率 Defect %');
 
   // G3. Defect qty bar
   mk('gp12DefBar','bar',{
@@ -5370,6 +5476,27 @@ function initGp12Charts() {
     datasets:[{label:'出现批次 Occurrences', data:defVals,
       backgroundColor:'rgba(220,38,38,0.78)',borderColor:'#dc2626',borderWidth:1,borderRadius:4}]
   },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:10}}}}});
+
+  // G6b. Pareto (share bars + cumulative line, single 0-100% axis)
+  (function(){
+    const pairs=defLabels.map((l,i)=>[l,defVals[i]]).sort((a,b)=>b[1]-a[1]);
+    const tot=pairs.reduce((s,p)=>s+p[1],0);
+    const pLabels=pairs.map(p=>p[0]);
+    const share=pairs.map(p=>+(p[1]/tot*100).toFixed(1));
+    let cum=0; const cumu=pairs.map(p=>{cum+=p[1]/tot*100; return +cum.toFixed(1);});
+    const pcs=pairs.map(p=>p[1]);
+    mk('gp12ParetoChart','bar',{
+      labels:pLabels,
+      datasets:[
+        {type:'line',label:'累计占比 Cumulative %',data:cumu,borderColor:'#e85d04',backgroundColor:'rgba(232,93,4,0.08)',borderWidth:3,pointBackgroundColor:'#e85d04',pointBorderColor:'#fff',pointBorderWidth:1.5,pointRadius:4,tension:0.2,order:0},
+        {type:'bar',label:'占比 Share %',data:share,backgroundColor:'rgba(37,99,235,0.7)',borderColor:'#2563eb',borderWidth:1,borderRadius:4,order:1},
+      ]
+    },{plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,font:{size:11}}},
+        tooltip:{mode:'index',intersect:false,callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y}%`,
+          afterBody:items=>`出现批次 ${pcs[items[0].dataIndex]}`}}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:35,font:{size:9.5}}},
+        y:{grid:{color:gridC},min:0,max:100,ticks:{callback:v=>v+'%'}}}});
+  })();
 
   // G7. Defect pie
   mk('gp12DefectPie','doughnut',{
@@ -6350,7 +6477,124 @@ function initExecCharts(){
     mk('execPrec','bar',{labels:pm.map(m=>m+'月'),
       datasets:[{data:pm.map(m=>window._precData.months[m].total),backgroundColor:'#10b981c0',borderColor:'#10b981',borderWidth:1,borderRadius:4}]},miniOpts(false));
   }
+  _renderRustChain();
+  _renderYtd();
   _renderExecMonth(_execMonth);
+}
+
+// TOP-defect (Rust) chain across grinding→assembly→final→GP12; series from each stage's real data
+function _renderRustChain(){
+  const mL=['1月','2月','3月','4月','5月','6月'];
+  const gpd=window._grinderProcDetail;
+  const grinder=[1,2,3,4,5,6].map(m=>{const md=gpd[String(m)];if(!md)return 0;let s=0;
+    ['after','before'].forEach(st=>{if(!md[st])return;Object.values(md[st]).forEach(p=>{
+      (p.matDefects||[]).forEach(([n,v])=>{if(/rust|生锈|锈/i.test(n))s+=v;});
+      (p.respDefects||[]).forEach(([n,v])=>{if(/rust|生锈|锈/i.test(n))s+=v;});});});return s;});
+  const asm=[1,2,3,4,5,6].map(m=>{const d=window._asmMonthData[String(m)];if(!d||!d.appearItems)return 0;
+    let s=0;Object.entries(d.appearItems).forEach(([k,v])=>{if(/rust|生锈|锈/i.test(k))s+=v;});return s;});
+  const fin=[8,3,6,5,1,7];      // final-inspection Rust batch occurrences (finDefectHeatmap source)
+  const gp12=[0,5,10,13,15,2];  // GP12 Rust batch occurrences (gp12DefectHeatmap source)
+  const gridC=_mode==='dark'?'#2a2f48':'#e8ecf5';
+  const mini=(id,data,color)=>mk(id,'bar',{labels:mL,datasets:[{data,backgroundColor:color+'c0',borderColor:color,borderWidth:1,borderRadius:4}]},
+    {plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC},beginAtZero:true,ticks:{font:{size:9},maxTicksLimit:4}}}});
+  mini('chainGrinder',grinder,'#2563eb'); mini('chainAsm',asm,'#7c3aed'); mini('chainFin',fin,'#d97706'); mini('chainGp12',gp12,'#dc2626');
+  // auto conclusion: which stage's June is most anomalous vs its OWN history (z-score,
+  // unit-free — avoids the small-base %-spike trap when comparing pcs vs batches)
+  const stages=[{zh:'磨削',en:'Grinding',s:grinder,unit:'件'},{zh:'装配',en:'Assembly',s:asm,unit:'件'},{zh:'终检',en:'Final',s:fin,unit:'批'},{zh:'GP12',en:'GP12',s:gp12,unit:'批'}];
+  let worst=null;
+  stages.forEach(st=>{const prior=st.s.slice(0,5); const jun=st.s[5];
+    const mean=prior.reduce((a,b)=>a+b,0)/prior.length;
+    const sd=Math.sqrt(prior.reduce((a,b)=>a+(b-mean)*(b-mean),0)/prior.length)||1;
+    const z=(jun-mean)/sd;
+    if(z>0 && (!worst||z>worst.z)) worst={st,z,jun,mean:Math.round(mean)};});
+  const el=document.getElementById('chain-insight');
+  if(el){
+    el.innerHTML = (worst && worst.z>2)
+      ? `<span data-zh><b>自动判读：</b>6月锈蚀在<b style="color:#dc2626;">${worst.st.zh}环节</b>异常突出——当月 ${worst.jun}${worst.st.unit}，远超该环节前5月均值(约${worst.mean}${worst.st.unit}，+${worst.z.toFixed(1)}σ)，是链路上游的失控点，应优先排查该环节防锈/清洗/存储。下游环节锈蚀多为上游流入。<i>（跨环节按各自历史波动比较，非直接比数值，因单位不同）</i></span><span data-en><b>Auto-reading:</b> June Rust is a clear outlier at the <b style="color:#dc2626;">${worst.st.en}</b> stage — ${worst.jun} ${worst.st.unit==='件'?'pcs':'batches'} vs a ~${worst.mean} prior-5-month average (+${worst.z.toFixed(1)}σ), the upstream loss-of-control point; prioritise anti-rust/cleaning/storage there.</span>`
+      : `<span data-zh><b>自动判读：</b>6月锈蚀在各环节相对自身历史均无显著异常（无环节超 2σ），未见单一环节失控。</span><span data-en><b>Auto-reading:</b> No stage shows June Rust beyond 2σ of its own history; no single loss-of-control point.</span>`;
+  }
+}
+
+function _renderYtd(){
+  const sum=a=>a.reduce((s,x)=>s+(x||0),0);
+  const gMonths=[1,2,3,4,5,6].map(m=>window._grinderMonthData[String(m)]).filter(Boolean);
+  const sfMonths=[1,2,3,4,5,6].map(m=>window._prodMonthData[String(m)]).filter(Boolean);
+  const gWaste=sum(gMonths.map(d=>d.totalAll));
+  const sfOut=sum(sfMonths.map(d=>(d.sfMor||0)+(d.sfNgt||0)));
+  const aMonths=[1,2,3,4,5,6].map(m=>window._asmMonthData[String(m)]).filter(Boolean);
+  const aNg=sum(aMonths.map(d=>d.ng)), aOut=sum(aMonths.map(d=>d.output));
+  const gp12Def=sum(window._gp12M.defQty), gp12Insp=sum(window._gp12M.insp);
+  const sMonths=[1,2,3,4,5,6].map(m=>window._salesData[String(m)]).filter(Boolean);
+  const sVal=sum(sMonths.map(d=>d.kpi.totalVal));
+  const setY=(k,v)=>{const el=document.querySelector(`[data-ytd="${k}"]`); if(el) el.textContent=v;};
+  setY('grinder', sfOut>0 ? Math.round(gWaste/sfOut*100000).toLocaleString() : '—');
+  setY('asm', (aOut+aNg)>0 ? (aNg/(aOut+aNg)*100).toFixed(2)+'%' : '—');
+  setY('gp12', gp12Insp>0 ? (gp12Def/gp12Insp*100).toFixed(2)+'%' : '—');
+  setY('asmOut', aOut.toLocaleString());
+  setY('sales', '¥'+(sVal/1000000).toFixed(2)+'M');
+}
+
+// Data-driven insight engine: worst/best movers, SPC special causes, sustained trends
+function _genAutoInsights(m){
+  const box=document.getElementById('exec-auto-insights'); if(!box) return;
+  const gd=window._grinderMonthData, pd=window._prodMonthData, ad=window._asmMonthData, sd=window._salesData, td=window._attData;
+  const mm6=[1,2,3,4,5,6];
+  const grinderRate=mm6.map(k=>{const g=gd[String(k)],p=pd[String(k)];const t=p?((p.sfMor||0)+(p.sfNgt||0)):0;return (g&&t>0)?g.totalAll/t*100000:null;});
+  const asmRate=mm6.map(k=>{const d=ad[String(k)];return d?d.ngRate:null;});
+  const asmN=mm6.map(k=>{const d=ad[String(k)];return d?(d.output+d.ng):0;});
+  const salesV=mm6.map(k=>{const d=sd[String(k)];return d?d.kpi.totalVal:null;});
+  const attIss=mm6.map(k=>{const d=td[String(k)];return d?_attIssues(d):null;});
+  const M=[
+    {zh:'磨工缺陷率',en:'Grinder defect rate',s:grinderRate,n:null,good:'down',fmt:v=>Math.round(v).toLocaleString()+'/十万'},
+    {zh:'装配不良率',en:'Assembly NG rate',s:asmRate,n:asmN,good:'down',fmt:v=>v.toFixed(2)+'%'},
+    {zh:'GP12不良率',en:'GP12 defect rate',s:window._gp12M.def,n:window._gp12M.insp,good:'down',fmt:v=>v+'%'},
+    {zh:'终检不良率',en:'Final defect rate',s:window._finM.def,n:window._finM.insp,good:'down',fmt:v=>v+'%'},
+    {zh:'品监不良率',en:'QSD defect rate',s:window._qsdM.def,n:window._qsdM.insp,good:'down',fmt:v=>v+'%'},
+    {zh:'销售额',en:'Sales value',s:salesV,n:null,good:'up',fmt:v=>'¥'+(v/1e6).toFixed(2)+'M'},
+    {zh:'考勤异常',en:'Attendance issues',s:attIss,n:null,good:'down',fmt:v=>v+'次'},
+  ];
+  const changes=[];
+  M.forEach(met=>{const cur=met.s[m-1],prev=met.s[m-2];
+    if(cur==null||prev==null||prev===0)return;
+    const raw=(cur-prev)/Math.abs(prev)*100, improve=met.good==='down'?-raw:raw;
+    changes.push({met,cur,prev,improve,raw});});
+  const special=[];
+  M.forEach(met=>{if(!met.n)return;
+    const valid=met.s.map((r,i)=>({r,n:met.n[i]})).filter(x=>x.r!=null&&x.n>0);
+    const totN=valid.reduce((s,x)=>s+x.n,0); if(!totN)return;
+    const pbar=valid.reduce((s,x)=>s+x.r*x.n,0)/totN;
+    const cur=met.s[m-1],n=met.n[m-1]; if(cur==null||!n)return;
+    const sig=Math.sqrt(Math.max(pbar*(100-pbar),0)/n);
+    if(cur>pbar+3*sig)special.push({met,cur,dir:'adv'});
+    else if(cur<pbar-3*sig)special.push({met,cur,dir:'fav'});});
+  const trends=[];
+  M.forEach(met=>{const vals=[];for(let k=Math.max(1,m-2);k<=m;k++){if(met.s[k-1]!=null)vals.push(met.s[k-1]);}
+    if(vals.length<3)return; let bad=true;
+    for(let i=1;i<vals.length;i++){const d=vals[i]-vals[i-1];const isBad=met.good==='down'?d>0:d<0;if(!(isBad||d===0)){bad=false;break;}}
+    if(bad && vals[vals.length-1]!==vals[0])trends.push(met);});
+  const worsen=changes.filter(c=>c.improve<-0.05).sort((a,b)=>a.improve-b.improve).slice(0,3);
+  const improveTop=changes.filter(c=>c.improve>0.05).sort((a,b)=>b.improve-a.improve).slice(0,3);
+  const L=(zh,en)=>`<span data-zh>${zh}</span><span data-en>${en}</span>`;
+  const card=(color,head_zh,head_en,body_zh,body_en)=>`<div class="insight-card" style="--ic-color:${color};"><div class="insight-head">${L(head_zh,head_en)}</div><div class="insight-body">${L(body_zh,body_en)}</div></div>`;
+  const cards=[];
+  // priority: adverse special cause > favourable special cause > sustained trend > top worsen > top improve
+  special.filter(s=>s.dir==='adv').forEach(sp=>cards.push(card('#dc2626','⚠ '+sp.met.zh+'超出控制上限','⚠ '+sp.met.en+' beyond UCL',
+    `本月 <strong>${sp.met.fmt(sp.cur)}</strong> 超出 ±3σ 控制上限，属<strong>恶化型特殊原因</strong>，需立即追查根因。`,
+    `This month <strong>${sp.met.fmt(sp.cur)}</strong> is beyond the +3σ UCL — an <strong>adverse special cause</strong>; investigate now.`)));
+  trends.forEach(met=>cards.push(card('#d97706','📈 '+met.zh+'连续3月持续恶化','📈 '+met.en+' worsening 3 months',
+    `${met.zh}连续 3 个月向不利方向变化（当前 <strong>${met.fmt(met.s[m-1])}</strong>），建议提前介入，勿等超限。`,
+    `${met.en} has moved unfavourably for 3 consecutive months (now <strong>${met.fmt(met.s[m-1])}</strong>); intervene early.`)));
+  special.filter(s=>s.dir==='fav').forEach(sp=>cards.push(card('#059669','✅ '+sp.met.zh+'突破控制下限','✅ '+sp.met.en+' below LCL',
+    `本月 <strong>${sp.met.fmt(sp.cur)}</strong> 低于 ±3σ 控制下限，属<strong>改善型特殊原因</strong>，应查明并固化经验。`,
+    `This month <strong>${sp.met.fmt(sp.cur)}</strong> is below the −3σ LCL — a <strong>favourable special cause</strong>; lock in the gain.`)));
+  worsen.forEach(c=>cards.push(card('#dc2626','▼ '+c.met.zh+'环比恶化','▼ '+c.met.en+' worsened',
+    `<strong>${c.met.fmt(c.cur)}</strong>，较上月 ${c.met.fmt(c.prev)} 恶化 <strong>${Math.abs(c.improve).toFixed(1)}%</strong>。`,
+    `<strong>${c.met.fmt(c.cur)}</strong>, worsened <strong>${Math.abs(c.improve).toFixed(1)}%</strong> vs ${c.met.fmt(c.prev)}.`)));
+  improveTop.forEach(c=>cards.push(card('#059669','▲ '+c.met.zh+'环比改善','▲ '+c.met.en+' improved',
+    `<strong>${c.met.fmt(c.cur)}</strong>，较上月 ${c.met.fmt(c.prev)} 改善 <strong>${c.improve.toFixed(1)}%</strong>。`,
+    `<strong>${c.met.fmt(c.cur)}</strong>, improved <strong>${c.improve.toFixed(1)}%</strong> vs ${c.met.fmt(c.prev)}.`)));
+  if(!cards.length) cards.push(card('#0891b2','ℹ 本月无显著异动','ℹ No significant movement','所选月份各指标环比变化均较小，且均在控制限内，过程稳定。','All metrics moved little MoM and stayed within control limits — process stable.'));
+  box.innerHTML=cards.slice(0,6).join('');
 }
 
 function _renderExecMonth(m){
@@ -6363,8 +6607,14 @@ function _renderExecMonth(m){
   const T=window._attData[String(m)],          Tp=window._attData[String(m-1)];
   const P=window._prodMonthData[String(m)];
 
-  setV('grinderWaste', G ? G.totalAll.toLocaleString() : '—');
-  _momKpi('[data-exec-kpi="grinderWaste"]', G?G.totalAll:null, Gp?Gp.totalAll:null, 'down');
+  // grinder: volume-normalized defect rate (per 100K superfinish output) — fair MoM vs raw count
+  const _gRate=(gd,pd)=>{const t=pd?((pd.sfMor||0)+(pd.sfNgt||0)):0; return (gd&&t>0)?gd.totalAll/t*100000:null;};
+  const Pp=window._prodMonthData[String(m-1)];
+  const gR=_gRate(G,P), gRp=_gRate(Gp,Pp);
+  setV('grinderRate', gR!=null ? Math.round(gR).toLocaleString() : '—');
+  _momKpi('[data-exec-kpi="grinderRate"]', gR, gRp, 'down');
+  const subGR=document.querySelector('[data-exec-sub="grinderRate"]');
+  if(subGR) subGR.innerHTML = G ? `<span data-zh>废品 ${G.totalAll.toLocaleString()} 件 ÷ 后磨产量</span><span data-en>${G.totalAll.toLocaleString()} pcs ÷ superfinish output</span>` : '<span data-zh>该月无数据</span><span data-en>No data</span>';
   setV('asmNgRate', A ? A.ngRate.toFixed(2)+'%' : '—');
   _momKpi('[data-exec-kpi="asmNgRate"]', A?A.ngRate:null, Ap?Ap.ngRate:null, 'down');
   setV('asmOutput', A ? A.output.toLocaleString() : '—');
@@ -6398,6 +6648,7 @@ function _renderExecMonth(m){
   setS('att',     T ? _attIssues(T) : '—');
   const pd=window._precData && window._precData.months ? window._precData.months[m] : null;
   setS('prec',    pd ? pd.total.toLocaleString() : '—');
+  _genAutoInsights(m);
   // apply current language to any re-written bilingual subs
   if (typeof setLang==='function') setLang(_lang);
 }
