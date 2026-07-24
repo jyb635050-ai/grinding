@@ -2055,10 +2055,18 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
         <div class="kpi-label"><span data-zh>CPK最小值 · 均值</span><span data-en>Mean of Min-CPK</span></div>
         <div class="kpi-value" data-cpk-kpi="meanmin">—</div>
         <div class="kpi-sub"><span data-zh>各批最低特性 CPK 的均值</span><span data-en>avg of per-batch worst CPK</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#4f46e5;"><span class="kpi-icon"><svg class="ic"><use href="#i-activity"/></svg></span>
+        <div class="kpi-label"><span data-zh>五特性平均CPK</span><span data-en>Mean CPK · 5 Chars</span></div>
+        <div class="kpi-value" data-cpk-kpi="meanall">—</div>
+        <div class="kpi-sub"><span data-zh>5 项尺寸特性均值CPK的平均</span><span data-en>average across the five characteristics</span></div></div>
       <div class="kpi-card" style="--kpi-color:#7c3aed;"><span class="kpi-icon"><svg class="ic"><use href="#i-activity"/></svg></span>
         <div class="kpi-label"><span data-zh>能力充足占比</span><span data-en>Capable ≥1.33</span></div>
         <div class="kpi-value" data-cpk-kpi="pct133">—</div>
         <div class="kpi-sub"><span data-zh>最小CPK≥1.33 的批次占比</span><span data-en>batches with min-CPK ≥1.33</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#0d9488;"><span class="kpi-icon"><svg class="ic"><use href="#i-check"/></svg></span>
+        <div class="kpi-label"><span data-zh>CPK达标率</span><span data-en>CPK Pass Rate</span></div>
+        <div class="kpi-value" data-cpk-kpi="passrate">—</div>
+        <div class="kpi-sub"><span data-zh>源表判定达标批次占比</span><span data-en>batches accepted per source file</span></div></div>
       <div class="kpi-card" style="--kpi-color:#dc2626;"><span class="kpi-icon"><svg class="ic"><use href="#i-trend-down"/></svg></span>
         <div class="kpi-label"><span data-zh>能力最弱特性</span><span data-en>Weakest Characteristic</span></div>
         <div class="kpi-value" data-cpk-kpi="weakest" style="font-size:20px;">—</div>
@@ -2093,6 +2101,16 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
 
   <section>
     <div class="section-label">SECTION 03</div>
+    <div class="section-title"><span data-zh>五特性 CPK 指数曲线对比</span><span data-en>Five-Characteristic CPK Trend</span></div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#4f46e5;"><span data-zh>各尺寸特性 月度 CPK 曲线（含五项平均）</span><span data-en>Monthly CPK Curve per Characteristic (with 5-avg)</span></div>
+      <div class="chart-wrap tall"><canvas id="cpkCharTrend"></canvas></div>
+      <div class="spc-note" style="border-left-color:#4f46e5;"><span data-zh>5 条彩线=各尺寸特性 1-6月 月度均值CPK；<b>加粗深色线=五项平均CPK</b>（各月 5 项均值的算术平均）。红色虚线=1.33 能力充足线。<b>径向游隙 Gr</b> 曲线常年贴近 1.33，是能力洼地；其余四项稳定在 2.0 以上，故平均值被强项抬高，读数时需与 Gr 单独对照。</span><span data-en>Five colored lines = monthly mean CPK per characteristic; bold line = 5-characteristic average. Dashed = 1.33. Radial clearance Gr hugs 1.33 — the weak spot — so the average is lifted by the stronger four.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">SECTION 04</div>
     <div class="section-title"><span data-zh>CPK 趋势与型号对比</span><span data-en>CPK Trend &amp; By Model</span></div>
     <div class="charts-grid">
       <div class="chart-card">
@@ -2107,7 +2125,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
   </section>
 
   <section>
-    <div class="section-label">SECTION 04</div>
+    <div class="section-label">SECTION 05</div>
     <div class="section-title"><span data-zh>自动洞察</span><span data-en>Auto Insights</span></div>
     <div class="insights" id="cpk-insights"></div>
   </section>
@@ -6755,6 +6773,10 @@ function initQsdCpk(){
   sk('weakest',CH[wi][0].split(' ')[1]||CH[wi][0]); sk('flagged',flagged); sk('models',models.length);
   const ws=document.querySelector('[data-cpk-sub="weakest"]');
   if(ws) ws.innerHTML=`<span data-zh>均值CPK ${chMean[wi]}（最低 ${chMin[wi]}）</span><span data-en>mean CPK ${chMean[wi]} (min ${chMin[wi]})</span>`;
+  // NEW KPIs: source-file pass rate + 5-characteristic mean CPK
+  const passrate=(n-flagged)/n*100;
+  const meanAll=chMean.reduce((a,b)=>a+b,0)/5;
+  sk('passrate',passrate.toFixed(1)+'%'); sk('meanall',meanAll.toFixed(2));
 
   // Chart 1: mean+min per characteristic + 1.33 line
   mk('cpkCharBar','bar',{
@@ -6799,6 +6821,21 @@ function initQsdCpk(){
   },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10,font:{size:10}}}},
     scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC},beginAtZero:true,title:{display:true,text:'均值 CPK'}}}});
 
+  // Chart 5: monthly CPK curve per characteristic + 5-characteristic average
+  const monKeys=[...new Set(D.map(r=>+String(r[0]).split('/')[0]))].sort((a,b)=>a-b);
+  const charColors=['#2563eb','#0891b2','#059669','#d97706','#7c3aed'];
+  const monMean=(m,ci)=>{const rs=D.filter(r=>+String(r[0]).split('/')[0]===m);return +(rs.reduce((s,r)=>s+r[ci],0)/rs.length).toFixed(2);};
+  const charDS=CH.map((c,k)=>({label:c[0].split(' ')[1]||c[0],data:monKeys.map(m=>monMean(m,c[1])),
+    borderColor:charColors[k],backgroundColor:charColors[k],borderWidth:2,tension:0.3,pointRadius:3,pointHoverRadius:5,fill:false}));
+  const avgDS={label:'五项平均',data:monKeys.map(m=>{const v=CH.map(c=>monMean(m,c[1]));return +(v.reduce((a,b)=>a+b,0)/v.length).toFixed(2);}),
+    borderColor:_mode==='dark'?'#e2e8f0':'#1e293b',backgroundColor:'rgba(30,41,59,0.10)',borderWidth:3.5,tension:0.3,pointRadius:4.5,pointStyle:'rectRot',pointHoverRadius:6.5,fill:false,order:0};
+  mk('cpkCharTrend','line',{
+    labels:monKeys.map(m=>m+'月'),
+    datasets:[...charDS,avgDS,{type:'line',label:'1.33',data:monKeys.map(()=>1.33),borderColor:'#dc2626',borderWidth:1.5,borderDash:[5,4],pointRadius:0,order:99}]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:8,font:{size:10},filter:it=>it.text!=='1.33'}},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${(+c.parsed.y).toFixed(2)}`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:gridC},beginAtZero:false,title:{display:true,text:'CPK'}}}});
+
   // Insights
   const box=document.getElementById('cpk-insights');
   if(box){
@@ -6812,6 +6849,9 @@ function initQsdCpk(){
     cards.push(_insCard('#7c3aed','📊 能力分档','📊 Capability Bands',
       `${n} 批中：优秀(≥1.67) <strong>${bands.exc}</strong> 批、充足(1.33–1.67) <strong>${bands.cap}</strong> 批、勉强(1.0–1.33) <strong>${bands.mar}</strong> 批，能力充足(≥1.33)占比 <strong>${pct133}%</strong>。`,
       `Of ${n} batches: ${bands.exc} excellent, ${bands.cap} capable, ${bands.mar} marginal; ${pct133}% at ≥1.33.`));
+    cards.push(_insCard('#0d9488','✅ CPK达标率 '+passrate.toFixed(1)+'%','✅ CPK Pass Rate '+passrate.toFixed(1)+'%',
+      `按源监控表判定，${n} 批中 <strong>${n-flagged}</strong> 批达标，<b>达标率 ${passrate.toFixed(1)}%</b>；五特性平均CPK <strong>${meanAll.toFixed(2)}</strong>，各月均值稳定在 2.4 以上，过程能力整体稳健。需注意该平均值被内/外圈宽度、内/外径等强项拉高，径向游隙 Gr 仍是需重点收敛的短板，不能仅看平均值判定。`,
+      `Per source file, <strong>${n-flagged}/${n}</strong> batches accepted — <b>pass rate ${passrate.toFixed(1)}%</b>. Five-characteristic mean CPK <strong>${meanAll.toFixed(2)}</strong>; note the average is lifted by the strong four, while radial clearance Gr remains the item to tighten.`));
     if(flagged>0){
       const fr=D.find(r=>r[4]>0);
       cards.push(_insCard('#d97706','⚠ 源表标记不达标','⚠ Flagged in Source File',
