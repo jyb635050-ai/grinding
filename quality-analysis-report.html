@@ -5856,7 +5856,9 @@ window._precData = {"months":{"1":{"total":462,"ng":121,"corr":46,"still":19,"no
 
 let precChartsInited=false;
 let _precMonth=5;
-const _precChartIds=['precTrendChart','precStatusPie','precMetricBar','precFrontCombo','precBackCombo','precModelBar','precModelRate','precEquipBar','precConsBar'];
+// NOTE: every canvas that _renderPrecMonth re-creates must be listed here, or the re-create
+// throws "Canvas is already in use" and aborts the rest of the month render.
+const _precChartIds=['precTrendChart','precRateChart','precStatusPie','precMetricBar','precFrontCombo','precFrontComboRate','precBackCombo','precBackComboRate','precModelBar','precModelRate','precEquipBar','precConsBar'];
 
 function _precFmt(n){ return Number(n).toLocaleString('en-US'); }
 
