@@ -1776,6 +1776,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
   <button class="tab-btn" onclick="switchQsdTab('qsd-defect',this)"><svg class="ic"><use href="#i-search"/></svg> <span data-zh>不良项目</span><span data-en>Defect Analysis</span></button>
   <button class="tab-btn" onclick="switchQsdTab('qsd-model',this)"><svg class="ic"><use href="#i-tag"/></svg> <span data-zh>型号分析</span><span data-en>Model Analysis</span></button>
   <button class="tab-btn" onclick="switchQsdTab('qsd-detail',this)"><svg class="ic"><use href="#i-list"/></svg> <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
+  <button class="tab-btn" onclick="switchQsdTab('qsd-cpk',this)"><svg class="ic"><use href="#i-target"/></svg> <span data-zh>CPK分析</span><span data-en>CPK Analysis</span></button>
 </div>
 
 <main>
@@ -2032,6 +2033,99 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
           <tr><td>61905J</td><td class="num">14</td><td class="num">13</td><td class="num" style="color:#d97706;">92.9%</td><td class="num">1,748</td><td class="num">1</td><td><span class="badge badge-amber"><span data-zh>关注</span><span data-en>Monitor</span></span></td></tr>
           <tr><td>6210T1</td><td class="num">5</td><td class="num">4</td><td class="num" style="color:#dc2626;font-weight:700;">80.0%</td><td class="num">555</td><td class="num">11</td><td><span class="badge badge-red">⚠ <span data-zh>高风险</span><span data-en>High Risk</span></span></td></tr>
         </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- ── QSD CPK ANALYSIS ── -->
+<div class="tab-panel" id="tab-qsd-cpk">
+  <section>
+    <div class="section-label">SECTION 01</div>
+    <div class="section-title"><span data-zh>成品 CPK 过程能力概览</span><span data-en>Finished-Product Process Capability (CPK)</span></div>
+    <div class="insight-card" style="--ic-color:#0891b2;margin-bottom:16px;">
+      <div class="insight-body"><span data-zh><b>CPK（过程能力指数）</b>衡量尺寸特性相对公差的稳定裕度。行业通用判据：<b>≥1.33 能力充足</b>、1.0–1.33 勉强、&lt;1.0 不足、≥1.67 优秀。本页监控 5 个成品尺寸特性：内圈宽度△Bs、外圈宽度△Cs、内径△dmp、外径△Dmp、径向游隙 Gr。数据来源 <b>成品CPK监控列表.xlsx</b>（1-6月），批次「CPK最小值」取该批 5 项中的最低者。</span><span data-en><b>CPK</b> measures dimensional capability vs tolerance. Convention: <b>≥1.33 capable</b>, 1.0–1.33 marginal, &lt;1.0 incapable, ≥1.67 excellent. Five characteristics tracked; batch "min CPK" is the lowest of the five.</span></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kpi-color:#2563eb;"><span class="kpi-icon"><svg class="ic"><use href="#i-target"/></svg></span>
+        <div class="kpi-label"><span data-zh>监控批次</span><span data-en>Batches Monitored</span></div>
+        <div class="kpi-value" data-cpk-kpi="batches">—</div>
+        <div class="kpi-sub"><span data-zh>1-6月 CPK 抽测批次</span><span data-en>Jan–Jun CPK batches</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#059669;"><span class="kpi-icon"><svg class="ic"><use href="#i-check"/></svg></span>
+        <div class="kpi-label"><span data-zh>CPK最小值 · 均值</span><span data-en>Mean of Min-CPK</span></div>
+        <div class="kpi-value" data-cpk-kpi="meanmin">—</div>
+        <div class="kpi-sub"><span data-zh>各批最低特性 CPK 的均值</span><span data-en>avg of per-batch worst CPK</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#7c3aed;"><span class="kpi-icon"><svg class="ic"><use href="#i-activity"/></svg></span>
+        <div class="kpi-label"><span data-zh>能力充足占比</span><span data-en>Capable ≥1.33</span></div>
+        <div class="kpi-value" data-cpk-kpi="pct133">—</div>
+        <div class="kpi-sub"><span data-zh>最小CPK≥1.33 的批次占比</span><span data-en>batches with min-CPK ≥1.33</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#dc2626;"><span class="kpi-icon"><svg class="ic"><use href="#i-trend-down"/></svg></span>
+        <div class="kpi-label"><span data-zh>能力最弱特性</span><span data-en>Weakest Characteristic</span></div>
+        <div class="kpi-value" data-cpk-kpi="weakest" style="font-size:20px;">—</div>
+        <div class="kpi-sub" data-cpk-sub="weakest"><span data-zh>均值CPK最低的尺寸项</span><span data-en>lowest mean CPK</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#d97706;"><span class="kpi-icon"><svg class="ic"><use href="#i-alert"/></svg></span>
+        <div class="kpi-label"><span data-zh>文件标记不达标</span><span data-en>Flagged Non-conforming</span></div>
+        <div class="kpi-value" data-cpk-kpi="flagged">—</div>
+        <div class="kpi-sub"><span data-zh>源表判定不达标的批次</span><span data-en>per source-file judgement</span></div></div>
+      <div class="kpi-card" style="--kpi-color:#0891b2;"><span class="kpi-icon"><svg class="ic"><use href="#i-tag"/></svg></span>
+        <div class="kpi-label"><span data-zh>涉及型号</span><span data-en>Models</span></div>
+        <div class="kpi-value" data-cpk-kpi="models">—</div>
+        <div class="kpi-sub"><span data-zh>CPK监控产品型号数</span><span data-en>models under CPK monitoring</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">SECTION 02</div>
+    <div class="section-title"><span data-zh>各尺寸特性能力对比</span><span data-en>Capability by Characteristic</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>5 项特性 CPK：均值与最小值</span><span data-en>Five Characteristics · Mean &amp; Min CPK</span></div>
+        <div class="chart-wrap tall"><canvas id="cpkCharBar"></canvas></div>
+        <div class="spc-note" style="border-left-color:#dc2626;"><span data-zh>柱=各特性均值CPK，◆=其历史最小值。均值/最小同时低者即为<b>能力瓶颈</b>，应作为工艺改善优先项。红色虚线=1.33 能力充足线。</span><span data-en>Bars = mean CPK per characteristic; ◆ = its historical minimum. The lowest is the capability bottleneck. Dashed line = 1.33 capable threshold.</span></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>批次 CPK最小值分布</span><span data-en>Distribution of Batch Min-CPK</span></div>
+        <div class="chart-wrap tall"><canvas id="cpkDist"></canvas></div>
+        <div class="spc-note" style="border-left-color:#059669;"><span data-zh>按 CPK 能力档位统计批次数：绿=优秀(≥1.67)、蓝=充足(1.33–1.67)、橙=勉强(1.0–1.33)、红=不足(&lt;1.0)。</span><span data-en>Batch counts by capability band. Green excellent, blue capable, amber marginal, red incapable.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">SECTION 03</div>
+    <div class="section-title"><span data-zh>CPK 趋势与型号对比</span><span data-en>CPK Trend &amp; By Model</span></div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#0891b2;"><span data-zh>各批次 CPK最小值趋势（按检验日期）</span><span data-en>Batch Min-CPK Trend (by date)</span></div>
+        <div class="chart-wrap"><canvas id="cpkTrend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title" style="--ct-color:#e85d04;"><span data-zh>分型号 · 各特性均值CPK</span><span data-en>Mean CPK by Model</span></div>
+        <div class="chart-wrap"><canvas id="cpkModel"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">SECTION 04</div>
+    <div class="section-title"><span data-zh>自动洞察</span><span data-en>Auto Insights</span></div>
+    <div class="insights" id="cpk-insights"></div>
+  </section>
+
+  <section>
+    <div class="section-label">DETAIL</div>
+    <div class="section-title"><span data-zh>CPK 明细表（全部批次）</span><span data-en>CPK Detail (all batches)</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th><span data-zh>日期</span><span data-en>Date</span></th>
+          <th><span data-zh>型号</span><span data-en>Model</span></th>
+          <th><span data-zh>入库</span><span data-en>Inbound</span></th>
+          <th>△Bs</th><th>△Cs</th><th>△dmp</th><th>△Dmp</th><th>Gr</th>
+          <th><span data-zh>CPK最小</span><span data-en>Min CPK</span></th>
+          <th><span data-zh>判定</span><span data-en>Verdict</span></th>
+        </tr></thead>
+        <tbody id="cpkTableBody"></tbody>
       </table>
     </div>
   </section>
@@ -4354,12 +4448,15 @@ function switchProdTab(id, btn) {
 
 // ── QSD tab switch ──
 function switchQsdTab(id, btn) {
-  document.querySelectorAll('#tab-qsd-overview,#tab-qsd-trend,#tab-qsd-defect,#tab-qsd-model,#tab-qsd-detail')
+  document.querySelectorAll('#tab-qsd-overview,#tab-qsd-trend,#tab-qsd-defect,#tab-qsd-model,#tab-qsd-detail,#tab-qsd-cpk')
     .forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#qsd-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   initQsdCharts();
+  if (id==='qsd-cpk') initQsdCpk();
+  // charts built while the tab was hidden render at zero size — reflow on show
+  requestAnimationFrame(()=>{ document.querySelectorAll('#tab-'+id+' canvas').forEach(cv=>{const ch=Chart.getChart(cv); if(ch){try{ch.resize();}catch(e){}}}); });
 }
 
 // ── Final inspection tab switch ──
@@ -6590,6 +6687,153 @@ function _renderExecMonth(m){
   if (typeof setLang==='function') setLang(_lang);
 }
 window._renderExecMonth=_renderExecMonth;
+
+// ── QSD CPK analysis (finished-product process capability) ──
+// row = [date, model, inbound, cpkMin, nfCount, △Bs, △Cs, △dmp, △Dmp, Gr]
+window._cpkData = [
+["1/26","6203-2RS·CG25",6720,1.43,0,3.17,4.27,2.25,2.77,1.43],
+["1/26","6203-2RS·CG25",6720,1.54,0,2.7,2.91,2.15,2.77,1.54],
+["1/26","6203-2RS·CG25",6720,1.26,0,2.35,3.05,1.71,2.78,1.26],
+["1/28","6203-2RS·CG25",6720,1.33,0,1.75,2.12,1.81,2.65,1.33],
+["1/28","6203-2RS·CG25",6720,1.48,0,2.49,2.94,2.38,2.47,1.48],
+["1/28","6203-2RS·CG25",6720,1.38,0,3.19,2.63,2.36,2.83,1.38],
+["1/28","6203-2RS·CG25",6720,1.31,0,4.23,3.17,2.42,1.81,1.31],
+["1/28","6203-2RS·CG25",6720,1.34,0,3.33,2.83,1.84,3.74,1.34],
+["1/30","6203-2RS·CG25",6720,1.42,0,6.46,3.11,1.86,5.06,1.42],
+["1/30","6203-2RS·CG25",6720,1.45,0,2.74,3.1,1.73,2.59,1.45],
+["2/9","6203-2RS·CG25",6720,1.69,0,2.36,3.24,1.79,3.64,1.69],
+["2/9","6203-2RS·CG25",6720,1.52,0,2.1,3.2,2.27,2.85,1.52],
+["2/9","6203-2RS·CG25",6720,1.25,0,2.67,3.13,2.11,3.52,1.25],
+["2/9","6203-2RS·CG25",6720,1.21,0,1.65,3.1,2.69,2.88,1.21],
+["3/7","6203-2RS·CG25",6720,1.23,0,5.71,3.34,2.97,3.12,1.23],
+["3/7","6203-2RS·CG25",6720,1.17,0,3.42,3.23,1.79,2.46,1.17],
+["3/7","6203-2RS·CG25",6720,1.31,0,3.13,2.41,2.36,2.53,1.31],
+["4/28","6203-2RS·CG25",6720,1.82,0,3.24,3.05,3.61,2.1,1.82],
+["4/28","6203-2RS·CG25",6720,1.84,0,2.01,3.24,1.84,3.07,2],
+["4/28","6203-2RS·CG25",6720,1.72,0,1.72,2.31,2.12,2.48,1.78],
+["5/3","6203-2RS·CG25",6720,1.34,0,3.29,4.21,1.84,2.3,1.34],
+["5/3","6203-2RS·CG25",6720,1.69,0,2.28,3.09,1.98,4.42,1.69],
+["6/9","6203J·CU1",4800,1.37,0,3.54,3.31,1.37,3.9,1.91],
+["6/17","6203J·CU1",6000,1.56,0,5.63,4.14,1.56,2.23,1.58],
+["6/17","6203J·CU1",6900,1.86,0,5.11,2.81,2.04,1.93,1.86],
+["6/17","6203J·CU1",6000,1.78,0,3.57,3.9,1.78,3.78,2.3],
+["6/17","6203J·CU1",2400,1.69,0,2.24,2.85,1.69,2.37,1.74],
+["6/19","6203J·CU1",6000,1.28,1,4.26,2.33,2.55,2.46,1.28],
+["6/19","6203J·CU1",2400,1.78,0,4.45,3.36,1.78,4.87,1.93],
+["6/19","6203J·CU1",1800,1.45,0,2.83,4.68,1.7,3.03,1.45],
+["6/19","6203J·CU1",6600,1.71,0,3.41,2.29,2.34,4.76,1.71],
+["6/28","6203-2RS·CG25",6720,1.59,0,4.18,3.42,2.87,3.73,1.59],
+["6/28","6203-2RS·CG25",6720,2.1,0,2.11,2.29,2.12,2.1,2.54],
+["6/28","6203-2RS·CG25",6720,1.74,0,3.9,3.81,2.74,3.47,1.74],
+["6/28","6203-2RS·CG25",6720,1.27,0,3.85,3.08,2.32,3.13,1.27],
+["6/28","6203-2RS·CG25",6720,1.5,0,2.17,2.68,2.39,1.97,1.5],
+["6/28","6203-2RS·CG25",6720,1.76,0,3.47,3.53,1.87,2.32,1.76],
+["6/28","6203-2RS·CG25",6720,1.64,0,3.05,4.04,2.15,2.46,1.64],
+["6/28","6203-2RS·CG25",6720,1.71,0,3.12,2.56,1.71,2.16,2.09],
+["6/28","6203-2RS·CG25",6720,1.6,0,2.11,2.44,1.76,2.53,1.6]
+];
+let _cpkInited=false;
+function _cpkBand(v){return v>=1.67?'exc':v>=1.33?'cap':v>=1.0?'mar':'bad';}
+function _cpkColor(v){return v>=1.67?'#059669':v>=1.33?'#2563eb':v>=1.0?'#d97706':'#dc2626';}
+function initQsdCpk(){
+  if(_cpkInited){ document.querySelectorAll('#tab-qsd-cpk canvas').forEach(cv=>{const ch=Chart.getChart(cv);if(ch)try{ch.resize();}catch(e){}}); return; }
+  _cpkInited=true;
+  const D=window._cpkData, n=D.length, gridC=_mode==='dark'?'#2a2f48':'#e8ecf5';
+  const CH=[['内圈宽度 △Bs',5],['外圈宽度 △Cs',6],['内径 △dmp',7],['外径 △Dmp',8],['径向游隙 Gr',9]];
+  const mean=i=>D.reduce((s,r)=>s+r[i],0)/n, mn=i=>Math.min(...D.map(r=>r[i]));
+  const chMean=CH.map(c=>+mean(c[1]).toFixed(2)), chMin=CH.map(c=>+mn(c[1]).toFixed(2));
+  const cpkMins=D.map(r=>r[3]);
+  const meanMin=cpkMins.reduce((s,v)=>s+v,0)/n;
+  const pct133=Math.round(cpkMins.filter(v=>v>=1.33).length/n*100);
+  const flagged=D.filter(r=>r[4]>0).length;
+  const models=[...new Set(D.map(r=>r[1]))];
+  // weakest characteristic = lowest mean
+  let wi=0; chMean.forEach((v,i)=>{if(v<chMean[wi])wi=i;});
+  // KPIs
+  const sk=(k,v)=>{const el=document.querySelector(`[data-cpk-kpi="${k}"]`);if(el)el.textContent=v;};
+  sk('batches',n); sk('meanmin',meanMin.toFixed(2)); sk('pct133',pct133+'%');
+  sk('weakest',CH[wi][0].split(' ')[1]||CH[wi][0]); sk('flagged',flagged); sk('models',models.length);
+  const ws=document.querySelector('[data-cpk-sub="weakest"]');
+  if(ws) ws.innerHTML=`<span data-zh>均值CPK ${chMean[wi]}（最低 ${chMin[wi]}）</span><span data-en>mean CPK ${chMean[wi]} (min ${chMin[wi]})</span>`;
+
+  // Chart 1: mean+min per characteristic + 1.33 line
+  mk('cpkCharBar','bar',{
+    labels:CH.map(c=>c[0]),
+    datasets:[
+      {label:'均值 Mean CPK',data:chMean,backgroundColor:CH.map((c,i)=>_cpkColor(chMean[i])+'cc'),borderColor:CH.map((c,i)=>_cpkColor(chMean[i])),borderWidth:1,borderRadius:4,order:2},
+      {type:'scatter',label:'最小 Min CPK',data:chMin.map((v,i)=>({x:i,y:v})),pointStyle:'rectRot',pointRadius:7,backgroundColor:'#1e2a45',borderColor:'#fff',borderWidth:1,order:0},
+      {type:'line',label:'1.33 能力充足线',data:chMean.map(()=>1.33),borderColor:'#dc2626',borderWidth:1.5,borderDash:[5,4],pointRadius:0,order:1},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${(c.parsed.y!=null?c.parsed.y:c.parsed).toFixed?c.parsed.y.toFixed(2):c.parsed.y}`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9.5}}},y:{grid:{color:gridC},beginAtZero:true,title:{display:true,text:'CPK'}}}});
+
+  // Chart 2: min-CPK band distribution
+  const bands={exc:0,cap:0,mar:0,bad:0}; cpkMins.forEach(v=>bands[_cpkBand(v)]++);
+  mk('cpkDist','bar',{
+    labels:['优秀 ≥1.67','充足 1.33–1.67','勉强 1.0–1.33','不足 <1.0'],
+    datasets:[{label:'批次数',data:[bands.exc,bands.cap,bands.mar,bands.bad],
+      backgroundColor:['#059669cc','#2563ebcc','#d97706cc','#dc2626cc'],borderColor:['#059669','#2563eb','#d97706','#dc2626'],borderWidth:1,borderRadius:4}]
+  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9.5}}},y:{grid:{color:gridC},beginAtZero:true,ticks:{precision:0}}}});
+
+  // Chart 3: min-CPK trend by batch (date order)
+  mk('cpkTrend','line',{
+    labels:D.map((r,i)=>r[0]),
+    datasets:[
+      {label:'CPK最小值',data:cpkMins,borderColor:'#0891b2',backgroundColor:'rgba(8,145,178,0.08)',borderWidth:2,tension:0.25,fill:true,
+       pointBackgroundColor:cpkMins.map(_cpkColor),pointBorderColor:'#fff',pointBorderWidth:1,pointRadius:3.5},
+      {type:'line',label:'1.33',data:cpkMins.map(()=>1.33),borderColor:'#dc2626',borderWidth:1.5,borderDash:[5,4],pointRadius:0},
+    ]
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:8,font:{size:10},filter:it=>it.text!=='1.33'}},
+      tooltip:{callbacks:{afterLabel:c=>c.datasetIndex===0?`型号 ${D[c.dataIndex][1]}`:''}}},
+    scales:{x:{grid:{display:false},ticks:{maxRotation:0,font:{size:8},autoSkip:true,maxTicksLimit:14}},y:{grid:{color:gridC},beginAtZero:false,title:{display:true,text:'CPK'}}}});
+
+  // Chart 4: mean CPK per characteristic by model
+  const palette=['#2563eb','#e85d04'];
+  mk('cpkModel','bar',{
+    labels:CH.map(c=>c[0]),
+    datasets:models.map((m,mi)=>{
+      const rows=D.filter(r=>r[1]===m);
+      return {label:m,data:CH.map(c=>+(rows.reduce((s,r)=>s+r[c[1]],0)/rows.length).toFixed(2)),
+        backgroundColor:palette[mi]+'cc',borderColor:palette[mi],borderWidth:1,borderRadius:4};
+    })
+  },{plugins:{legend:{position:'top',labels:{boxWidth:11,padding:10,font:{size:10}}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC},beginAtZero:true,title:{display:true,text:'均值 CPK'}}}});
+
+  // Insights
+  const box=document.getElementById('cpk-insights');
+  if(box){
+    const cards=[];
+    cards.push(_insCard('#dc2626','🎯 径向游隙是能力瓶颈','🎯 Radial Clearance — the Bottleneck',
+      `<strong>${CH[wi][0]}</strong> 均值CPK仅 <strong>${chMean[wi]}</strong>（最低 ${chMin[wi]}），显著低于其余尺寸特性（均值 ${Math.max(...chMean).toFixed(2)}），是过程能力的短板。游隙由沟道磨削尺寸与钢球分组共同决定，建议优先收敛沟径/选球策略。`,
+      `<strong>${CH[wi][0]}</strong> has the lowest mean CPK (<strong>${chMean[wi]}</strong>, min ${chMin[wi]}) — the capability bottleneck. Clearance is set by groove size + ball grading; tighten those first.`));
+    cards.push(_insCard('#059669','✅ 尺寸特性能力充足','✅ Dimensional Capability Solid',
+      `内/外圈宽度、内/外径 4 项均值CPK 均在 ${chMean.filter((v,i)=>i!==wi).reduce((a,b)=>Math.min(a,b),9).toFixed(2)} 以上，能力充足；全部 ${n} 批 CPK最小值均 ≥1.0，无能力不足批次。`,
+      `The four size characteristics all exceed CPK ${chMean.filter((v,i)=>i!==wi).reduce((a,b)=>Math.min(a,b),9).toFixed(2)}; all ${n} batches have min-CPK ≥1.0.`));
+    cards.push(_insCard('#7c3aed','📊 能力分档','📊 Capability Bands',
+      `${n} 批中：优秀(≥1.67) <strong>${bands.exc}</strong> 批、充足(1.33–1.67) <strong>${bands.cap}</strong> 批、勉强(1.0–1.33) <strong>${bands.mar}</strong> 批，能力充足(≥1.33)占比 <strong>${pct133}%</strong>。`,
+      `Of ${n} batches: ${bands.exc} excellent, ${bands.cap} capable, ${bands.mar} marginal; ${pct133}% at ≥1.33.`));
+    if(flagged>0){
+      const fr=D.find(r=>r[4]>0);
+      cards.push(_insCard('#d97706','⚠ 源表标记不达标','⚠ Flagged in Source File',
+        `源监控表判定 <strong>${flagged}</strong> 批不达标（${fr[0]} ${fr[1]}，CPK最小 ${fr[3]}，项目为径向游隙），与上面"游隙为瓶颈"一致，应作为个案追溯。`,
+        `<strong>${flagged}</strong> batch flagged non-conforming in the source (${fr[0]} ${fr[1]}, min-CPK ${fr[3]}, on radial clearance).`));
+    }
+    box.innerHTML=cards.join('');
+  }
+
+  // Detail table
+  const tb=document.getElementById('cpkTableBody');
+  if(tb){
+    const cell=v=>`<td class="num" style="color:${_cpkColor(v)};font-weight:${v<1.33?700:500};">${v.toFixed(2)}</td>`;
+    tb.innerHTML=D.map(r=>{
+      const bad=r[4]>0;
+      const verdict=bad?`<span class="badge badge-red">⚠ <span data-zh>不达标</span><span data-en>NC</span></span>`
+        :(r[3]>=1.33?`<span class="badge badge-green"><span data-zh>充足</span><span data-en>OK</span></span>`:`<span class="badge badge-amber"><span data-zh>勉强</span><span data-en>Marginal</span></span>`);
+      return `<tr><td>${r[0]}</td><td style="font-size:11px;">${r[1]}</td><td class="num">${r[2].toLocaleString()}</td>${cell(r[5])}${cell(r[6])}${cell(r[7])}${cell(r[8])}${cell(r[9])}<td class="num" style="font-weight:700;color:${_cpkColor(r[3])};">${r[3].toFixed(2)}</td><td>${verdict}</td></tr>`;
+    }).join('');
+  }
+  if(typeof setLang==='function') setLang(_lang);
+}
 
 // exec is the default visible module — build it now
 initExecCharts();
