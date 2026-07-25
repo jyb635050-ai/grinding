@@ -1860,18 +1860,24 @@
         const bandCount = Math.floor((horizontalSpan + 0.001) / band.w);
         if (sideCount < 1 || bandCount < 1) return;
 
+        const sideHeight = sideCount * side.d;
+        const bandWidth = bandCount * band.w;
+        const ringWidth = side.w + bandWidth;
+        const ringHeight = band.d + sideHeight;
+        const offsetX = (state.pallet.w - ringWidth) / 2;
+        const offsetY = (state.pallet.d - ringHeight) / 2;
         const rects = [];
         for (let i = 0; i < sideCount; i++) {
-          rects.push({ x: 0, y: i * side.d, ...side });
+          rects.push({ x: offsetX, y: offsetY + i * side.d, ...side });
         }
         for (let i = 0; i < bandCount; i++) {
-          rects.push({ x: side.w + i * band.w, y: 0, ...band });
+          rects.push({ x: offsetX + side.w + i * band.w, y: offsetY, ...band });
         }
         for (let i = 0; i < sideCount; i++) {
-          rects.push({ x: state.pallet.w - side.w, y: band.d + i * side.d, ...side });
+          rects.push({ x: offsetX + bandWidth, y: offsetY + band.d + i * side.d, ...side });
         }
         for (let i = 0; i < bandCount; i++) {
-          rects.push({ x: i * band.w, y: state.pallet.d - band.d, ...band });
+          rects.push({ x: offsetX + i * band.w, y: offsetY + sideHeight, ...band });
         }
 
         const variants = [
