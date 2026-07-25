@@ -797,8 +797,7 @@
     }
   </script>
   <script type="module">
-    import * as THREE from "three";
-    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    let THREE, OrbitControls;
 
     const PALLET_PRESETS = new Map([
       ["large", [1200, 800, 140]],
@@ -2393,6 +2392,7 @@
     }
 
     function export3D() {
+      if (!renderer || !scene || !camera) return;
       renderer.render(scene, camera);
       const link = document.createElement("a");
       link.download = "pallet-3d-view.png";
@@ -2480,12 +2480,22 @@
     populateCartonPresets();
     syncPalletPresetFromDimensions();
     readForm();
-    init3D();
     attachEvents();
     applyTheme();
     applyLanguage({ rerender: false });
     calculatePlans();
     applyLanguage();
+
+    try {
+      [THREE, { OrbitControls }] = await Promise.all([
+        import("three"),
+        import("three/addons/controls/OrbitControls.js"),
+      ]);
+      init3D();
+      schedule3D();
+    } catch (error) {
+      console.warn("3D preview is unavailable; 2D planning and language controls remain active.", error);
+    }
   </script>
 </body>
 </html>
