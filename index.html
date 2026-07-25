@@ -845,6 +845,8 @@
       planMessageKey: null,
       activePlan: null,
       selectedId: null,
+      copiedBox: null,
+      pasteCount: 0,
       scale: 0.5,
       dragging: null,
       renderQueued: false,
@@ -941,6 +943,10 @@
         noteOptimized: "搜索箱体边缘形成的可用角点，可覆盖风车形等非条带布局",
         appliedPlan: "已应用：{name}",
         selectBoxFirst: "请先选中一个箱子",
+        boxCopied: "已复制选中箱子",
+        boxPasted: "已粘贴箱子",
+        boxPastedOverlap: "已粘贴箱子，请调整重叠位置",
+        boxDeleted: "已删除选中箱子",
         noSpaceRow: "当前尺寸下没有足够空间补一排",
         centeredToast: "箱组已整体居中",
         exported3d: "已导出 3D 图片",
@@ -1035,6 +1041,10 @@
         noteOptimized: "Searches edge-defined corners to cover pinwheel and other non-strip layouts",
         appliedPlan: "Applied: {name}",
         selectBoxFirst: "Select a carton first",
+        boxCopied: "Selected carton copied",
+        boxPasted: "Carton pasted",
+        boxPastedOverlap: "Carton pasted; adjust the overlap",
+        boxDeleted: "Selected carton deleted",
         noSpaceRow: "No available space for another row at the current size",
         centeredToast: "Carton group centered",
         exported3d: "3D image exported",
@@ -1483,6 +1493,123 @@
       state.activePlan = null;
       renderPlans();
       render2D();
+    }
+
+    function copySelectedBox() {
+      const box = state.layout.find(item => item.id === state.selectedId);
+      if (!box) return false;
+      state.copiedBox = {
+        x: box.x,
+        y: box.y,
+        w: box.w,
+        d: box.d,
+        rotated: box.rotated,
+      };
+      state.pasteCount = 0;
+      showToast(t("boxCopied"));
+      return true;
+    }
+
+    function findPastePlacement(template) {
+      const maxX = Math.max(0, state.pallet.w - template.w);
+      const maxY = Math.max(0, state.pallet.d - template.d);
+      const step = Math.max(1, Number(els.gridSize.value) || 25);
+      const offset = step * ((state.pasteCount % 4) + 1);
+      const preferred = {
+        x: clamp(template.x + offset, 0, maxX),
+        y: clamp(template.y + offset, 0, maxY),
+      };
+      const candidates = [preferred];
+
+      state.layout.forEach(box => {
+        candidates.push(
+          { x: box.x + box.w, y: box.y },
+          { x: box.x, y: box.y + box.d },
+          { x: box.x - template.w, y: box.y },
+          { x: box.x, y: box.y - template.d },
+        );
+      });
+
+      for (let y = 0; y <= maxY + 0.001; y += step) {
+        for (let x = 0; x <= maxX + 0.001; x += step) {
+          candidates.push({ x, y });
+        }
+      }
+      candidates.push({ x: maxX, y: maxY });
+
+      const seen = new Set();
+      for (const position of candidates) {
+        const x = clamp(position.x, 0, maxX);
+        const y = clamp(position.y, 0, maxY);
+        const key = `${Math.round(x * 1000)}:${Math.round(y * 1000)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const candidate = { ...template, x, y };
+        const inside = candidate.w <= state.pallet.w + 0.001 && candidate.d <= state.pallet.d + 0.001;
+        if (inside && !state.layout.some(box => rectanglesOverlap(candidate, box))) {
+          return { x, y, overlaps: false };
+        }
+      }
+      return { ...preferred, overlaps: true };
+    }
+
+    function pasteCopiedBox() {
+      if (!state.copiedBox) return false;
+      const template = state.copiedBox;
+      const placement = findPastePlacement(template);
+      const box = {
+        id: uid(),
+        x: placement.x,
+        y: placement.y,
+        w: template.w,
+        d: template.d,
+        rotated: template.rotated,
+      };
+      state.layout.push(box);
+      state.selectedId = box.id;
+      state.pasteCount += 1;
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+      showToast(t(placement.overlaps ? "boxPastedOverlap" : "boxPasted"));
+      return true;
+    }
+
+    function deleteSelectedBox() {
+      const index = state.layout.findIndex(item => item.id === state.selectedId);
+      if (index < 0) return false;
+      state.layout.splice(index, 1);
+      state.selectedId = null;
+      state.activePlan = null;
+      renderPlans();
+      render2D();
+      showToast(t("boxDeleted"));
+      return true;
+    }
+
+    function isEditableTarget(target) {
+      return target instanceof Element && Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+    }
+
+    function handleKeyboardShortcuts(event) {
+      if (event.defaultPrevented || event.repeat || isEditableTarget(event.target)) return;
+      const key = event.key.toLowerCase();
+      const modifier = event.ctrlKey || event.metaKey;
+
+      if (event.key === "Delete" && !modifier && !event.altKey && state.selectedId) {
+        event.preventDefault();
+        deleteSelectedBox();
+        return;
+      }
+      if (modifier && !event.altKey && key === "c" && state.selectedId) {
+        event.preventDefault();
+        copySelectedBox();
+        return;
+      }
+      if (modifier && !event.altKey && key === "v" && state.copiedBox) {
+        event.preventDefault();
+        pasteCopiedBox();
+      }
     }
 
     function rotateBox(id = state.selectedId) {
@@ -2233,6 +2360,7 @@
           render2D();
         }
       });
+      window.addEventListener("keydown", handleKeyboardShortcuts);
       window.addEventListener("resize", render2D);
     }
 
