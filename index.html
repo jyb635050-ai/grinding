@@ -728,6 +728,7 @@
             <button class="primary" id="applyBest">应用首选方案</button>
             <button class="blue" id="addRow">补一排箱子</button>
             <button class="blue" id="rotateBoxToolbar">箱子旋转 90°</button>
+            <button class="green" id="centerLayoutToolbar">整体居中</button>
           </div>
           <div class="toolbar-right">
             <span class="status-pill">2D 俯视手动规划</span>
@@ -928,6 +929,7 @@
         planMeta: "单层 {count} 箱，三层 {total} 箱，利用率约 {util}%。",
         optimalProof: "已验证最优",
         planOptimized: "空间搜索优化",
+        planRing: "回字形环绕摆 {index}",
         planNormal: "全部同向摆",
         planRotated: "全部旋转摆",
         planMixedRows: "混合条带 {n}横+{r}竖",
@@ -941,6 +943,7 @@
         noteMixedCols: "按列切分，适合需要左右分区的托盘",
         noteMixedColsAlt: "旋转列靠左，右侧按原方向补齐",
         noteOptimized: "搜索箱体边缘形成的可用角点，可覆盖风车形等非条带布局",
+        noteRing: "沿托盘四边顺时针环绕，适合形成中心留空的回字形布局",
         appliedPlan: "已应用：{name}",
         selectBoxFirst: "请先选中一个箱子",
         boxCopied: "已复制选中箱子",
@@ -1026,6 +1029,7 @@
         planMeta: "{count} / layer, {total} total, about {util}% utilization.",
         optimalProof: "Proven optimal",
         planOptimized: "Spatial Search",
+        planRing: "Perimeter Ring {index}",
         planNormal: "All Same Direction",
         planRotated: "All Rotated",
         planMixedRows: "Mixed Rows {n}N+{r}R",
@@ -1039,6 +1043,7 @@
         noteMixedCols: "Column split, useful when left/right zones are needed",
         noteMixedColsAlt: "Rotated columns on the left, normal direction on the right",
         noteOptimized: "Searches edge-defined corners to cover pinwheel and other non-strip layouts",
+        noteRing: "Wraps cartons clockwise around all four pallet edges to form a center opening",
         appliedPlan: "Applied: {name}",
         selectBoxFirst: "Select a carton first",
         boxCopied: "Selected carton copied",
@@ -1138,6 +1143,7 @@
       setText("#applyBest", "applyBest");
       setText("#addRow", "addRow");
       setText("#rotateBoxToolbar", "rotate90");
+      setText("#centerLayoutToolbar", "centerLayout");
       setText(".toolbar-right .status-pill", "workspaceTitle");
       setText(".metrics .metric:nth-child(1) span", "boxesPerLayer");
       setText(".metrics .metric:nth-child(2) span", "totalBoxes");
@@ -1826,13 +1832,72 @@
       };
     }
 
+    function buildRingLayouts() {
+      const layouts = [];
+      const seen = new Set();
+      const addVariants = sideRotated => {
+        const side = sideRotated
+          ? { w: state.box.d, d: state.box.w, rotated: true }
+          : { w: state.box.w, d: state.box.d, rotated: false };
+        const band = sideRotated
+          ? { w: state.box.w, d: state.box.d, rotated: false }
+          : { w: state.box.d, d: state.box.w, rotated: true };
+        const verticalSpan = state.pallet.d - band.d;
+        const horizontalSpan = state.pallet.w - side.w;
+        const sideCount = Math.floor((verticalSpan + 0.001) / side.d);
+        const bandCount = Math.floor((horizontalSpan + 0.001) / band.w);
+        if (sideCount < 1 || bandCount < 1) return;
+
+        const rects = [];
+        for (let i = 0; i < sideCount; i++) {
+          rects.push({ x: 0, y: i * side.d, ...side });
+        }
+        for (let i = 0; i < bandCount; i++) {
+          rects.push({ x: side.w + i * band.w, y: 0, ...band });
+        }
+        for (let i = 0; i < sideCount; i++) {
+          rects.push({ x: state.pallet.w - side.w, y: band.d + i * side.d, ...side });
+        }
+        for (let i = 0; i < bandCount; i++) {
+          rects.push({ x: i * band.w, y: state.pallet.d - band.d, ...band });
+        }
+
+        const variants = [
+          rects,
+          rects.map(rect => ({ ...rect, x: state.pallet.w - rect.x - rect.w })),
+        ];
+        variants.forEach(layout => {
+          const inside = layout.every(rect =>
+            rect.x >= -0.001 && rect.y >= -0.001 &&
+            rect.x + rect.w <= state.pallet.w + 0.001 &&
+            rect.y + rect.d <= state.pallet.d + 0.001
+          );
+          const overlaps = layout.some((rect, index) =>
+            layout.slice(index + 1).some(other => rectanglesOverlap(rect, other))
+          );
+          const signature = layout
+            .map(rect => `${Math.round(rect.x)}:${Math.round(rect.y)}:${Math.round(rect.w)}:${Math.round(rect.d)}:${rect.rotated ? 1 : 0}`)
+            .sort()
+            .join("|");
+          if (inside && !overlaps && !seen.has(signature)) {
+            seen.add(signature);
+            layouts.push(layout);
+          }
+        });
+      };
+
+      addVariants(false);
+      addVariants(true);
+      return layouts;
+    }
+
     function calculatePlans() {
       readForm();
       const plans = [];
       const addPlan = (nameKey, noteKey, rects, strategy, vars = {}, options = {}) => {
         if (!rects.length) return;
         const count = rects.length;
-        const signature = rects.map(r => `${Math.round(r.x)}:${Math.round(r.y)}:${Math.round(r.w)}:${Math.round(r.d)}:${r.rotated ? 1 : 0}`).join("|");
+        const signature = rects.map(r => `${Math.round(r.x)}:${Math.round(r.y)}:${Math.round(r.w)}:${Math.round(r.d)}:${r.rotated ? 1 : 0}`).sort().join("|");
         const duplicate = plans.find(plan => plan.signature === signature);
         if (duplicate) {
           duplicate.provenOptimal ||= Boolean(options.provenOptimal);
@@ -1873,6 +1938,10 @@
           addPlan("planMixedColsAlt", "noteMixedColsAlt", buildColumns([{ rotated: true, cols: r }, { rotated: false, cols: n }]).rects, "cols-mixed-alt", { n, r });
         }
       }
+
+      buildRingLayouts().forEach((rects, index) => {
+        addPlan("planRing", "noteRing", rects, `ring-${index + 1}`, { index: index + 1 });
+      });
 
       const seedPlan = plans.reduce((best, plan) => !best || plan.count > best.count ? plan : best, null);
       const spatial = searchSpatialLayout(seedPlan?.rects || []);
@@ -2333,6 +2402,7 @@
       document.querySelector("#centerLayout").addEventListener("click", centerLayout);
       document.querySelector("#addRow").addEventListener("click", addRow);
       document.querySelector("#rotateBoxToolbar").addEventListener("click", () => rotateBox());
+      document.querySelector("#centerLayoutToolbar").addEventListener("click", centerLayout);
       document.querySelector("#export3d").addEventListener("click", export3D);
       document.querySelector("#showDimensions3d").addEventListener("change", () => {
         state.showDimensions = els.showDimensions3d.checked;
