@@ -727,7 +727,7 @@
           <div class="toolbar-left">
             <button class="primary" id="applyBest">应用首选方案</button>
             <button class="blue" id="addRow">补一排箱子</button>
-            <button id="resetView2d">视图归中</button>
+            <button class="blue" id="rotateBoxToolbar">箱子旋转 90°</button>
           </div>
           <div class="toolbar-right">
             <span class="status-pill">2D 俯视手动规划</span>
@@ -896,7 +896,7 @@
         clearBoxes: "清空箱子",
         applyBest: "应用首选方案",
         addRow: "补一排箱子",
-        resetView: "视图归中",
+        rotate90: "箱子旋转 90°",
         workspaceTitle: "2D 俯视手动规划",
         boxesPerLayer: "单层箱数",
         totalBoxes: "整托箱数",
@@ -990,7 +990,7 @@
         clearBoxes: "Clear",
         applyBest: "Apply Top Plan",
         addRow: "Add Row",
-        resetView: "Reset View",
+        rotate90: "Rotate Carton 90°",
         workspaceTitle: "2D Top View Planner",
         boxesPerLayer: "Boxes / Layer",
         totalBoxes: "Total Cartons",
@@ -1127,7 +1127,7 @@
       setText("#clearBoxes", "clearBoxes");
       setText("#applyBest", "applyBest");
       setText("#addRow", "addRow");
-      setText("#resetView2d", "resetView");
+      setText("#rotateBoxToolbar", "rotate90");
       setText(".toolbar-right .status-pill", "workspaceTitle");
       setText(".metrics .metric:nth-child(1) span", "boxesPerLayer");
       setText(".metrics .metric:nth-child(2) span", "totalBoxes");
@@ -2205,7 +2205,7 @@
       document.querySelector("#rotateBox").addEventListener("click", () => rotateBox());
       document.querySelector("#centerLayout").addEventListener("click", centerLayout);
       document.querySelector("#addRow").addEventListener("click", addRow);
-      document.querySelector("#resetView2d").addEventListener("click", () => els.wrap.scrollTo({ left: 0, top: 0, behavior: "smooth" }));
+      document.querySelector("#rotateBoxToolbar").addEventListener("click", () => rotateBox());
       document.querySelector("#export3d").addEventListener("click", export3D);
       document.querySelector("#showDimensions3d").addEventListener("change", () => {
         state.showDimensions = els.showDimensions3d.checked;
