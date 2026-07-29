@@ -143,30 +143,68 @@
       min-width: 0;
     }
 
-    .mark {
-      width: 42px;
-      height: 42px;
+    .bearing-mark {
+      width: 46px;
+      height: 46px;
       border: 3px solid var(--line);
-      border-radius: 8px;
-      background:
-        linear-gradient(0deg, transparent 55%, rgba(255,255,255,.24) 55%),
-        linear-gradient(135deg, #f0bd74, #b66b2c);
-      box-shadow: 4px 4px 0 rgba(29,38,51,.14);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #f8fafc 0%, #95a3b0 34%, #e1e7ec 60%, #738291 100%);
+      box-shadow: 3px 3px 0 rgba(29,38,51,.16);
       position: relative;
       flex: 0 0 auto;
+      overflow: hidden;
     }
 
-    .mark::before, .mark::after {
+    .bearing-mark::before {
       content: "";
       position: absolute;
-      bottom: 5px;
-      width: 10px;
-      height: 9px;
-      border: 2px solid var(--line);
-      background: #75461f;
+      inset: 4px;
+      border: 2px solid rgba(29,38,51,.68);
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.42);
     }
-    .mark::before { left: 6px; }
-    .mark::after { right: 6px; }
+
+    .bearing-rotor {
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      animation: bearing-spin 3.2s linear infinite;
+      will-change: transform;
+    }
+
+    .bearing-ball {
+      --angle: calc(var(--i) * 45deg);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      margin: -3.5px;
+      border: 1.5px solid var(--line);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffffff, #8e9ba7);
+      transform: rotate(var(--angle)) translateX(14px);
+    }
+
+    .bearing-ball:first-child { background: var(--accent); }
+
+    .bearing-bore {
+      position: absolute;
+      inset: 13px;
+      z-index: 2;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      background: var(--panel);
+      box-shadow: inset 2px 2px 0 rgba(29,38,51,.16);
+    }
+
+    :root[data-theme="dark"] .bearing-mark {
+      background: linear-gradient(145deg, #d6dee6 0%, #657482 34%, #a8b4bf 60%, #4c5a68 100%);
+    }
+
+    @keyframes bearing-spin {
+      to { transform: rotate(360deg); }
+    }
 
     .brand h1 {
       margin: 0;
@@ -263,6 +301,126 @@
     .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 9px; }
     .preset-field { margin-bottom: 9px; }
     .preset-field input, .preset-field select { font-weight: 700; }
+    .preset-field > label { display: block; margin-bottom: 5px; }
+
+    .preset-combobox { position: relative; }
+    .preset-combobox input { padding-right: 42px; }
+
+    .preset-toggle {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 34px;
+      min-height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 0 5px 5px 0;
+      background: transparent;
+      box-shadow: none;
+      display: grid;
+      place-items: center;
+    }
+
+    .preset-toggle:hover,
+    .preset-toggle:focus-visible {
+      background: var(--control-hover);
+      outline: none;
+    }
+
+    .preset-toggle:active { transform: none; box-shadow: none; }
+
+    .preset-chevron {
+      width: 9px;
+      height: 9px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg) translate(-1px, -1px);
+      transition: transform .18s ease;
+    }
+
+    .preset-toggle[aria-expanded="true"] .preset-chevron {
+      transform: rotate(225deg) translate(-1px, -1px);
+    }
+
+    .preset-popover {
+      position: fixed;
+      z-index: 80;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      max-height: 420px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      box-shadow: 0 5px 8px rgba(24,35,48,.22);
+      overflow: hidden;
+    }
+
+    .preset-popover[hidden] { display: none; }
+
+    .preset-list {
+      min-height: 0;
+      overflow: auto;
+      padding: 4px;
+      overscroll-behavior: contain;
+    }
+
+    .preset-option {
+      width: 100%;
+      min-height: 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      box-shadow: none;
+      color: var(--ink);
+      text-align: left;
+      white-space: normal;
+      transition: background .12s ease;
+    }
+
+    .preset-option + .preset-option { border-top: 1px solid var(--soft-line); }
+    .preset-option:hover,
+    .preset-option.active { background: var(--control-hover); }
+    .preset-option:active { transform: none; box-shadow: none; }
+
+    .preset-option-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .preset-option-size {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .preset-summary,
+    .preset-empty {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .preset-summary {
+      padding: 7px 10px;
+      border-top: 1px solid var(--soft-line);
+      background: var(--panel-2);
+    }
+
+    .preset-empty {
+      padding: 18px 10px;
+      text-align: center;
+    }
     .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
     .stack { display: grid; gap: 9px; }
     .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -613,6 +771,11 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); visibility: visible; }
 
+    @media (prefers-reduced-motion: reduce) {
+      .bearing-rotor { animation: none; }
+      .preset-chevron { transition: none; }
+    }
+
     @media (max-width: 1280px) {
       .main { grid-template-columns: 310px minmax(520px, 1fr); }
       .view-panel { grid-column: 1 / -1; min-height: 560px; }
@@ -631,7 +794,19 @@
   <div class="app">
     <header class="topbar">
       <div class="brand">
-        <div class="mark" aria-hidden="true"></div>
+        <div class="bearing-mark" aria-hidden="true">
+          <div class="bearing-rotor">
+            <span class="bearing-ball" style="--i:0"></span>
+            <span class="bearing-ball" style="--i:1"></span>
+            <span class="bearing-ball" style="--i:2"></span>
+            <span class="bearing-ball" style="--i:3"></span>
+            <span class="bearing-ball" style="--i:4"></span>
+            <span class="bearing-ball" style="--i:5"></span>
+            <span class="bearing-ball" style="--i:6"></span>
+            <span class="bearing-ball" style="--i:7"></span>
+          </div>
+          <span class="bearing-bore"></span>
+        </div>
         <div>
           <h1>PHJY托盘箱子摆放规划器</h1>
           <p>自动排布、手动拖拽、磁吸对齐、3D 检查</p>
@@ -673,10 +848,18 @@
             <h2>箱子尺寸</h2>
             <button class="small green" id="addBox">生成箱子</button>
           </div>
-          <label class="preset-field"><span id="boxPresetLabel">箱型快速选择（1096 项）</span>
-            <input type="search" id="boxPreset" list="boxPresetOptions" autocomplete="off" placeholder="输入型号、名称或尺寸筛选">
-            <datalist id="boxPresetOptions"></datalist>
-          </label>
+          <div class="preset-field">
+            <label for="boxPreset" id="boxPresetLabel">箱型快速选择（1096 项）</label>
+            <div class="preset-combobox" id="boxPresetCombo">
+              <input type="search" id="boxPreset" autocomplete="off" placeholder="输入型号、名称或尺寸筛选"
+                role="combobox" aria-autocomplete="list" aria-haspopup="listbox"
+                aria-expanded="false" aria-controls="boxPresetList">
+              <button class="preset-toggle" id="boxPresetToggle" type="button"
+                aria-label="展开箱型列表" aria-expanded="false" aria-controls="boxPresetList">
+                <span class="preset-chevron" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
           <div class="grid-3">
             <label>长 mm <input type="number" id="boxW" min="1" step="0.1" value="360"></label>
             <label>宽 mm <input type="number" id="boxD" min="1" step="0.1" value="215"></label>
@@ -787,6 +970,10 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <div class="preset-popover notranslate" id="boxPresetPopover" translate="no" hidden>
+    <div class="preset-list" id="boxPresetList" role="listbox"></div>
+    <p class="preset-summary" id="boxPresetSummary"></p>
+  </div>
 
   <script type="importmap">
     {
@@ -809,7 +996,11 @@
     const els = {
       palletPreset: document.querySelector("#palletPreset"),
       boxPreset: document.querySelector("#boxPreset"),
-      boxPresetOptions: document.querySelector("#boxPresetOptions"),
+      boxPresetCombo: document.querySelector("#boxPresetCombo"),
+      boxPresetToggle: document.querySelector("#boxPresetToggle"),
+      boxPresetPopover: document.querySelector("#boxPresetPopover"),
+      boxPresetList: document.querySelector("#boxPresetList"),
+      boxPresetSummary: document.querySelector("#boxPresetSummary"),
       palletW: document.querySelector("#palletW"),
       palletD: document.querySelector("#palletD"),
       palletH: document.querySelector("#palletH"),
@@ -866,6 +1057,8 @@
       lang: localStorage.getItem("palletPlannerLang") || "zh",
       theme: localStorage.getItem("palletPlannerTheme") || "light",
       showDimensions: localStorage.getItem("palletPlannerShowDimensions") !== "false",
+      presetMatches: [],
+      presetActiveIndex: -1,
     };
 
     const I18N = {
@@ -882,6 +1075,10 @@
         palletSmall: "小托盘 800 × 600 × 140 mm",
         cartonPreset: "箱型快速选择（{count} 项）",
         cartonSearchPlaceholder: "输入型号、名称或尺寸筛选",
+        cartonDropdownOpen: "展开箱型列表",
+        cartonDropdownClose: "收起箱型列表",
+        cartonMatches: "找到 {count} 个箱型，可输入关键词缩小范围",
+        cartonNoMatches: "没有匹配的箱型",
         colorCustom: "颜色自定义",
         autoPlan: "自动规划",
         manualAssist: "手动辅助",
@@ -982,6 +1179,10 @@
         palletSmall: "Small Pallet 800 × 600 × 140 mm",
         cartonPreset: "Carton Preset ({count})",
         cartonSearchPlaceholder: "Search model, name, or dimensions",
+        cartonDropdownOpen: "Open carton list",
+        cartonDropdownClose: "Close carton list",
+        cartonMatches: "{count} carton presets found. Type to narrow the list.",
+        cartonNoMatches: "No matching carton presets",
         colorCustom: "Colors",
         autoPlan: "Auto Planning",
         manualAssist: "Manual Tools",
@@ -1116,6 +1317,11 @@
       setText("#boxPresetLabel", "cartonPreset", { count: BOX_PRESETS.length });
       els.boxPreset.placeholder = t("cartonSearchPlaceholder");
       els.boxPreset.setAttribute("aria-label", t("cartonPreset", { count: BOX_PRESETS.length }));
+      const presetOpen = !els.boxPresetPopover.hidden;
+      const presetToggleLabel = t(presetOpen ? "cartonDropdownClose" : "cartonDropdownOpen");
+      els.boxPresetToggle.setAttribute("aria-label", presetToggleLabel);
+      els.boxPresetToggle.title = presetToggleLabel;
+      if (presetOpen) renderCartonPresetOptions();
       els.palletPreset.querySelector('[value="large"]').textContent = t("palletLarge");
       els.palletPreset.querySelector('[value="small"]').textContent = t("palletSmall");
 
@@ -1176,15 +1382,169 @@
       }
     }
 
-    function populateCartonPresets() {
+    function normalizePresetSearch(value) {
+      return String(value).toLocaleLowerCase().replace(/[×xX*]/g, "x").replace(/\s+/g, "");
+    }
+
+    function presetDisplayName(name) {
+      return name.replace(/[（(]\s*\d+(?:\.\d+)?\s*[×xX*]\s*\d+(?:\.\d+)?\s*[×xX*]\s*\d+(?:\.\d+)?\s*[）)]/, "").trim() || name;
+    }
+
+    function matchingCartonPresets() {
+      const query = normalizePresetSearch(els.boxPreset.value);
+      if (!query) return BOX_PRESETS;
+      return BOX_PRESETS
+        .map((preset, sourceIndex) => {
+          const [name, length, width, height] = preset;
+          const normalizedName = normalizePresetSearch(name);
+          const searchable = normalizePresetSearch(`${name} ${length}x${width}x${height}`);
+          if (!searchable.includes(query)) return null;
+          const nextCharacter = normalizedName.slice(query.length, query.length + 1);
+          const exactModel = normalizedName.startsWith(query) && !/[a-z0-9]/i.test(nextCharacter);
+          const rank = exactModel ? 0 : normalizedName.startsWith(query) ? 1 : 2;
+          return { preset, rank, sourceIndex };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.rank - b.rank || a.sourceIndex - b.sourceIndex)
+        .map(match => match.preset);
+    }
+
+    function renderCartonPresetOptions() {
+      state.presetMatches = matchingCartonPresets();
+      state.presetActiveIndex = -1;
+      els.boxPreset.removeAttribute("aria-activedescendant");
       const fragment = document.createDocumentFragment();
-      BOX_PRESETS.forEach(([name, length, width, height]) => {
-        const option = document.createElement("option");
-        option.value = name;
-        option.label = length + " × " + width + " × " + height + " mm";
+
+      state.presetMatches.forEach(([name, length, width, height], index) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "preset-option";
+        option.id = `box-preset-option-${index}`;
+        option.dataset.presetIndex = index;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", "false");
+
+        const title = document.createElement("span");
+        title.className = "preset-option-name";
+        title.textContent = presetDisplayName(name);
+
+        const size = document.createElement("span");
+        size.className = "preset-option-size";
+        size.textContent = `${length} × ${width} × ${height}`;
+
+        option.append(title, size);
         fragment.append(option);
       });
-      els.boxPresetOptions.replaceChildren(fragment);
+
+      if (!state.presetMatches.length) {
+        const empty = document.createElement("p");
+        empty.className = "preset-empty";
+        empty.textContent = t("cartonNoMatches");
+        fragment.append(empty);
+      }
+
+      els.boxPresetList.replaceChildren(fragment);
+      els.boxPresetSummary.textContent = state.presetMatches.length
+        ? t("cartonMatches", { count: state.presetMatches.length })
+        : t("cartonNoMatches");
+    }
+
+    function positionCartonPresetPopover() {
+      if (els.boxPresetPopover.hidden) return;
+      const rect = els.boxPresetCombo.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        closeCartonPresetList();
+        return;
+      }
+
+      const margin = 8;
+      const gap = 6;
+      const width = Math.min(Math.max(rect.width, 360), window.innerWidth - margin * 2);
+      const left = clamp(rect.left, margin, window.innerWidth - width - margin);
+      const below = window.innerHeight - rect.bottom - gap - margin;
+      const above = rect.top - gap - margin;
+      const placeBelow = below >= 220 || below >= above;
+      const available = Math.max(150, placeBelow ? below : above);
+      const maxHeight = Math.min(420, available);
+
+      els.boxPresetPopover.style.width = `${width}px`;
+      els.boxPresetPopover.style.maxHeight = `${maxHeight}px`;
+      els.boxPresetPopover.style.left = `${left}px`;
+      const renderedHeight = Math.min(els.boxPresetPopover.scrollHeight, maxHeight);
+      els.boxPresetPopover.style.top = placeBelow
+        ? `${rect.bottom + gap}px`
+        : `${Math.max(margin, rect.top - gap - renderedHeight)}px`;
+    }
+
+    function openCartonPresetList() {
+      renderCartonPresetOptions();
+      els.boxPresetPopover.hidden = false;
+      els.boxPreset.setAttribute("aria-expanded", "true");
+      els.boxPresetToggle.setAttribute("aria-expanded", "true");
+      const label = t("cartonDropdownClose");
+      els.boxPresetToggle.setAttribute("aria-label", label);
+      els.boxPresetToggle.title = label;
+      positionCartonPresetPopover();
+    }
+
+    function closeCartonPresetList() {
+      if (els.boxPresetPopover.hidden) return;
+      els.boxPresetPopover.hidden = true;
+      els.boxPreset.setAttribute("aria-expanded", "false");
+      els.boxPreset.removeAttribute("aria-activedescendant");
+      els.boxPresetToggle.setAttribute("aria-expanded", "false");
+      const label = t("cartonDropdownOpen");
+      els.boxPresetToggle.setAttribute("aria-label", label);
+      els.boxPresetToggle.title = label;
+      state.presetActiveIndex = -1;
+    }
+
+    function setActiveCartonPreset(index) {
+      const options = [...els.boxPresetList.querySelectorAll(".preset-option")];
+      if (!options.length) return;
+      const nextIndex = (index + options.length) % options.length;
+      options.forEach((option, optionIndex) => {
+        const active = optionIndex === nextIndex;
+        option.classList.toggle("active", active);
+        option.setAttribute("aria-selected", String(active));
+      });
+      state.presetActiveIndex = nextIndex;
+      const activeOption = options[nextIndex];
+      els.boxPreset.setAttribute("aria-activedescendant", activeOption.id);
+      activeOption.scrollIntoView({ block: "nearest" });
+    }
+
+    function selectCartonPreset(preset) {
+      if (!preset) return;
+      els.boxPreset.value = preset[0];
+      applyCartonPreset(preset);
+      closeCartonPresetList();
+      els.boxPreset.focus();
+    }
+
+    function handleCartonPresetKeydown(event) {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        event.stopPropagation();
+        if (els.boxPresetPopover.hidden) openCartonPresetList();
+        const step = event.key === "ArrowDown" ? 1 : -1;
+        const start = state.presetActiveIndex < 0 && step < 0 ? 0 : state.presetActiveIndex;
+        setActiveCartonPreset(start + step);
+        return;
+      }
+      if (event.key === "Enter" && !els.boxPresetPopover.hidden && state.presetActiveIndex >= 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectCartonPreset(state.presetMatches[state.presetActiveIndex]);
+        return;
+      }
+      if (event.key === "Escape" && !els.boxPresetPopover.hidden) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeCartonPresetList();
+      } else if (event.key === "Tab") {
+        closeCartonPresetList();
+      }
     }
 
     function syncPalletPresetFromDimensions() {
@@ -1203,11 +1563,12 @@
     function clearCartonPresetSelection() {
       els.boxPreset.value = "";
       delete els.boxPreset.dataset.applied;
+      closeCartonPresetList();
     }
 
-    function applyCartonPreset() {
+    function applyCartonPreset(selectedPreset = null) {
       const name = els.boxPreset.value.trim();
-      const preset = BOX_PRESET_BY_NAME.get(name);
+      const preset = selectedPreset || BOX_PRESET_BY_NAME.get(name);
       if (!preset) return;
       const [, length, width, height] = preset;
       const unchanged =
@@ -2424,8 +2785,32 @@
         document.querySelector(`#${id}`).addEventListener("input", rebuildForNewSize);
       });
       els.palletPreset.addEventListener("change", applyPalletPreset);
-      els.boxPreset.addEventListener("input", applyCartonPreset);
-      els.boxPreset.addEventListener("change", applyCartonPreset);
+      els.boxPreset.addEventListener("input", () => {
+        applyCartonPreset();
+        openCartonPresetList();
+      });
+      els.boxPreset.addEventListener("change", () => applyCartonPreset());
+      els.boxPreset.addEventListener("click", openCartonPresetList);
+      els.boxPreset.addEventListener("keydown", handleCartonPresetKeydown);
+      els.boxPresetToggle.addEventListener("click", () => {
+        const shouldOpen = els.boxPresetPopover.hidden;
+        if (shouldOpen) {
+          openCartonPresetList();
+          els.boxPreset.focus();
+        } else {
+          closeCartonPresetList();
+        }
+      });
+      els.boxPresetList.addEventListener("click", event => {
+        const option = event.target.closest(".preset-option");
+        if (!option) return;
+        selectCartonPreset(state.presetMatches[Number(option.dataset.presetIndex)]);
+      });
+      document.addEventListener("pointerdown", event => {
+        if (!els.boxPresetCombo.contains(event.target) && !els.boxPresetPopover.contains(event.target)) {
+          closeCartonPresetList();
+        }
+      });
       ["palletWeight","boxWeight","perBox"].forEach(id => {
         document.querySelector(`#${id}`).addEventListener("input", () => {
           readForm();
@@ -2479,11 +2864,17 @@
         }
       });
       window.addEventListener("keydown", handleKeyboardShortcuts);
-      window.addEventListener("resize", render2D);
+      window.addEventListener("resize", () => {
+        render2D();
+        positionCartonPresetPopover();
+      });
+      window.addEventListener("scroll", event => {
+        if (event.target !== els.boxPresetList) positionCartonPresetPopover();
+      }, true);
     }
 
     els.showDimensions3d.checked = state.showDimensions;
-    populateCartonPresets();
+
     syncPalletPresetFromDimensions();
     readForm();
     attachEvents();
