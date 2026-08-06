@@ -93,8 +93,27 @@
   .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
   .charts-grid.wide{grid-template-columns:2fr 1fr;}
   .charts-grid.three{grid-template-columns:1fr 1fr 1fr;}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow);}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow);position:relative;}
   .chart-card.full{grid-column:1/-1;}
+  /* ── copy-chart-as-PNG button (bottom-right of every chart card) ── */
+  .chart-copy-btn{position:absolute;right:10px;bottom:10px;z-index:5;width:28px;height:28px;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);
+    opacity:.35;transition:opacity .18s,color .18s,border-color .18s,background .18s;}
+  .chart-card:hover .chart-copy-btn{opacity:1;}
+  .chart-copy-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .chart-copy-btn:focus-visible{opacity:1;outline:2px solid var(--accent);outline-offset:2px;}
+  .chart-copy-btn .ic{width:15px;height:15px;}
+  .chart-copy-btn.is-ok{opacity:1;color:#059669;border-color:#059669;}
+  .chart-copy-btn.is-err{opacity:1;color:#dc2626;border-color:#dc2626;}
+  .chart-copy-btn.is-busy{opacity:1;cursor:progress;}
+  /* toast shown after a copy */
+  .chart-copy-toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);
+    z-index:9999;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    background:#1e2a45;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.28);
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:88vw;}
+  .chart-copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  @media print{.chart-copy-btn,.chart-copy-toast{display:none !important;}}
   .chart-title{font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
   .chart-title::before{content:'';width:3px;height:14px;background:var(--ct-color,var(--accent));border-radius:2px;flex-shrink:0;}
   .chart-wrap{position:relative;height:260px;}
@@ -304,7 +323,7 @@
   .cmp-section-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
   .cmp-section-sub{font-size:12px;color:var(--text-muted);margin-bottom:14px;}
   .cmp-chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;}
-  .cmp-chart-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;}
+  .cmp-chart-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px 10px;position:relative;}
   .cmp-chart-card.full{grid-column:1/-1;}
   .cmp-chart-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
   .cmp-chart-wrap{position:relative;height:240px;}
@@ -480,6 +499,8 @@
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4 20h16"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3L2 20h20L12 3z"/><path d="M12 9.5v5M12 17.4v.01"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-10-1 12-5 16-9 17z"/><path d="M4 21c2-4.5 6-8.5 12-11.5"/></symbol>
   <symbol id="i-phone-off" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2M4 4l16 16"/></symbol>
@@ -3927,6 +3948,128 @@ function mk(id, type, data, opts={}) {
   return c;
 }
 
+// ── Copy any chart as a transparent-background PNG (for pasting into slides) ──
+// Chart.js canvases carry no background fill, so the PNG is transparent as-is.
+// We briefly raise devicePixelRatio so the bitmap is crisp at presentation size,
+// capture, then restore the on-screen resolution.
+const _COPY_DPR = 3;
+
+function _chartCopyToast(msg, isErr){
+  let t = document.getElementById('chartCopyToast');
+  if(!t){ t=document.createElement('div'); t.id='chartCopyToast'; t.className='chart-copy-toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.style.background = isErr ? '#7f1d1d' : '#1e2a45';
+  t.classList.add('show');
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+function _chartFileName(card, cv){
+  const t = card.querySelector('.chart-title,.cmp-chart-card-title');
+  let n = t ? t.textContent.trim().replace(/\s+/g,' ') : '';
+  n = n.replace(/[\\/:*?"<>|]/g,'').slice(0,60).trim();
+  return (n || cv.id || 'chart') + '.png';
+}
+
+// Render the chart at _COPY_DPR and hand back a PNG blob; always restores DPR.
+// Two things matter here and both are easy to get wrong:
+//   • write to chart.config.options — chart.options is a RESOLVED PROXY, assigning to it is a no-op;
+//   • call draw() after resize() — resize() alone leaves the bitmap at the old size and unpainted
+//     (its update is animated), so a capture taken right after it comes out blank.
+function _chartToPngBlob(cv){
+  const ch = (typeof Chart!=='undefined') ? Chart.getChart(cv) : null;
+  if(!ch) return Promise.resolve(null);   // chart not built yet → canvas is empty, refuse rather than copy a blank
+  const orig = ch.config.options.devicePixelRatio;
+  try{
+    ch.config.options.devicePixelRatio = _COPY_DPR;
+    ch.resize(); ch.draw();
+  }catch(e){}
+  return new Promise(resolve=>{
+    try{ cv.toBlob(b=>resolve(b), 'image/png'); }
+    catch(e){ resolve(null); }
+  }).finally(()=>{
+    try{
+      ch.config.options.devicePixelRatio = orig;
+      ch.resize(); ch.draw();
+    }catch(e){}
+  });
+}
+
+async function _copyChartPng(cv, btn, card){
+  if(btn.classList.contains('is-busy')) return;
+  const useEl = btn.querySelector('use');
+  const setState=(cls,icon)=>{
+    btn.classList.remove('is-busy','is-ok','is-err');
+    if(cls) btn.classList.add(cls);
+    if(useEl) useEl.setAttribute('href', icon);
+    if(cls) setTimeout(()=>{ btn.classList.remove('is-ok','is-err'); if(useEl) useEl.setAttribute('href','#i-copy'); }, 2200);
+  };
+  btn.classList.add('is-busy');
+
+  if(typeof Chart==='undefined' || !Chart.getChart(cv)){
+    setState('is-err','#i-alert');
+    _chartCopyToast(_lang==='zh' ? '该图表尚未渲染，请先滚动到它再复制'
+                                 : 'That chart has not rendered yet — scroll to it first', true);
+    return;
+  }
+  const blob = await _chartToPngBlob(cv);
+  if(!blob){
+    setState('is-err','#i-alert');
+    _chartCopyToast(_lang==='zh' ? '图表导出失败' : 'Chart export failed', true);
+    return;
+  }
+  // Preferred path: put a real image on the clipboard.
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      await navigator.clipboard.write([ new ClipboardItem({'image/png': blob}) ]);
+      setState('is-ok','#i-check');
+      // The PNG keeps whatever theme is on screen. In dark mode the labels are light —
+      // invisible on a white slide — so say so rather than let them find out in PowerPoint.
+      const darkWarn = (_mode==='dark');
+      _chartCopyToast(_lang==='zh'
+        ? (darkWarn ? '已复制（深色主题，浅色文字）— 贴到白底 PPT 会看不清，建议切到浅色再复制'
+                    : '已复制（透明背景 PNG）— 到 PPT 里 Ctrl+V 即可')
+        : (darkWarn ? 'Copied — but dark theme means light labels; switch to light mode for a white slide'
+                    : 'Copied as transparent PNG — paste straight into your slide'), darkWarn);
+      return;
+    }
+    throw new Error('clipboard image API unavailable');
+  }catch(e){
+    // Clipboard can be blocked by permissions or a non-secure context — fall back to a download.
+    try{
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = _chartFileName(card, cv);
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+      setState('is-ok','#i-download');
+      _chartCopyToast(_lang==='zh' ? '剪贴板不可用，已改为下载 PNG 文件'
+                                   : 'Clipboard unavailable — PNG downloaded instead');
+    }catch(e2){
+      setState('is-err','#i-alert');
+      _chartCopyToast(_lang==='zh' ? '复制失败' : 'Copy failed', true);
+    }
+  }
+}
+
+// Idempotent: safe to call again after new chart cards appear (e.g. the compare overlay).
+function initChartCopyButtons(root){
+  (root||document).querySelectorAll('.chart-card,.cmp-chart-card').forEach(card=>{
+    if(card.querySelector('.chart-copy-btn')) return;
+    const cv = card.querySelector('canvas');
+    if(!cv) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chart-copy-btn';
+    btn.setAttribute('aria-label', 'Copy chart as transparent PNG');
+    btn.title = '复制图表为透明背景 PNG（可直接粘贴到 PPT）\nCopy chart as transparent PNG';
+    btn.innerHTML = '<svg class="ic"><use href="#i-copy"/></svg>';
+    btn.addEventListener('click', ev=>{ ev.preventDefault(); ev.stopPropagation(); _copyChartPng(cv, btn, card); });
+    card.appendChild(btn);
+  });
+}
+window.initChartCopyButtons = initChartCopyButtons;
+
 // ── SPC p-chart: rate line + centre line + variable 3σ control limits ──
 // rates[] in %, counts[] = per-point sample size n. Points beyond limits turn red.
 function mkSpc(id, rates, counts, labels, seriesLabel){
@@ -4300,6 +4443,7 @@ _renderGrinderMonth(_grinderMonth);
 
 // ── Module switch ──
 function switchModule(id, btn) {
+  initChartCopyButtons();   // idempotent; covers lazily-rendered cards
   document.querySelectorAll('.module-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.module-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('module-'+id).classList.add('active');
@@ -4428,6 +4572,13 @@ function switchModule(id, btn) {
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', setup);
   else setup();
+})();
+
+// Attach the copy button to every chart card present at load.
+(function(){
+  const go = ()=>{ try{ initChartCopyButtons(); }catch(e){} };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
 })();
 
 // ── Sales tab switch ──
@@ -6318,6 +6469,7 @@ function renderCompare(){
       card('cmpPcNg','8工序不合格率 NG% by Process',true)+
       card('cmpPcCorr','8工序整改率 Correction% by Process',true));
   charts.innerHTML=H;
+  setTimeout(()=>{ try{ initChartCopyButtons(charts); }catch(e){} }, 0);
 
   // ===== Helper to make a grouped comparison chart =====
   function grouped(id,type,labels,dataA,dataB,opts){
