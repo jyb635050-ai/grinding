@@ -96,14 +96,16 @@
   .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow);position:relative;}
   .chart-card.full{grid-column:1/-1;}
   /* ── copy-chart-as-PNG button (bottom-right of every chart card) ── */
-  .chart-copy-btn{position:absolute;right:10px;bottom:10px;z-index:5;width:28px;height:28px;padding:0;
+  .chart-copy-btn{position:absolute;right:8px;top:8px;z-index:5;width:14px;height:14px;padding:0;
     display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
-    background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);
+    background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text-sub);
     opacity:.35;transition:opacity .18s,color .18s,border-color .18s,background .18s;}
+  /* the button is deliberately tiny — give it a comfortable invisible hit area */
+  .chart-copy-btn::after{content:'';position:absolute;inset:-7px;}
   .chart-card:hover .chart-copy-btn{opacity:1;}
   .chart-copy-btn:hover{color:var(--accent);border-color:var(--accent);}
   .chart-copy-btn:focus-visible{opacity:1;outline:2px solid var(--accent);outline-offset:2px;}
-  .chart-copy-btn .ic{width:15px;height:15px;}
+  .chart-copy-btn .ic{width:9px;height:9px;}
   .chart-copy-btn.is-ok{opacity:1;color:#059669;border-color:#059669;}
   .chart-copy-btn.is-err{opacity:1;color:#dc2626;border-color:#dc2626;}
   .chart-copy-btn.is-busy{opacity:1;cursor:progress;}
@@ -3971,6 +3973,9 @@ function _chartCopyToast(msg, isErr){
 function _chartToPngBlob(cv){
   const ch = (typeof Chart!=='undefined') ? Chart.getChart(cv) : null;
   if(!ch) return Promise.resolve(null);   // chart not built yet → canvas is empty, refuse rather than copy a blank
+  // Never resize a chart whose container is collapsed (hidden panel): Chart.js would
+  // compute a 0x0 layout and leave the canvas permanently blank until the panel reopens.
+  if(!cv.clientWidth || !cv.clientHeight) return Promise.resolve(null);
   const orig = ch.config.options.devicePixelRatio;
   try{
     ch.config.options.devicePixelRatio = _COPY_DPR;
@@ -3998,7 +4003,7 @@ async function _copyChartPng(cv, btn){
   };
   btn.classList.add('is-busy');
 
-  if(typeof Chart==='undefined' || !Chart.getChart(cv)){
+  if(typeof Chart==='undefined' || !Chart.getChart(cv) || !cv.clientWidth || !cv.clientHeight){
     setState('is-err','#i-alert');
     _chartCopyToast(_lang==='zh' ? '该图表尚未渲染，请先滚动到它再复制'
                                  : 'That chart has not rendered yet — scroll to it first', true);
