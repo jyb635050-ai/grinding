@@ -500,7 +500,6 @@
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4 20h16"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3L2 20h20L12 3z"/><path d="M12 9.5v5M12 17.4v.01"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-10-1 12-5 16-9 17z"/><path d="M4 21c2-4.5 6-8.5 12-11.5"/></symbol>
   <symbol id="i-phone-off" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2M4 4l16 16"/></symbol>
@@ -3964,13 +3963,6 @@ function _chartCopyToast(msg, isErr){
   t._hideTimer = setTimeout(()=>t.classList.remove('show'), 2800);
 }
 
-function _chartFileName(card, cv){
-  const t = card.querySelector('.chart-title,.cmp-chart-card-title');
-  let n = t ? t.textContent.trim().replace(/\s+/g,' ') : '';
-  n = n.replace(/[\\/:*?"<>|]/g,'').slice(0,60).trim();
-  return (n || cv.id || 'chart') + '.png';
-}
-
 // Render the chart at _COPY_DPR and hand back a PNG blob; always restores DPR.
 // Two things matter here and both are easy to get wrong:
 //   • write to chart.config.options — chart.options is a RESOLVED PROXY, assigning to it is a no-op;
@@ -3995,7 +3987,7 @@ function _chartToPngBlob(cv){
   });
 }
 
-async function _copyChartPng(cv, btn, card){
+async function _copyChartPng(cv, btn){
   if(btn.classList.contains('is-busy')) return;
   const useEl = btn.querySelector('use');
   const setState=(cls,icon)=>{
@@ -4018,37 +4010,20 @@ async function _copyChartPng(cv, btn, card){
     _chartCopyToast(_lang==='zh' ? '图表导出失败' : 'Chart export failed', true);
     return;
   }
-  // Preferred path: put a real image on the clipboard.
   try{
-    if(navigator.clipboard && window.ClipboardItem){
-      await navigator.clipboard.write([ new ClipboardItem({'image/png': blob}) ]);
-      setState('is-ok','#i-check');
-      // The PNG keeps whatever theme is on screen. In dark mode the labels are light —
-      // invisible on a white slide — so say so rather than let them find out in PowerPoint.
-      const darkWarn = (_mode==='dark');
-      _chartCopyToast(_lang==='zh'
-        ? (darkWarn ? '已复制（深色主题，浅色文字）— 贴到白底 PPT 会看不清，建议切到浅色再复制'
-                    : '已复制（透明背景 PNG）— 到 PPT 里 Ctrl+V 即可')
-        : (darkWarn ? 'Copied — but dark theme means light labels; switch to light mode for a white slide'
-                    : 'Copied as transparent PNG — paste straight into your slide'), darkWarn);
-      return;
-    }
-    throw new Error('clipboard image API unavailable');
+    await navigator.clipboard.write([ new ClipboardItem({'image/png': blob}) ]);
+    setState('is-ok','#i-check');
+    // The PNG keeps whatever theme is on screen. In dark mode the labels are light —
+    // invisible on a white slide — so say so rather than let them find out in PowerPoint.
+    const darkWarn = (_mode==='dark');
+    _chartCopyToast(_lang==='zh'
+      ? (darkWarn ? '已复制（深色主题，浅色文字）— 贴到白底 PPT 会看不清，建议切到浅色再复制'
+                  : '已复制 — 到 PPT 里 Ctrl+V 即可')
+      : (darkWarn ? 'Copied — but dark theme means light labels; switch to light mode for a white slide'
+                  : 'Copied — paste into your slide with Ctrl+V'), darkWarn);
   }catch(e){
-    // Clipboard can be blocked by permissions or a non-secure context — fall back to a download.
-    try{
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = _chartFileName(card, cv);
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url), 1000);
-      setState('is-ok','#i-download');
-      _chartCopyToast(_lang==='zh' ? '剪贴板不可用，已改为下载 PNG 文件'
-                                   : 'Clipboard unavailable — PNG downloaded instead');
-    }catch(e2){
-      setState('is-err','#i-alert');
-      _chartCopyToast(_lang==='zh' ? '复制失败' : 'Copy failed', true);
-    }
+    setState('is-err','#i-alert');
+    _chartCopyToast(_lang==='zh' ? '复制失败，请重试' : 'Copy failed — try again', true);
   }
 }
 
@@ -4064,7 +4039,7 @@ function initChartCopyButtons(root){
     btn.setAttribute('aria-label', 'Copy chart as transparent PNG');
     btn.title = '复制图表为透明背景 PNG（可直接粘贴到 PPT）\nCopy chart as transparent PNG';
     btn.innerHTML = '<svg class="ic"><use href="#i-copy"/></svg>';
-    btn.addEventListener('click', ev=>{ ev.preventDefault(); ev.stopPropagation(); _copyChartPng(cv, btn, card); });
+    btn.addEventListener('click', ev=>{ ev.preventDefault(); ev.stopPropagation(); _copyChartPng(cv, btn); });
     card.appendChild(btn);
   });
 }
