@@ -219,6 +219,15 @@
       font-size: 13px;
     }
 
+    .developer-credit {
+      padding-left: 18px;
+      border-left: 2px solid color-mix(in srgb, var(--line) 28%, transparent);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .statusbar {
       display: flex;
       align-items: center;
@@ -257,11 +266,52 @@
 
     .main {
       display: grid;
-      grid-template-columns: 330px minmax(560px, 1fr) 430px;
-      gap: 14px;
+      grid-template-columns:
+        var(--side-pane-width, 330px)
+        14px
+        minmax(560px, 1fr)
+        14px
+        var(--view-pane-width, 430px);
+      gap: 0;
       padding: 14px;
       min-height: 0;
       height: calc(100vh - 76px);
+    }
+
+    .pane-resizer {
+      position: relative;
+      min-width: 14px;
+      cursor: col-resize;
+      touch-action: none;
+      user-select: none;
+      outline: none;
+    }
+
+    .pane-resizer::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--soft-line);
+      transform: translate(-50%, -50%);
+      transition: height .16s ease, background .16s ease;
+    }
+
+    .pane-resizer:hover::before,
+    .pane-resizer:focus-visible::before,
+    .pane-resizer.active::before {
+      height: 76px;
+      background: var(--accent);
+    }
+
+    body.resizing-panes,
+    body.resizing-panes * {
+      cursor: col-resize !important;
+      user-select: none !important;
     }
 
     .panel {
@@ -774,10 +824,12 @@
     @media (prefers-reduced-motion: reduce) {
       .bearing-rotor { animation: none; }
       .preset-chevron { transition: none; }
+      .pane-resizer::before { transition: none; }
     }
 
-    @media (max-width: 1280px) {
-      .main { grid-template-columns: 310px minmax(520px, 1fr); }
+    @media (max-width: 1380px) {
+      .main { grid-template-columns: 310px minmax(520px, 1fr); gap: 14px; }
+      .pane-resizer { display: none; }
       .view-panel { grid-column: 1 / -1; min-height: 560px; }
     }
 
@@ -811,6 +863,7 @@
           <h1>PHJY托盘箱子摆放规划器</h1>
           <p>自动排布、手动拖拽、磁吸对齐、3D 检查</p>
         </div>
+        <span class="developer-credit" id="developerCredit">开发人员：JEFF</span>
       </div>
       <div class="statusbar">
         <button class="top-action" id="langToggle" type="button">EN</button>
@@ -918,6 +971,10 @@
         </section>
       </aside>
 
+      <div class="pane-resizer" id="leftPaneResizer" data-pane-resizer="left"
+        role="separator" aria-orientation="vertical" tabindex="0"
+        aria-label="调整参数区和 2D 区宽度"></div>
+
       <section class="panel workspace-panel">
         <div class="toolbar">
           <div class="toolbar-left">
@@ -944,6 +1001,10 @@
           <div class="metric" id="totalWeightMetric"><span>总重量</span><strong id="totalWeight">0 kg</strong></div>
         </div>
       </section>
+
+      <div class="pane-resizer" id="rightPaneResizer" data-pane-resizer="right"
+        role="separator" aria-orientation="vertical" tabindex="0"
+        aria-label="调整 2D 区和 3D 区宽度"></div>
 
       <aside class="panel view-panel">
         <div class="view-head">
@@ -1034,6 +1095,11 @@
       dimensionReadout: document.querySelector("#dimensionReadout"),
       langToggle: document.querySelector("#langToggle"),
       themeToggle: document.querySelector("#themeToggle"),
+      main: document.querySelector(".main"),
+      sidePane: document.querySelector(".side"),
+      workspacePane: document.querySelector(".workspace-panel"),
+      viewPane: document.querySelector(".view-panel"),
+      paneResizers: [...document.querySelectorAll("[data-pane-resizer]")],
     };
 
     const state = {
@@ -1059,12 +1125,16 @@
       showDimensions: localStorage.getItem("palletPlannerShowDimensions") !== "false",
       presetMatches: [],
       presetActiveIndex: -1,
+      panePreference: { left: 330, right: 430 },
+      paneResize: null,
+      paneRenderQueued: false,
     };
 
     const I18N = {
       zh: {
         appTitle: "PHJY托盘箱子摆放规划器",
         tagline: "自动排布、手动拖拽、磁吸对齐、3D 检查",
+        developerCredit: "开发人员：JEFF",
         langToggle: "EN",
         themeDark: "深色模式",
         themeLight: "浅色模式",
@@ -1165,10 +1235,14 @@
         scaleReadout: "比例 1 mm ≈ {scale} px",
         legendPallet: "木托盘：同色顶板 + 三条纵向支撑，形成 2 个叉车孔",
         legendBox: "箱子：统一颜色，方向用箱内尺寸文字区分",
+        resizeLeftPane: "拖动调整参数区和 2D 区宽度，双击恢复默认",
+        resizeRightPane: "拖动调整 2D 区和 3D 区宽度，双击恢复默认",
+        paneLayoutReset: "三个窗口宽度已恢复默认",
       },
       en: {
         appTitle: "PHJY Pallet Carton Layout Planner",
         tagline: "Auto layout, manual drag, magnetic alignment, 3D inspection",
+        developerCredit: "Developer: JEFF",
         langToggle: "中文",
         themeDark: "Dark Mode",
         themeLight: "Light Mode",
@@ -1269,6 +1343,9 @@
         scaleReadout: "Scale 1 mm ≈ {scale} px",
         legendPallet: "Wood pallet: one-color top deck plus three lengthwise supports, forming two fork openings",
         legendBox: "Carton: one color; orientation is shown by the size text",
+        resizeLeftPane: "Drag to resize the controls and 2D panes. Double-click to reset.",
+        resizeRightPane: "Drag to resize the 2D and 3D panes. Double-click to reset.",
+        paneLayoutReset: "The three pane widths were reset",
       },
     };
 
@@ -1311,6 +1388,7 @@
       document.title = t("appTitle");
       setText(".brand h1", "appTitle");
       setText(".brand p", "tagline");
+      setText("#developerCredit", "developerCredit");
       els.langToggle.textContent = t("langToggle");
       els.themeToggle.textContent = t(state.theme === "dark" ? "themeLight" : "themeDark");
       setText("#palletPresetLabel", "palletPreset");
@@ -1322,6 +1400,11 @@
       els.boxPresetToggle.setAttribute("aria-label", presetToggleLabel);
       els.boxPresetToggle.title = presetToggleLabel;
       if (presetOpen) renderCartonPresetOptions();
+      els.paneResizers.forEach(resizer => {
+        const label = t(resizer.dataset.paneResizer === "left" ? "resizeLeftPane" : "resizeRightPane");
+        resizer.setAttribute("aria-label", label);
+        resizer.title = label;
+      });
       els.palletPreset.querySelector('[value="large"]').textContent = t("palletLarge");
       els.palletPreset.querySelector('[value="small"]').textContent = t("palletSmall");
 
@@ -1595,6 +1678,186 @@
         floorMesh.material.color.set(0xffffff);
       }
       schedule3D();
+    }
+
+    const PANE_LAYOUT = Object.freeze({
+      breakpoint: 1380,
+      defaultLeft: 330,
+      defaultRight: 430,
+      minLeft: 280,
+      minRight: 340,
+      minCenter: 560,
+      keyboardStep: 20,
+    });
+
+    function isResizablePaneLayout() {
+      return window.innerWidth > PANE_LAYOUT.breakpoint;
+    }
+
+    function paneAvailableWidth() {
+      const style = getComputedStyle(els.main);
+      const horizontalPadding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const handleWidth = els.paneResizers.reduce(
+        (sum, resizer) => sum + resizer.getBoundingClientRect().width,
+        0
+      ) || 28;
+      return els.main.clientWidth - horizontalPadding - handleWidth;
+    }
+
+    function currentPaneWidths() {
+      return {
+        left: els.sidePane.getBoundingClientRect().width,
+        right: els.viewPane.getBoundingClientRect().width,
+      };
+    }
+
+    function constrainPaneWidths(left, right, changedPane = null) {
+      const maximumCombined = Math.max(
+        PANE_LAYOUT.minLeft + PANE_LAYOUT.minRight,
+        paneAvailableWidth() - PANE_LAYOUT.minCenter
+      );
+      let nextLeft = Number(left) || PANE_LAYOUT.defaultLeft;
+      let nextRight = Number(right) || PANE_LAYOUT.defaultRight;
+
+      if (changedPane === "left") {
+        nextRight = clamp(nextRight, PANE_LAYOUT.minRight, maximumCombined - PANE_LAYOUT.minLeft);
+        nextLeft = clamp(nextLeft, PANE_LAYOUT.minLeft, maximumCombined - nextRight);
+      } else if (changedPane === "right") {
+        nextLeft = clamp(nextLeft, PANE_LAYOUT.minLeft, maximumCombined - PANE_LAYOUT.minRight);
+        nextRight = clamp(nextRight, PANE_LAYOUT.minRight, maximumCombined - nextLeft);
+      } else {
+        nextLeft = clamp(nextLeft, PANE_LAYOUT.minLeft, maximumCombined - PANE_LAYOUT.minRight);
+        nextRight = clamp(nextRight, PANE_LAYOUT.minRight, maximumCombined - nextLeft);
+      }
+
+      return { left: nextLeft, right: nextRight, maximumCombined };
+    }
+
+    function updatePaneResizerAria(left, right, maximumCombined) {
+      els.paneResizers.forEach(resizer => {
+        const isLeft = resizer.dataset.paneResizer === "left";
+        const value = isLeft ? left : right;
+        const maximum = maximumCombined - (isLeft ? right : left);
+        resizer.setAttribute("aria-valuemin", String(isLeft ? PANE_LAYOUT.minLeft : PANE_LAYOUT.minRight));
+        resizer.setAttribute("aria-valuemax", String(Math.round(maximum)));
+        resizer.setAttribute("aria-valuenow", String(Math.round(value)));
+        resizer.setAttribute("aria-valuetext", Math.round(value) + " px");
+      });
+    }
+
+    function schedulePaneLayoutRender() {
+      if (state.paneRenderQueued) return;
+      state.paneRenderQueued = true;
+      requestAnimationFrame(() => {
+        state.paneRenderQueued = false;
+        render2D();
+        positionCartonPresetPopover();
+      });
+    }
+
+    function applyPaneLayout(left, right, { changedPane = null, remember = false } = {}) {
+      if (!isResizablePaneLayout()) return;
+      const constrained = constrainPaneWidths(left, right, changedPane);
+      els.main.style.setProperty("--side-pane-width", constrained.left + "px");
+      els.main.style.setProperty("--view-pane-width", constrained.right + "px");
+      updatePaneResizerAria(constrained.left, constrained.right, constrained.maximumCombined);
+      if (remember) {
+        state.panePreference = { left: constrained.left, right: constrained.right };
+        localStorage.setItem("palletPlannerPaneWidths", JSON.stringify(state.panePreference));
+      }
+      schedulePaneLayoutRender();
+    }
+
+    function restorePaneLayout() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("palletPlannerPaneWidths") || "null");
+        if (saved && Number(saved.left) > 0 && Number(saved.right) > 0) {
+          state.panePreference = { left: Number(saved.left), right: Number(saved.right) };
+        }
+      } catch {
+        localStorage.removeItem("palletPlannerPaneWidths");
+      }
+      applyPaneLayout(state.panePreference.left, state.panePreference.right);
+    }
+
+    function startPaneResize(event) {
+      if (!isResizablePaneLayout() || event.button !== 0) return;
+      const widths = currentPaneWidths();
+      state.paneResize = {
+        side: event.currentTarget.dataset.paneResizer,
+        startX: event.clientX,
+        startLeft: widths.left,
+        startRight: widths.right,
+        pointerId: event.pointerId,
+        handle: event.currentTarget,
+      };
+      event.currentTarget.classList.add("active");
+      event.currentTarget.setPointerCapture(event.pointerId);
+      document.body.classList.add("resizing-panes");
+      closeCartonPresetList();
+      event.preventDefault();
+    }
+
+    function movePaneResize(event) {
+      if (!state.paneResize || event.pointerId !== state.paneResize.pointerId) return;
+      const delta = event.clientX - state.paneResize.startX;
+      const left = state.paneResize.side === "left"
+        ? state.paneResize.startLeft + delta
+        : state.paneResize.startLeft;
+      const right = state.paneResize.side === "right"
+        ? state.paneResize.startRight - delta
+        : state.paneResize.startRight;
+      applyPaneLayout(left, right, { changedPane: state.paneResize.side });
+    }
+
+    function finishPaneResize(event) {
+      if (!state.paneResize || event.pointerId !== state.paneResize.pointerId) return;
+      const { handle, pointerId, side } = state.paneResize;
+      if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);
+      handle.classList.remove("active");
+      document.body.classList.remove("resizing-panes");
+      state.paneResize = null;
+      const widths = currentPaneWidths();
+      applyPaneLayout(widths.left, widths.right, { changedPane: side, remember: true });
+    }
+
+    function resetPaneLayout() {
+      state.panePreference = { left: PANE_LAYOUT.defaultLeft, right: PANE_LAYOUT.defaultRight };
+      applyPaneLayout(state.panePreference.left, state.panePreference.right, { remember: true });
+      showToast(t("paneLayoutReset"));
+    }
+
+    function handlePaneResizerKeydown(event) {
+      if (!isResizablePaneLayout()) return;
+      if (event.key === "Home") {
+        event.preventDefault();
+        resetPaneLayout();
+        return;
+      }
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      event.stopPropagation();
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      const delta = direction * (event.shiftKey ? 50 : PANE_LAYOUT.keyboardStep);
+      const widths = currentPaneWidths();
+      if (event.currentTarget.dataset.paneResizer === "left") {
+        applyPaneLayout(widths.left + delta, widths.right, { changedPane: "left", remember: true });
+      } else {
+        applyPaneLayout(widths.left, widths.right - delta, { changedPane: "right", remember: true });
+      }
+    }
+
+    function handlePaneViewportResize() {
+      if (state.paneResize) {
+        state.paneResize.handle.classList.remove("active");
+        state.paneResize = null;
+        document.body.classList.remove("resizing-panes");
+      }
+      if (isResizablePaneLayout()) {
+        applyPaneLayout(state.panePreference.left, state.panePreference.right);
+      } else {
+        schedulePaneLayoutRender();
+      }
     }
 
     function readForm() {
@@ -2857,6 +3120,14 @@
         applyTheme();
       });
       document.querySelectorAll("[data-align]").forEach(button => button.addEventListener("click", () => alignSelected(button.dataset.align)));
+      els.paneResizers.forEach(resizer => {
+        resizer.addEventListener("pointerdown", startPaneResize);
+        resizer.addEventListener("pointermove", movePaneResize);
+        resizer.addEventListener("pointerup", finishPaneResize);
+        resizer.addEventListener("pointercancel", finishPaneResize);
+        resizer.addEventListener("dblclick", resetPaneLayout);
+        resizer.addEventListener("keydown", handlePaneResizerKeydown);
+      });
       els.board.addEventListener("pointerdown", event => {
         if (event.target === els.board) {
           state.selectedId = null;
@@ -2865,7 +3136,7 @@
       });
       window.addEventListener("keydown", handleKeyboardShortcuts);
       window.addEventListener("resize", () => {
-        render2D();
+        handlePaneViewportResize();
         positionCartonPresetPopover();
       });
       window.addEventListener("scroll", event => {
@@ -2874,6 +3145,7 @@
     }
 
     els.showDimensions3d.checked = state.showDimensions;
+    restorePaneLayout();
 
     syncPalletPresetFromDimensions();
     readForm();
