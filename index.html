@@ -1215,6 +1215,7 @@
         dirNormal: "横向",
         emptyPlans: "点击“计算方案”生成可选摆法。",
         noFitPlan: "当前箱子尺寸无法放入托盘。",
+        noEfficientPlan: "未找到利用率达到 70% 的方案，请调整托盘或箱子尺寸。",
         apply: "应用",
         planMeta: "单层 {count} 箱，三层 {total} 箱，利用率约 {util}%。",
         optimalProof: "已验证最优",
@@ -1323,6 +1324,7 @@
         dirNormal: "normal",
         emptyPlans: "Click Calculate to generate layout options.",
         noFitPlan: "The current carton size does not fit on the pallet.",
+        noEfficientPlan: "No layout reaches 70% utilization. Adjust the pallet or carton size.",
         apply: "Apply",
         planMeta: "{count} / layer, {total} total, about {util}% utilization.",
         optimalProof: "Proven optimal",
@@ -2545,6 +2547,8 @@
       return layouts;
     }
 
+    const MIN_PLAN_UTILIZATION = 0.7;
+
     function calculatePlans() {
       readForm();
       const plans = [];
@@ -2634,10 +2638,11 @@
         seedPlan.provenOptimal = true;
       }
 
-      plans.sort((a, b) => b.count - a.count || Number(b.provenOptimal) - Number(a.provenOptimal) || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
-      state.plans = plans.slice(0, 7);
+      const eligiblePlans = plans.filter(plan => plan.util >= MIN_PLAN_UTILIZATION - 1e-9);
+      eligiblePlans.sort((a, b) => b.count - a.count || Number(b.provenOptimal) - Number(a.provenOptimal) || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
+      state.plans = eligiblePlans.slice(0, 7);
       state.activePlan = state.plans[0]?.id ?? null;
-      state.planMessageKey = state.plans.length ? null : "noFitPlan";
+      state.planMessageKey = state.plans.length ? null : (plans.length ? "noEfficientPlan" : "noFitPlan");
       renderPlans();
       if (state.plans[0]) {
         applyPlan(state.plans[0].id);
@@ -2645,7 +2650,7 @@
         state.layout = [];
         state.selectedId = null;
         render2D();
-        showToast(t("noFitPlan"));
+        showToast(t(state.planMessageKey || "noFitPlan"));
       }
     }
 
