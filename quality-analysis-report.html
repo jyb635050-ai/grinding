@@ -647,9 +647,6 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
   <button class="module-btn" id="mod-att" draggable="true" onclick="switchModule('att',this)">
     <svg class="ic"><use href="#i-clock"/></svg> <span data-zh>考勤分析</span><span data-en>Attendance</span>
   </button>
-  <button class="module-btn" id="mod-sales" draggable="true" onclick="switchModule('sales',this)">
-    <svg class="ic"><use href="#i-money"/></svg> <span data-zh>销售分析</span><span data-en>Sales</span>
-  </button>
   <button class="module-btn" id="mod-prec" draggable="true" onclick="switchModule('prec',this)">
     <svg class="ic"><use href="#i-ruler"/></svg> <span data-zh>精测分析</span><span data-en>Precision Test</span>
   </button>
@@ -721,12 +718,6 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="kpi-value" data-exec-kpi="gp12Def">—</div>
       <div class="kpi-sub"><span data-zh>加严检验单件不良率</span><span data-en>Enhanced-inspection unit rate</span></div>
     </div>
-    <div class="kpi-card" style="--kpi-color:#d97706;">
-      <span class="kpi-icon"><svg class="ic"><use href="#i-money"/></svg></span>
-      <div class="kpi-label"><span data-zh>销售额</span><span data-en>Sales Value</span></div>
-      <div class="kpi-value" data-exec-kpi="salesVal">—</div>
-      <div class="kpi-sub" data-exec-sub="salesVal"><span data-zh>当月发货金额</span><span data-en>Monthly shipment value</span></div>
-    </div>
     <div class="kpi-card" style="--kpi-color:#0891b2;">
       <span class="kpi-icon"><svg class="ic"><use href="#i-clock"/></svg></span>
       <div class="kpi-label"><span data-zh>考勤异常</span><span data-en>Attendance Issues</span></div>
@@ -763,12 +754,6 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="kpi-label"><span data-zh>YTD 装配产量</span><span data-en>YTD Assembly Output</span></div>
       <div class="kpi-value" data-ytd="asmOut">—</div>
       <div class="kpi-sub"><span data-zh>1-6月累计成品 (pcs)</span><span data-en>Jan–Jun finished (pcs)</span></div>
-    </div>
-    <div class="kpi-card" style="--kpi-color:#d97706;">
-      <span class="kpi-icon"><svg class="ic"><use href="#i-money"/></svg></span>
-      <div class="kpi-label"><span data-zh>YTD 销售额</span><span data-en>YTD Sales Value</span></div>
-      <div class="kpi-value" data-ytd="sales">—</div>
-      <div class="kpi-sub"><span data-zh>累计发货 (5月起有数据)</span><span data-en>cumulative (from May)</span></div>
     </div>
   </div>
 </section>
@@ -818,12 +803,6 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="chart-wrap" style="height:130px;"><canvas id="execProd"></canvas></div>
       <div class="exec-stat"><span class="exec-stat-val" data-exec-stat="prod">—</span><span class="exec-stat-lbl"><span data-zh>当月超精产出 (pcs)</span><span data-en>superfinish output (pcs)</span></span></div>
       <button class="exec-go" onclick="switchModule('prod',document.getElementById('mod-prod'))"><span data-zh>查看详情 →</span><span data-en>Details →</span></button>
-    </div>
-    <div class="chart-card exec-card">
-      <div class="chart-title" style="--ct-color:#e85d04;"><span data-zh>销售 · 发货金额</span><span data-en>Sales · Shipment Value</span></div>
-      <div class="chart-wrap" style="height:130px;"><canvas id="execSales"></canvas></div>
-      <div class="exec-stat"><span class="exec-stat-val" data-exec-stat="sales">—</span><span class="exec-stat-lbl"><span data-zh>当月金额</span><span data-en>monthly value</span></span></div>
-      <button class="exec-go" onclick="switchModule('sales',document.getElementById('mod-sales'))"><span data-zh>查看详情 →</span><span data-en>Details →</span></button>
     </div>
     <div class="chart-card exec-card">
       <div class="chart-title" style="--ct-color:#4f46e5;"><span data-zh>考勤 · 异常记录</span><span data-en>Attendance · Issues</span></div>
@@ -3160,313 +3139,6 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
 </main>
 </div><!-- end module-att -->
 
-<!-- ══════ MODULE: SALES ══════ -->
-<div class="module-panel" id="module-sales">
-
-<!-- MONTH SWITCHER (sales) -->
-<div class="month-bar" id="sales-month-bar">
-  <span class="month-bar-label"><span data-zh>月份</span><span data-en>MONTH</span></span>
-  <button class="month-btn" data-month="1" disabled>1月 JAN</button>
-  <button class="month-btn" data-month="2" disabled>2月 FEB</button>
-  <button class="month-btn" data-month="3" disabled>3月 MAR</button>
-  <button class="month-btn" data-month="4" disabled>4月 APR</button>
-  <button class="month-btn" data-month="5" onclick="switchMonth('sales',5,this)">5月 MAY</button>
-  <button class="month-btn active" data-month="6" onclick="switchMonth('sales',6,this)">6月 JUN</button>
-  <button class="month-btn" data-month="7" disabled>7月 JUL</button>
-  <button class="month-btn" data-month="8" disabled>8月 AUG</button>
-  <button class="month-btn" data-month="9" disabled>9月 SEP</button>
-  <button class="month-btn" data-month="10" disabled>10月 OCT</button>
-  <button class="month-btn" data-month="11" disabled>11月 NOV</button>
-  <button class="month-btn" data-month="12" disabled>12月 DEC</button>
-</div>
-
-<header>
-  <div class="header-tag">
-    <span data-zh>商务报告 · 销售发货分析</span>
-    <span data-en>Commercial Report · Sales &amp; Shipment</span>
-  </div>
-  <h1>
-    <span data-zh>销售<span>发货分析</span></span>
-    <span data-en>Sales <span>Shipment Analysis</span></span>
-  </h1>
-  <div class="header-meta">
-    <div class="meta-pill"><span class="dot"></span><span data-hdr="sales-month">2026年6月</span></div>
-    <div class="meta-pill" data-hdr="sales-file">6月份销售发货.xlsx</div>
-    <div class="meta-pill"><span data-hdr="sales-orders">22单 全外贸</span></div>
-    <div class="meta-pill"><span data-hdr="sales-value">金额 ¥186万</span></div>
-  </div>
-</header>
-
-<div class="tab-nav" id="sales-tab-nav">
-  <button class="tab-btn active" onclick="switchSalesTab('sales-overview',this)"><svg class="ic"><use href="#i-chart"/></svg> <span data-zh>总览</span><span data-en>Overview</span></button>
-  <button class="tab-btn" onclick="switchSalesTab('sales-customer',this)"><svg class="ic"><use href="#i-users"/></svg> <span data-zh>客户分析</span><span data-en>Customer</span></button>
-  <button class="tab-btn" onclick="switchSalesTab('sales-trend',this)"><svg class="ic"><use href="#i-trend"/></svg> <span data-zh>日发货趋势</span><span data-en>Daily Trend</span></button>
-  <button class="tab-btn" onclick="switchSalesTab('sales-trade',this)"><svg class="ic"><use href="#i-ship"/></svg> <span data-zh>贸易 &amp; 运营</span><span data-en>Trade &amp; Ops</span></button>
-  <button class="tab-btn" onclick="switchSalesTab('sales-detail',this)"><svg class="ic"><use href="#i-list"/></svg> <span data-zh>明细表</span><span data-en>Detail Tables</span></button>
-</div>
-
-<main>
-
-<!-- ── SALES OVERVIEW ── -->
-<div class="tab-panel active" id="tab-sales-overview">
-  <section>
-    <div class="section-label"><span data-zh>第一节</span><span data-en>SECTION 01</span></div>
-    <div class="section-title"><span data-zh>销售关键指标概览</span><span data-en>Sales KPIs</span></div>
-    <div class="kpi-grid">
-      <div class="kpi-card" style="--kpi-color:#2563eb;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-money"/></svg></span>
-        <div class="kpi-label"><span data-zh>发货金额</span><span data-en>Shipment Value</span></div>
-        <div class="kpi-value" id="sales-kv-value">¥1.79M</div>
-        <div class="kpi-sub" id="sales-ks-value"><span data-zh>累计 ¥1,790,690</span><span data-en>Total ¥1,790,690</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#059669;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-box"/></svg></span>
-        <div class="kpi-label"><span data-zh>出库总量</span><span data-en>Shipped Qty</span></div>
-        <div class="kpi-value" id="sales-kv-qty">434,143</div>
-        <div class="kpi-sub"><span data-zh>件 pcs</span><span data-en>pcs</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#d97706;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-list"/></svg></span>
-        <div class="kpi-label"><span data-zh>发货单据</span><span data-en>Orders</span></div>
-        <div class="kpi-value" id="sales-kv-orders">23</div>
-        <div class="kpi-sub" id="sales-ks-orders"><span data-zh>全部出库完成</span><span data-en>All completed</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#7c3aed;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-money"/></svg></span>
-        <div class="kpi-label"><span data-zh>单件均价</span><span data-en>Avg Unit Price</span></div>
-        <div class="kpi-value" id="sales-kv-price">¥4.12</div>
-        <div class="kpi-sub"><span data-zh>金额 ÷ 数量</span><span data-en>Value ÷ Qty</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#dc2626;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-trophy"/></svg></span>
-        <div class="kpi-label"><span data-zh>最大开票客户</span><span data-en>Top Bill-to</span></div>
-        <div class="kpi-value" id="sales-kv-topbill"><span data-zh>¥75万</span><span data-en>¥751K</span></div>
-        <div class="kpi-sub" id="sales-ks-topbill"><span data-zh>C&amp;U Americas 占42%</span><span data-en>C&amp;U Americas · 42%</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#0891b2;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-target"/></svg></span>
-        <div class="kpi-label"><span data-zh>最大终端客户</span><span data-en>Top End Customer</span></div>
-        <div class="kpi-value" id="sales-kv-topend"><span data-zh>¥56万</span><span data-en>¥560K</span></div>
-        <div class="kpi-sub" id="sales-ks-topend"><span data-zh>BorgWarner (ETTS+Thermal) 占31%</span><span data-en>BorgWarner (ETTS+Thermal) · 31%</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#e85d04;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-users"/></svg></span>
-        <div class="kpi-label"><span data-zh>客户覆盖</span><span data-en>Customers</span></div>
-        <div class="kpi-value" id="sales-kv-coverage">7 / 10</div>
-        <div class="kpi-sub" id="sales-ks-coverage"><span data-zh>开票7家 / 终端10家</span><span data-en>7 bill-to / 10 end</span></div>
-      </div>
-      <div class="kpi-card" style="--kpi-color:#4f46e5;">
-        <span class="kpi-icon"><svg class="ic"><use href="#i-globe"/></svg></span>
-        <div class="kpi-label"><span data-zh>出口结构</span><span data-en>Export Structure</span></div>
-        <div class="kpi-value" id="sales-kv-export">100%</div>
-        <div class="kpi-sub" id="sales-ks-export"><span data-zh>全外贸 FOB:DAP:CIF=15:6:2</span><span data-en>All export · FOB 15 / DAP 6 / CIF 2</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
-    <div class="section-title"><span data-zh>开票客户 vs 终端客户金额分布</span><span data-en>Bill-to vs End Customer Value</span></div>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>开票客户 — 金额占比</span><span data-en>Bill-to Customer — Value Share</span></div>
-        <div class="chart-wrap"><canvas id="salesBillPie"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>终端客户 — 金额占比</span><span data-en>End Customer — Value Share</span></div>
-        <div class="chart-wrap"><canvas id="salesEndPie"></canvas></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-label"><span data-zh>第三节</span><span data-en>SECTION 03</span></div>
-    <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights</span></div>
-    <div class="insights" id="sales-insights"></div>
-  </section>
-</div>
-
-<!-- ── SALES CUSTOMER ── -->
-<div class="tab-panel" id="tab-sales-customer">
-  <section>
-    <div class="section-label">CUSTOMER</div>
-    <div class="section-title"><span data-zh>客户分析（双维度）</span><span data-en>Customer Analysis (Dual View)</span></div>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>开票客户 — 金额排行（¥）</span><span data-en>Bill-to — Value Ranking (¥)</span></div>
-        <div class="chart-wrap"><canvas id="salesBillBar"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>终端客户 — 金额排行（¥）</span><span data-en>End Customer — Value Ranking (¥)</span></div>
-        <div class="chart-wrap"><canvas id="salesEndBar"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-top:18px;">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>各客户出库数量（件）</span><span data-en>Shipped Qty by Customer (pcs)</span></div>
-        <div class="chart-wrap"><canvas id="salesQtyBar"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>终端客户单件均价（¥/件）</span><span data-en>Unit Price by End Customer (¥/pc)</span></div>
-        <div class="chart-wrap"><canvas id="salesPriceBar"></canvas></div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ── SALES TREND ── -->
-<div class="tab-panel" id="tab-sales-trend">
-  <section>
-    <div class="section-label">DAILY TREND</div>
-    <div class="section-title"><span data-zh>日发货趋势</span><span data-en>Daily Shipment Trend</span></div>
-    <div class="charts-grid">
-      <div class="chart-card full">
-        <div class="chart-title" style="--ct-color:#2563eb;"><span data-zh>每日发货金额（单据数见悬浮提示）</span><span data-en>Daily Shipment Value (orders in tooltip)</span></div>
-        <div class="chart-wrap tall"><canvas id="salesDailyChart"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-top:18px;">
-      <div class="chart-card full">
-        <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>5月每日发货数量（件）</span><span data-en>Daily Shipment Quantity (pcs)</span></div>
-        <div class="chart-wrap"><canvas id="salesDailyQty"></canvas></div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ── SALES TRADE ── -->
-<div class="tab-panel" id="tab-sales-trade">
-  <section>
-    <div class="section-label">TRADE &amp; OPS</div>
-    <div class="section-title"><span data-zh>贸易条款 &amp; 运营特征</span><span data-en>Trade Terms &amp; Operations</span></div>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#0891b2;"><span data-zh>贸易条款分布</span><span data-en>Trade Terms Distribution</span></div>
-        <div class="chart-wrap"><canvas id="salesTermsPie"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>各贸易条款金额对比</span><span data-en>Value by Trade Term</span></div>
-        <div class="chart-wrap"><canvas id="salesTermsBar"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-top:18px;">
-      <div class="chart-card full">
-        <div class="chart-title" style="--ct-color:#059669;"><span data-zh>运营特征汇总</span><span data-en>Operational Characteristics</span></div>
-        <div style="padding:8px 4px;font-size:12.5px;color:var(--text-sub);line-height:1.95;">
-          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
-            <strong style="color:var(--text);"><span data-zh>📦 销售类型</span><span data-en>Sales Type</span></strong>
-            <span><span data-zh>23单全部为外贸销售，无内销订单</span><span data-en>All 23 orders are export sales; no domestic orders</span></span>
-          </p>
-          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
-            <strong style="color:var(--text);"><span data-zh>✅ 发货状态</span><span data-en>Status</span></strong>
-            <span><span data-zh>23单全部"出库完成"，履约率100%</span><span data-en>All 23 orders "shipment complete" — 100% fulfillment</span></span>
-          </p>
-          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
-            <strong style="color:var(--text);"><span data-zh>🚚 是否直发</span><span data-en>Direct Ship</span></strong>
-            <span><span data-zh>全部"否"，统一经PHJY仓库发货</span><span data-en>All "No" — uniformly shipped from PHJY warehouse</span></span>
-          </p>
-          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
-            <strong style="color:var(--text);"><span data-zh>⚡ 紧急发货</span><span data-en>Urgent</span></strong>
-            <span><span data-zh>全部"否"，无紧急订单</span><span data-en>All "No" — no urgent orders</span></span>
-          </p>
-          <p style="margin-bottom:10px;display:grid;grid-template-columns:1fr 2fr;gap:14px;">
-            <strong style="color:var(--text);"><span data-zh>🏷️ 贴标 / 打包</span><span data-en>Label / Pack</span></strong>
-            <span><span data-zh>统一"常规标签"+"无包装带"，运营高度标准化</span><span data-en>All "regular labels" + "no packing strap" — highly standardized</span></span>
-          </p>
-          <p style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
-            <strong style="color:var(--text);"><span data-zh>🚛 送货方式</span><span data-en>Delivery</span></strong>
-            <span><span data-zh>全部"送货"模式</span><span data-en>All "delivery" mode</span></span>
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ── SALES DETAIL ── -->
-<div class="tab-panel" id="tab-sales-detail">
-  <section>
-    <div class="section-label">DETAIL TABLES</div>
-    <div class="section-title"><span data-zh>销售数据明细表</span><span data-en>Sales Detail Tables</span></div>
-
-    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>开票客户 / 终端客户 汇总</span><span data-en>Bill-to vs End Customer Summary</span></p>
-    <div class="table-wrap" style="margin-bottom:28px;">
-      <table>
-        <thead><tr>
-          <th><span data-zh>开票客户 Bill-to</span><span data-en>Bill-to</span></th>
-          <th><span data-zh>单据</span><span data-en>Orders</span></th>
-          <th><span data-zh>数量(件)</span><span data-en>Qty (pcs)</span></th>
-          <th><span data-zh>金额(¥)</span><span data-en>Value (¥)</span></th>
-          <th><span data-zh>占比</span><span data-en>Share</span></th>
-        </tr></thead>
-        <tbody id="sales-tbl-bill">
-          <tr><td>C&amp;U Americas, LLC</td><td class="num">7</td><td class="num">117,151</td><td class="num">750,866</td><td class="num" style="color:#dc2626;font-weight:700;">41.9%</td></tr>
-          <tr><td>GATES UNITTA INDIA</td><td class="num">2</td><td class="num">68,040</td><td class="num">286,884</td><td class="num">16.0%</td></tr>
-          <tr><td>TVS MOTOR COMPANY</td><td class="num">2</td><td class="num">99,000</td><td class="num">250,104</td><td class="num">14.0%</td></tr>
-          <tr><td>Hyundai Mobis Co., Ltd</td><td class="num">3</td><td class="num">56,160</td><td class="num">186,496</td><td class="num">10.4%</td></tr>
-          <tr><td>ZF Automotive Thailand</td><td class="num">6</td><td class="num">30,192</td><td class="num">156,126</td><td class="num">8.7%</td></tr>
-          <tr><td>C&amp;U Europe GmbH</td><td class="num">1</td><td class="num">49,600</td><td class="num">123,008</td><td class="num">6.9%</td></tr>
-          <tr><td><span data-zh>日本C&amp;U精工株式会社</span><span data-en>C&amp;U Seiko Japan</span></td><td class="num">2</td><td class="num">14,000</td><td class="num">37,206</td><td class="num">2.1%</td></tr>
-          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">23</td><td class="num">434,143</td><td class="num">1,790,690</td><td class="num">100.0%</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>终端客户 汇总（含单件均价）</span><span data-en>End Customer Summary (incl. Unit Price)</span></p>
-    <div class="table-wrap" style="margin-bottom:28px;">
-      <table>
-        <thead><tr>
-          <th><span data-zh>终端客户 End Customer</span><span data-en>End Customer</span></th>
-          <th><span data-zh>单据</span><span data-en>Orders</span></th>
-          <th><span data-zh>数量(件)</span><span data-en>Qty (pcs)</span></th>
-          <th><span data-zh>金额(¥)</span><span data-en>Value (¥)</span></th>
-          <th><span data-zh>单价(¥/件)</span><span data-en>Unit ¥</span></th>
-        </tr></thead>
-        <tbody id="sales-tbl-end">
-          <tr><td>BORGWARNER TURBO (ETTS)</td><td class="num">3</td><td class="num">43,231</td><td class="num" style="color:#dc2626;font-weight:700;">444,474</td><td class="num">10.28</td></tr>
-          <tr><td>GATES UNITTA INDIA</td><td class="num">2</td><td class="num">68,040</td><td class="num">286,884</td><td class="num">4.22</td></tr>
-          <tr><td>TVS MOTOR COMPANY</td><td class="num">2</td><td class="num">99,000</td><td class="num">250,104</td><td class="num">2.53</td></tr>
-          <tr><td>Hyundai Mobis</td><td class="num">3</td><td class="num">56,160</td><td class="num">186,496</td><td class="num">3.32</td></tr>
-          <tr><td>ZF Automotive Thailand</td><td class="num">6</td><td class="num">30,192</td><td class="num">156,126</td><td class="num">5.17</td></tr>
-          <tr><td>MUVIQ USA, LLC</td><td class="num">1</td><td class="num">40,320</td><td class="num">155,599</td><td class="num">3.86</td></tr>
-          <tr><td>Beko Spol. S.R.O</td><td class="num">1</td><td class="num">49,600</td><td class="num">123,008</td><td class="num">2.48</td></tr>
-          <tr><td>BorgWarner Thermal Systems</td><td class="num">2</td><td class="num">22,800</td><td class="num">115,398</td><td class="num">5.06</td></tr>
-          <tr><td><span data-zh>関東農機</span><span data-en>Kanto Nouki</span></td><td class="num">2</td><td class="num">14,000</td><td class="num">37,206</td><td class="num">2.66</td></tr>
-          <tr><td>NIDEC MOTOR CORP HURST</td><td class="num">1</td><td class="num">10,800</td><td class="num">35,395</td><td class="num">3.28</td></tr>
-          <tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">23</td><td class="num">434,143</td><td class="num">1,790,690</td><td class="num">4.12</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:11px;"><span data-zh>单笔订单 TOP10（按金额）</span><span data-en>Top 10 Single Orders (by Value)</span></p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th><span data-zh>日期</span><span data-en>Date</span></th>
-          <th><span data-zh>开票客户</span><span data-en>Bill-to</span></th>
-          <th><span data-zh>终端客户</span><span data-en>End</span></th>
-          <th><span data-zh>数量</span><span data-en>Qty</span></th>
-          <th><span data-zh>金额(¥)</span><span data-en>Value (¥)</span></th>
-        </tr></thead>
-        <tbody id="sales-tbl-top10">
-          <tr><td>05-23</td><td>C&amp;U Americas</td><td>BorgWarner ETTS</td><td class="num">43,200</td><td class="num" style="color:#dc2626;font-weight:700;">444,195</td></tr>
-          <tr><td>05-04</td><td>GATES UNITTA INDIA</td><td>GATES UNITTA INDIA</td><td class="num">45,360</td><td class="num">191,256</td></tr>
-          <tr><td>05-23</td><td>C&amp;U Americas</td><td>MUVIQ USA</td><td class="num">40,320</td><td class="num">155,599</td></tr>
-          <tr><td>05-14</td><td>TVS MOTOR</td><td>TVS MOTOR</td><td class="num">49,500</td><td class="num">125,052</td></tr>
-          <tr><td>05-04</td><td>TVS MOTOR</td><td>TVS MOTOR</td><td class="num">49,500</td><td class="num">125,052</td></tr>
-          <tr><td>05-11</td><td>C&amp;U Europe</td><td>Beko (Czech)</td><td class="num">49,600</td><td class="num">123,008</td></tr>
-          <tr><td>05-28</td><td>GATES UNITTA INDIA</td><td>GATES UNITTA INDIA</td><td class="num">22,680</td><td class="num">95,628</td></tr>
-          <tr><td>05-12</td><td>C&amp;U Americas</td><td>BorgWarner Thermal</td><td class="num">14,400</td><td class="num">93,248</td></tr>
-          <tr><td>05-25</td><td>Hyundai Mobis</td><td>Hyundai Mobis</td><td class="num">14,040</td><td class="num">62,166</td></tr>
-          <tr><td>05-25</td><td>Hyundai Mobis</td><td>Hyundai Mobis</td><td class="num">14,040</td><td class="num">62,166</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-</div>
-
-</main>
-</div><!-- end module-sales -->
 
 <!-- ══════════ MODULE: PRECISION TEST 精测分析 ══════════ -->
 <div class="module-panel" id="module-prec">
@@ -3892,11 +3564,6 @@ function switchMonth(module, month, btn) {
   // Attendance: re-render charts for the selected month from _attData.
   if (module === 'att') {
     initAttCharts(month);
-  }
-  // Sales: only May (5) currently has data; re-init charts on (re)select.
-  // When other months' data is provided, add window._renderSalesMonth(month) like the other modules.
-  if (module === 'sales') {
-    initSalesCharts(month);
   }
 }
 
@@ -4478,13 +4145,6 @@ function switchModule(id, btn) {
     document.querySelectorAll('#att-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
     initAttCharts();
   }
-  if (id==='sales') {
-    document.querySelectorAll('#tab-sales-overview,#tab-sales-customer,#tab-sales-trend,#tab-sales-trade,#tab-sales-detail')
-      .forEach(p=>p.classList.remove('active'));
-    document.getElementById('tab-sales-overview').classList.add('active');
-    document.querySelectorAll('#sales-tab-nav .tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
-    initSalesCharts();
-  }
   if (id==='prec') {
     document.querySelectorAll('#tab-prec-overview,#tab-prec-process,#tab-prec-model,#tab-prec-equip,#tab-prec-detail')
       .forEach(p=>p.classList.remove('active'));
@@ -4562,15 +4222,6 @@ function switchModule(id, btn) {
   else go();
 })();
 
-// ── Sales tab switch ──
-function switchSalesTab(id, btn) {
-  document.querySelectorAll('#tab-sales-overview,#tab-sales-customer,#tab-sales-trend,#tab-sales-trade,#tab-sales-detail')
-    .forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('#sales-tab-nav .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
-  initSalesCharts();
-}
 
 // ── Attendance tab switch ──
 function switchAttTab(id, btn) {
@@ -5835,210 +5486,6 @@ function initAttCharts(month) {
   reg('attBackOut');
 }
 
-// ── Sales charts (lazy init once) ──
-let salesChartsInited = false;
-
-window._salesData = {"5":{"kpi":{"totalVal":1790690,"totalQty":434143,"orders":23,"avgPrice":4.12,"topBillName":"C&U Americas","topBillVal":750866,"topBillPct":42,"topEndName":"BorgWarner ETTS","topEndVal":444474,"topEndPct":25,"nBill":7,"nEnd":10,"exportPct":100,"termsCnt":{"FOB":15,"DAP":6,"CIF":2},"nExcluded":0,"excludedVal":0},"billPie":{"labels":["C&U Americas","GATES India","TVS Motor","Hyundai Mobis","ZF Thailand","C&U Europe","C&U Japan"],"data":[750866,286884,250104,186496,156126,123008,37206]},"endPie":{"labels":["BorgWarner ETTS","GATES India","TVS Motor","Hyundai Mobis","ZF Thailand","MUVIQ USA","Beko Czech","BW Thermal","其他 Others"],"data":[444474,286884,250104,186496,156126,155599,123008,115398,72601]},"billBar":{"labels":["C&U Americas","GATES India","TVS Motor","Hyundai Mobis","ZF Thailand","C&U Europe","C&U Japan"],"data":[750866,286884,250104,186496,156126,123008,37206]},"endBar":{"labels":["BorgWarner ETTS","GATES India","TVS Motor","Hyundai Mobis","ZF Thailand","MUVIQ USA","Beko Czech","BW Thermal","Kanto Nouki","Nidec Hurst"],"data":[444474,286884,250104,186496,156126,155599,123008,115398,37206,35395]},"qtyBar":{"labels":["TVS Motor","GATES India","Hyundai Mobis","Beko Czech","BorgWarner ETTS","MUVIQ USA","ZF Thailand","BW Thermal","Kanto Nouki","Nidec Hurst"],"data":[99000,68040,56160,49600,43231,40320,30192,22800,14000,10800]},"priceBar":{"labels":["BorgWarner ETTS","ZF Thailand","BW Thermal","GATES India","MUVIQ USA","Hyundai Mobis","Nidec Hurst","Kanto Nouki","TVS Motor","Beko Czech"],"data":[10.28,5.17,5.06,4.22,3.86,3.32,3.28,2.66,2.53,2.48]},"dayLabels":["5/4","5/5","5/6","5/8","5/11","5/12","5/14","5/16","5/23","5/25","5/28"],"dailyVal":[316308,270,9,90249,123008,93248,182751,65877,710770,112572,95628],"dailyOrders":[2,1,1,3,1,1,2,3,5,3,1],"dailyQty":[94860,30,1,17448,49600,28080,60900,12744,111720,36080,22680],"termsPie":{"labels":["FOB","DAP","CIF"],"data":[15,6,2]},"termsBar":{"labels":["FOB","DAP","CIF"],"data":[1597357,156126,37206]},"billTable":[{"name":"C&U Americas，LLC","orders":7,"qty":117151,"val":750866,"pct":41.9},{"name":"GATES UNITTA INDIA COMPANY PVT.LTD.","orders":2,"qty":68040,"val":286884,"pct":16.0},{"name":"TVS MOTOR COMPANY LIMITED","orders":2,"qty":99000,"val":250104,"pct":14.0},{"name":"Hyundai Mobis Co.,Ltd","orders":3,"qty":56160,"val":186496,"pct":10.4},{"name":"ZF Automotive Safety Systems (Thailand) Co., Ltd.","orders":6,"qty":30192,"val":156126,"pct":8.7},{"name":"C&U Europe GmbH","orders":1,"qty":49600,"val":123008,"pct":6.9},{"name":"日本C&U精工株式会社","orders":2,"qty":14000,"val":37206,"pct":2.1}],"endTable":[{"name":"BORGWARNER TURBO SYSTEMS, LLC (ETTS)","orders":3,"qty":43231,"val":444474,"unit":10.28},{"name":"GATES UNITTA INDIA COMPANY PVT.LTD.","orders":2,"qty":68040,"val":286884,"unit":4.22},{"name":"TVS MOTOR COMPANY LIMITED","orders":2,"qty":99000,"val":250104,"unit":2.53},{"name":"Hyundai Mobis Co.,Ltd","orders":3,"qty":56160,"val":186496,"unit":3.32},{"name":"ZF Automotive Safety Systems (Thailand) Co., Ltd.","orders":6,"qty":30192,"val":156126,"unit":5.17},{"name":"MUVIQ USA, LLC","orders":1,"qty":40320,"val":155599,"unit":3.86},{"name":"Beko Spol. S.R.O","orders":1,"qty":49600,"val":123008,"unit":2.48},{"name":"BorgWarner Thermal Systems","orders":2,"qty":22800,"val":115398,"unit":5.06},{"name":"関東農機","orders":2,"qty":14000,"val":37206,"unit":2.66},{"name":"NIDEC MOTOR CORPORATION HURST","orders":1,"qty":10800,"val":35395,"unit":3.28}],"top10Table":[{"date":"05-23","bill":"C&U Americas","end":"BorgWarner ETTS","qty":43200,"val":444195},{"date":"05-04","bill":"GATES India","end":"GATES India","qty":45360,"val":191256},{"date":"05-23","bill":"C&U Americas","end":"MUVIQ USA","qty":40320,"val":155599},{"date":"05-14","bill":"TVS Motor","end":"TVS Motor","qty":49500,"val":125052},{"date":"05-04","bill":"TVS Motor","end":"TVS Motor","qty":49500,"val":125052},{"date":"05-11","bill":"C&U Europe","end":"Beko Czech","qty":49600,"val":123008},{"date":"05-28","bill":"GATES India","end":"GATES India","qty":22680,"val":95628},{"date":"05-12","bill":"Hyundai Mobis","end":"Hyundai Mobis","qty":28080,"val":93248},{"date":"05-23","bill":"C&U Americas","end":"BW Thermal","qty":11400,"val":57699},{"date":"05-14","bill":"C&U Americas","end":"BW Thermal","qty":11400,"val":57699}]},"6":{"kpi":{"totalVal":1858079,"totalQty":486972,"orders":22,"avgPrice":3.82,"topBillName":"C&U Americas","topBillVal":524535,"topBillPct":28,"topEndName":"Namyang Nexmo","topEndVal":481159,"topEndPct":26,"nBill":11,"nEnd":13,"exportPct":100,"termsCnt":{"FOB":12,"CIF":5,"DAP":3,"FCA":1,"EXW":1},"nExcluded":1,"excludedVal":74330},"billPie":{"labels":["C&U Americas","Namyang Nexmo","TVS Motor","Hyundai Mobis","WEG Equip.(ARG)","GATES India","C&U Europe","ZF Thailand","其他 Others"],"data":[524535,481159,250104,186496,128405,127504,123008,26584,10285]},"endPie":{"labels":["Namyang Nexmo","BorgWarner ETTS","TVS Motor","Hyundai Mobis","WEG Equip.(ARG)","GATES India","Beko Czech","Lentron Corp","其他 Others"],"data":[481159,444195,250104,186496,128405,127504,123008,47455,69754]},"billBar":{"labels":["C&U Americas","Namyang Nexmo","TVS Motor","Hyundai Mobis","WEG Equip.(ARG)","GATES India","C&U Europe","ZF Thailand","Jinmyong Trade","ZF Korea"],"data":[524535,481159,250104,186496,128405,127504,123008,26584,8417,1512]},"endBar":{"labels":["Namyang Nexmo","BorgWarner ETTS","TVS Motor","Hyundai Mobis","WEG Equip.(ARG)","GATES India","Beko Czech","Lentron Corp","WEG Electric(US)","ZF Thailand"],"data":[481159,444195,250104,186496,128405,127504,123008,47455,32885,26584]},"qtyBar":{"labels":["Namyang Nexmo","TVS Motor","Hyundai Mobis","Beko Czech","WEG Equip.(ARG)","BorgWarner ETTS","GATES India","ZF Thailand","Lentron Corp","WEG Electric(US)"],"data":[120120,99000,56160,49600,46200,43200,30240,18012,12400,10800]},"priceBar":{"labels":["Jinmyong Trade","BorgWarner ETTS","ZF Korea","GATES India","Namyang Nexmo","Lentron Corp","Hyundai Mobis","WEG Electric(US)","WEG Equip.(ARG)","TVS Motor"],"data":[28.06,10.28,6.3,4.22,4.01,3.83,3.32,3.04,2.78,2.53]},"dayLabels":["6/2","6/4","6/8","6/13","6/19","6/22","6/25","6/26"],"dailyVal":[106053,147202,411394,123364,50053,26584,444195,549235],"dailyOrders":[1,2,5,2,3,1,1,7],"dailyQty":[28080,43720,156000,50300,11340,18012,43200,136320],"termsPie":{"labels":["FOB","CIF","DAP","FCA","EXW"],"data":[12,5,3,1,1]},"termsBar":{"labels":["FOB","CIF","DAP","FCA","EXW"],"data":[1324510,481159,36512,15541,356]},"billTable":[{"name":"C&U Americas，LLC","orders":4,"qty":66400,"val":524535,"pct":28.2},{"name":"NAMYANG NEXMO CO., LTD.","orders":5,"qty":120120,"val":481159,"pct":25.9},{"name":"TVS MOTOR COMPANY LIMITED","orders":2,"qty":99000,"val":250104,"pct":13.5},{"name":"Hyundai Mobis Co.,Ltd","orders":3,"qty":56160,"val":186496,"pct":10.0},{"name":"WEG EQUIPAMIENTOS ELECTRICOS S.A.","orders":2,"qty":46200,"val":128405,"pct":6.9},{"name":"GATES UNITTA INDIA COMPANY PVT.LTD.","orders":1,"qty":30240,"val":127504,"pct":6.9},{"name":"C&U Europe GmbH","orders":1,"qty":49600,"val":123008,"pct":6.6},{"name":"ZF Automotive Safety Systems (Thailand) Co., Ltd.","orders":1,"qty":18012,"val":26584,"pct":1.4},{"name":"JINMYONG TRADE CO., LTD","orders":1,"qty":300,"val":8417,"pct":0.5},{"name":"ZF Automotive Korea Co., Ltd.","orders":1,"qty":240,"val":1512,"pct":0.1},{"name":"CAR-V INDUSTRIAL SALES","orders":1,"qty":700,"val":356,"pct":0.0}],"endTable":[{"name":"NAMYANG NEXMO CO., LTD.","orders":5,"qty":120120,"val":481159,"unit":4.01},{"name":"BORGWARNER TURBO SYSTEMS, LLC (ETTS)","orders":1,"qty":43200,"val":444195,"unit":10.28},{"name":"TVS MOTOR COMPANY LIMITED","orders":2,"qty":99000,"val":250104,"unit":2.53},{"name":"Hyundai Mobis Co.,Ltd","orders":3,"qty":56160,"val":186496,"unit":3.32},{"name":"WEG EQUIPAMIENTOS ELECTRICOS S.A.","orders":2,"qty":46200,"val":128405,"unit":2.78},{"name":"GATES UNITTA INDIA COMPANY PVT.LTD.","orders":1,"qty":30240,"val":127504,"unit":4.22},{"name":"Beko Spol. S.R.O","orders":1,"qty":49600,"val":123008,"unit":2.48},{"name":"LENTRON CORPORATION","orders":2,"qty":12400,"val":47455,"unit":3.83},{"name":"WEG ELECTRIC CORP. - WMO - BLUFFTON","orders":1,"qty":10800,"val":32885,"unit":3.04},{"name":"ZF Automotive Safety Systems (Thailand) Co., Ltd.","orders":1,"qty":18012,"val":26584,"unit":1.48},{"name":"JINMYONG TRADE CO., LTD","orders":1,"qty":300,"val":8417,"unit":28.06},{"name":"ZF Automotive Korea Co., Ltd.","orders":1,"qty":240,"val":1512,"unit":6.3},{"name":"CAR-V INDUSTRIAL SALES","orders":1,"qty":700,"val":356,"unit":0.51}],"top10Table":[{"date":"06-25","bill":"C&U Americas","end":"BorgWarner ETTS","qty":43200,"val":444195},{"date":"06-08","bill":"TVS Motor","end":"TVS Motor","qty":89100,"val":225093},{"date":"06-04","bill":"Hyundai Mobis","end":"Hyundai Mobis","qty":42120,"val":139872},{"date":"06-26","bill":"GATES India","end":"GATES India","qty":30240,"val":127504},{"date":"06-13","bill":"C&U Europe","end":"Beko Czech","qty":49600,"val":123008},{"date":"06-26","bill":"Namyang Nexmo","end":"Namyang Nexmo","qty":28080,"val":118121},{"date":"06-26","bill":"Namyang Nexmo","end":"Namyang Nexmo","qty":28080,"val":118121},{"date":"06-26","bill":"Namyang Nexmo","end":"Namyang Nexmo","qty":28080,"val":106053},{"date":"06-02","bill":"Namyang Nexmo","end":"Namyang Nexmo","qty":28080,"val":106053},{"date":"06-08","bill":"WEG Equip.(ARG)","end":"WEG Equip.(ARG)","qty":25000,"val":76060}]}};
-
-function _genSalesInsights(D, mo){
-  const mi=Number(mo), k=D.kpi;
-  _setHdrLang('sales-month', `2026年${mi}月`, `${_ME[mi]} 2026`);
-  const fe=document.querySelector('[data-hdr="sales-file"]'); if(fe) fe.textContent=`${mi}月份销售发货.xlsx`;
-  _setHdrLang('sales-orders', `${k.orders}单 全外贸`, `${k.orders} orders · export`);
-  _setHdrLang('sales-value', `金额 ¥${Math.round(k.totalVal/10000)}万`, `¥${(k.totalVal/1e6).toFixed(2)}M`);
-  const box=document.getElementById('sales-insights'); if(!box) return;
-  const prev=window._salesData[String(mi-1)];
-  const w=v=>'¥'+(v/10000).toFixed(0)+'万', mom=(c,p)=>p?`（环比 ${c>=p?'+':''}${((c-p)/p*100).toFixed(1)}%）`:'';
-  const cards=[];
-  cards.push(_insCard('#d97706','💰 销售额与订单','💰 Sales & Orders',
-    `本月发货 <strong>¥${(k.totalVal/1e6).toFixed(2)}M</strong>${mom(k.totalVal,prev?prev.kpi.totalVal:null)}，${k.orders} 单、${k.totalQty.toLocaleString()} 件，均价 ¥${k.avgPrice.toFixed(2)}/件。`,
-    `Shipped <strong>¥${(k.totalVal/1e6).toFixed(2)}M</strong>${prev?` (${k.totalVal>=prev.kpi.totalVal?'+':''}${((k.totalVal-prev.kpi.totalVal)/prev.kpi.totalVal*100).toFixed(1)}% MoM)`:''}, ${k.orders} orders, avg ¥${k.avgPrice.toFixed(2)}.`));
-  cards.push(_insCard('#2563eb','🧾 最大开票客户','🧾 Top Bill-to',
-    `开票客户以 <strong>${k.topBillName}</strong> 最大，${w(k.topBillVal)}、占 <strong>${k.topBillPct}%</strong>，共 ${k.nBill} 个开票客户。`,
-    `Largest bill-to is <strong>${k.topBillName}</strong> at ${w(k.topBillVal)} (${k.topBillPct}%), across ${k.nBill} accounts.`));
-  cards.push(_insCard('#e85d04','🎯 最大最终客户','🎯 Top End-customer',
-    `最终客户以 <strong>${k.topEndName}</strong> 最大，${w(k.topEndVal)}、占 ${k.topEndPct}%，共 ${k.nEnd} 个最终客户。`,
-    `Largest end-customer is <strong>${k.topEndName}</strong> at ${w(k.topEndVal)} (${k.topEndPct}%), across ${k.nEnd} customers.`));
-  if(k.termsCnt){
-    const t=Object.entries(k.termsCnt).sort((a,b)=>b[1]-a[1]);
-    const tstr=t.map(([n,v])=>`${n} ${v}单`).join('、');
-    cards.push(_insCard('#059669','🌍 全外贸 · 贸易条款','🌍 All Export · Incoterms',
-      `本月 <strong>${k.exportPct}%</strong> 外贸出口。贸易条款：${tstr}，以 ${t[0][0]} 为主。`,
-      `<strong>${k.exportPct}%</strong> export. Incoterms: ${t.map(([n,v])=>n+' '+v).join(', ')}.`));
-  }
-  if(D.priceBar&&D.priceBar.labels.length){
-    cards.push(_insCard('#7c3aed','💎 单价最高客户','💎 Highest Unit Price',
-      `<strong>${D.priceBar.labels[0]}</strong> 单价最高，达 ¥${D.priceBar.data[0].toFixed(2)}/件，属高附加值订单。`,
-      `<strong>${D.priceBar.labels[0]}</strong> has the highest unit price at ¥${D.priceBar.data[0].toFixed(2)}/pc.`));
-  }
-  box.innerHTML=cards.join('');
-}
-
-function initSalesCharts(month) {
-  const mo = String(month || window._salesMonth || 6);
-  window._salesMonth = mo;
-  const D = (window._salesData && window._salesData[mo]) ? window._salesData[mo] : null;
-  if (!D) return;
-  _genSalesInsights(D, mo);
-
-  const gridC = _mode==='dark' ? '#2a2f48' : '#e8ecf5';
-  const palette=['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#0891b2','#e85d04','#4f46e5','#f59e0b','#10b981'];
-  const fmtW=v=>v>=10000?(v/10000).toFixed(1)+'万':v.toLocaleString();
-  const fmtK=v=>v>=1000?'¥'+Math.round(v/1000)+'K':'¥'+v;
-
-  // ---- KPIs ----
-  const setH=(id,html)=>{const el=document.getElementById(id); if(el) el.innerHTML=html;};
-  setH('sales-kv-value', `¥${(D.kpi.totalVal/1000000).toFixed(2)}M`);
-  setH('sales-ks-value', `<span data-zh>累计 ¥${D.kpi.totalVal.toLocaleString()}</span><span data-en>Total ¥${D.kpi.totalVal.toLocaleString()}</span>`);
-  setH('sales-kv-qty', D.kpi.totalQty.toLocaleString());
-  setH('sales-kv-orders', D.kpi.orders);
-  const compTxt = D.kpi.nExcluded>0
-    ? `<span data-zh>${D.kpi.orders}单出库完成，另有${D.kpi.nExcluded}单待出库</span><span data-en>${D.kpi.orders} completed, ${D.kpi.nExcluded} pending</span>`
-    : `<span data-zh>全部出库完成</span><span data-en>All completed</span>`;
-  setH('sales-ks-orders', compTxt);
-  setH('sales-kv-price', `¥${D.kpi.avgPrice.toFixed(2)}`);
-  setH('sales-kv-topbill', `<span data-zh>${fmtW(D.kpi.topBillVal)}</span><span data-en>${fmtK(D.kpi.topBillVal)}</span>`);
-  setH('sales-ks-topbill', `<span data-zh>${D.kpi.topBillName} 占${D.kpi.topBillPct}%</span><span data-en>${D.kpi.topBillName} · ${D.kpi.topBillPct}%</span>`);
-  setH('sales-kv-topend', `<span data-zh>${fmtW(D.kpi.topEndVal)}</span><span data-en>${fmtK(D.kpi.topEndVal)}</span>`);
-  setH('sales-ks-topend', `<span data-zh>${D.kpi.topEndName} 占${D.kpi.topEndPct}%</span><span data-en>${D.kpi.topEndName} · ${D.kpi.topEndPct}%</span>`);
-  const salesPrev = window._salesData[String(Number(mo)-1)];
-  _momKpi('#sales-kv-value', D.kpi.totalVal, salesPrev?salesPrev.kpi.totalVal:null, 'up');
-  _momKpi('#sales-kv-qty', D.kpi.totalQty, salesPrev?salesPrev.kpi.totalQty:null, 'up');
-  _momKpi('#sales-kv-orders', D.kpi.orders, salesPrev?salesPrev.kpi.orders:null, 'up');
-  setH('sales-kv-coverage', `${D.kpi.nBill} / ${D.kpi.nEnd}`);
-  setH('sales-ks-coverage', `<span data-zh>开票${D.kpi.nBill}家 / 终端${D.kpi.nEnd}家</span><span data-en>${D.kpi.nBill} bill-to / ${D.kpi.nEnd} end</span>`);
-  setH('sales-kv-export', `${D.kpi.exportPct}%`);
-  const termsStr = Object.entries(D.kpi.termsCnt).map(([k,v])=>`${k} ${v}`).join(' / ');
-  const termsStrZh = Object.keys(D.kpi.termsCnt).join(':')+'='+Object.values(D.kpi.termsCnt).join(':');
-  setH('sales-ks-export', `<span data-zh>${D.kpi.exportPct===100?'全外贸 ':''}${termsStrZh}</span><span data-en>${D.kpi.exportPct===100?'All export · ':''}${termsStr}</span>`);
-
-  // ---- destroy previous sales charts ----
-  if (window._salesCharts) { window._salesCharts.forEach(ch=>{try{ch.destroy();}catch(e){}}); }
-  window._salesCharts = [];
-  const reg = (id) => { const ch = Chart.getChart(id); if(ch){ window._salesCharts.push(ch); } return ch; };
-
-  // S1. Bill-to pie
-  // aggregate to top-4 + Others so pies never exceed 5 slices
-  const _aggPie=(labels,data)=>{
-    const pairs=labels.map((l,i)=>[l,data[i]]);
-    const named=pairs.filter(p=>!/其他|Others/i.test(p[0]));
-    let rest=pairs.filter(p=>/其他|Others/i.test(p[0])).reduce((s,p)=>s+p[1],0);
-    named.sort((a,b)=>b[1]-a[1]);
-    rest+=named.slice(4).reduce((s,p)=>s+p[1],0);
-    const L=named.slice(0,4).map(p=>p[0]), V=named.slice(0,4).map(p=>p[1]);
-    if(rest>0){L.push('其他 Others');V.push(rest);}
-    return [L,V];
-  };
-  const [bpL,bpV]=_aggPie(D.billPie.labels,D.billPie.data);
-  mk('salesBillPie','doughnut',{
-    labels:bpL.map((l,i)=>`${l} (${fmtK(bpV[i])})`),
-    datasets:[{data:bpV, backgroundColor:['#2563eb','#dc2626','#059669','#d97706','#9ca3af'].slice(0,bpV.length),borderColor:'#fff',borderWidth:3}]
-  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:7,font:{size:9.5}}}},cutout:'55%'});
-  reg('salesBillPie');
-
-  // S2. End-customer pie
-  const [epL,epV]=_aggPie(D.endPie.labels,D.endPie.data);
-  mk('salesEndPie','doughnut',{
-    labels:epL.map((l,i)=>`${l} (${fmtK(epV[i])})`),
-    datasets:[{data:epV,
-      backgroundColor:['#dc2626','#d97706','#059669','#0891b2','#9ca3af'].slice(0,epV.length),
-      borderColor:'#fff',borderWidth:3}]
-  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:7,font:{size:9.5}}}},cutout:'55%'});
-  reg('salesEndPie');
-
-  // S3. Bill-to bar
-  mk('salesBillBar','bar',{
-    labels:D.billBar.labels,
-    datasets:[{label:'¥', data:D.billBar.data,
-      backgroundColor:'rgba(37,99,235,0.78)',borderColor:'#2563eb',borderWidth:1,borderRadius:3}]
-  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:10}}}}});
-  reg('salesBillBar');
-
-  // S4. End-customer bar
-  mk('salesEndBar','bar',{
-    labels:D.endBar.labels,
-    datasets:[{label:'¥', data:D.endBar.data,
-      backgroundColor:'rgba(220,38,38,0.78)',borderColor:'#dc2626',borderWidth:1,borderRadius:3}]
-  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:9.5}}}}});
-  reg('salesEndBar');
-
-  // S5. Qty bar
-  mk('salesQtyBar','bar',{
-    labels:D.qtyBar.labels,
-    datasets:[{label:'件 pcs', data:D.qtyBar.data,
-      backgroundColor:'rgba(5,150,105,0.78)',borderColor:'#059669',borderWidth:1,borderRadius:3}]
-  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC}},y:{grid:{display:false},ticks:{font:{size:9.5}}}}});
-  reg('salesQtyBar');
-
-  // S6. Unit price by end customer
-  mk('salesPriceBar','bar',{
-    labels:D.priceBar.labels,
-    datasets:[{label:'¥/件', data:D.priceBar.data,
-      backgroundColor:D.priceBar.data.map(v=>v>=6?'rgba(220,38,38,0.8)':v>=4?'rgba(217,119,6,0.8)':'rgba(5,150,105,0.8)'),
-      borderWidth:1,borderRadius:3}]
-  },{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:gridC},beginAtZero:true},y:{grid:{display:false},ticks:{font:{size:9.5}}}}});
-  reg('salesPriceBar');
-
-  // S7. Daily value + order count (dual axis)
-  mk('salesDailyChart','bar',{
-    labels: D.dayLabels,
-    datasets:[
-      {label:'金额 Value (¥)', data:D.dailyVal,
-       backgroundColor:'rgba(37,99,235,0.75)',borderColor:'#2563eb',borderWidth:1,borderRadius:4},
-    ]
-  },{plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>` 金额 Value: ¥${c.parsed.y.toLocaleString()}`,
-        afterLabel:c=>` 单据 Orders: ${D.dailyOrders[c.dataIndex]}`}}},
-     scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true,title:{display:true,text:'¥'}}}});
-  reg('salesDailyChart');
-
-  // S8. Daily qty
-  mk('salesDailyQty','bar',{
-    labels: D.dayLabels,
-    datasets:[{label:'件 pcs', data:D.dailyQty,
-      backgroundColor:'rgba(217,119,6,0.78)',borderColor:'#d97706',borderWidth:1,borderRadius:4}]
-  },{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true}}});
-  reg('salesDailyQty');
-
-  // S9. Trade terms pie (by count)
-  const termsColors=['#0891b2','#7c3aed','#d97706','#dc2626','#059669','#4f46e5'];
-  mk('salesTermsPie','doughnut',{
-    labels:D.termsPie.labels.map((l,i)=>`${l} (${D.termsPie.data[i]})`),
-    datasets:[{data:D.termsPie.data, backgroundColor:termsColors.slice(0,D.termsPie.labels.length),borderColor:'#fff',borderWidth:3}]
-  },{plugins:{legend:{position:'bottom',labels:{boxWidth:11,padding:8,font:{size:11}}}},cutout:'55%'});
-  reg('salesTermsPie');
-
-  // S10. Trade terms by value (precise per-record calculation)
-  mk('salesTermsBar','bar',{
-    labels:D.termsBar.labels,
-    datasets:[
-      {label:'金额(¥) Value', data:D.termsBar.data, yAxisID:'y',
-       backgroundColor:'rgba(8,145,178,0.78)',borderRadius:3,borderWidth:1},
-    ]
-  },{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`¥${c.parsed.y.toLocaleString()}`}}},
-     scales:{x:{grid:{display:false}},y:{grid:{color:gridC},beginAtZero:true}}});
-  reg('salesTermsBar');
-
-  // ---- Detail tables ----
-  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const billBody=document.getElementById('sales-tbl-bill');
-  if (billBody) {
-    let rows = D.billTable.map(r=>`<tr><td>${esc(r.name)}</td><td class="num">${r.orders}</td><td class="num">${r.qty.toLocaleString()}</td><td class="num">${r.val.toLocaleString()}</td><td class="num"${r===D.billTable[0]?' style="color:#dc2626;font-weight:700;"':''}>${r.pct}%</td></tr>`).join('');
-    rows += `<tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">${D.kpi.orders}</td><td class="num">${D.kpi.totalQty.toLocaleString()}</td><td class="num">${D.kpi.totalVal.toLocaleString()}</td><td class="num">100.0%</td></tr>`;
-    billBody.innerHTML=rows;
-  }
-  const endBody=document.getElementById('sales-tbl-end');
-  if (endBody) {
-    let rows = D.endTable.map((r,i)=>`<tr><td>${esc(r.name)}</td><td class="num">${r.orders}</td><td class="num">${r.qty.toLocaleString()}</td><td class="num"${i===0?' style="color:#dc2626;font-weight:700;"':''}>${r.val.toLocaleString()}</td><td class="num">${r.unit.toFixed(2)}</td></tr>`).join('');
-    rows += `<tr style="font-weight:700;background:#f0f4ff;"><td><span data-zh>合计</span><span data-en>TOTAL</span></td><td class="num">${D.kpi.orders}</td><td class="num">${D.kpi.totalQty.toLocaleString()}</td><td class="num">${D.kpi.totalVal.toLocaleString()}</td><td class="num">${D.kpi.avgPrice.toFixed(2)}</td></tr>`;
-    endBody.innerHTML=rows;
-  }
-  const top10Body=document.getElementById('sales-tbl-top10');
-  if (top10Body) {
-    top10Body.innerHTML = D.top10Table.map((r,i)=>`<tr><td>${r.date}</td><td>${esc(r.bill)}</td><td>${esc(r.end)}</td><td class="num">${r.qty.toLocaleString()}</td><td class="num"${i===0?' style="color:#dc2626;font-weight:700;"':''}>${r.val.toLocaleString()}</td></tr>`).join('');
-  }
-}
-
 
 
 // ════════ PRECISION TEST MODULE ════════
@@ -6657,10 +6104,7 @@ function initExecCharts(){
   line('execFin',     window._finM.def,  '#d97706', true);
   line('execQsd',     window._qsdM.def,  '#0891b2', true);
   bar ('execProd',    _execSeries(window._prodMonthData, D=>(D.sfMor||0)+(D.sfNgt||0)), '#059669');
-  // sales & attendance only have data from May onward — chart just those months
-  const salesMonths=[5,6].filter(m=>window._salesData[String(m)]);
-  mk('execSales','bar',{labels:salesMonths.map(m=>m+'月'),
-    datasets:[{data:salesMonths.map(m=>window._salesData[String(m)].kpi.totalVal),backgroundColor:'#e85d04c0',borderColor:'#e85d04',borderWidth:1,borderRadius:4}]},miniOpts(false));
+  // attendance data only starts in May — chart just those months
   const attMonths=[5,6,7].filter(m=>window._attData[String(m)]);
   mk('execAtt','bar',{labels:attMonths.map(m=>m+'月'),
     datasets:[{data:attMonths.map(m=>_attIssues(window._attData[String(m)])),backgroundColor:'#4f46e5c0',borderColor:'#4f46e5',borderWidth:1,borderRadius:4}]},miniOpts(false));
@@ -6717,25 +6161,21 @@ function _renderYtd(){
   const aMonths=[1,2,3,4,5,6].map(m=>window._asmMonthData[String(m)]).filter(Boolean);
   const aNg=sum(aMonths.map(d=>d.ng)), aOut=sum(aMonths.map(d=>d.output));
   const gp12Def=sum(window._gp12M.defQty), gp12Insp=sum(window._gp12M.insp);
-  const sMonths=[1,2,3,4,5,6].map(m=>window._salesData[String(m)]).filter(Boolean);
-  const sVal=sum(sMonths.map(d=>d.kpi.totalVal));
   const setY=(k,v)=>{const el=document.querySelector(`[data-ytd="${k}"]`); if(el) el.textContent=v;};
   setY('grinder', sfOut>0 ? Math.round(gWaste/sfOut*100000).toLocaleString() : '—');
   setY('asm', (aOut+aNg)>0 ? (aNg/(aOut+aNg)*100).toFixed(2)+'%' : '—');
   setY('gp12', gp12Insp>0 ? (gp12Def/gp12Insp*100).toFixed(2)+'%' : '—');
   setY('asmOut', aOut.toLocaleString());
-  setY('sales', '¥'+(sVal/1000000).toFixed(2)+'M');
 }
 
 // Data-driven insight engine: worst/best movers, SPC special causes, sustained trends
 function _genAutoInsights(m){
   const box=document.getElementById('exec-auto-insights'); if(!box) return;
-  const gd=window._grinderMonthData, pd=window._prodMonthData, ad=window._asmMonthData, sd=window._salesData, td=window._attData;
+  const gd=window._grinderMonthData, pd=window._prodMonthData, ad=window._asmMonthData, td=window._attData;
   const mm6=[1,2,3,4,5,6];
   const grinderRate=mm6.map(k=>{const g=gd[String(k)],p=pd[String(k)];const t=p?((p.sfMor||0)+(p.sfNgt||0)):0;return (g&&t>0)?g.totalAll/t*100000:null;});
   const asmRate=mm6.map(k=>{const d=ad[String(k)];return d?d.ngRate:null;});
   const asmN=mm6.map(k=>{const d=ad[String(k)];return d?(d.output+d.ng):0;});
-  const salesV=mm6.map(k=>{const d=sd[String(k)];return d?d.kpi.totalVal:null;});
   const attIss=mm6.map(k=>{const d=td[String(k)];return d?_attIssues(d):null;});
   const M=[
     {zh:'磨工缺陷率',en:'Grinder defect rate',s:grinderRate,n:null,good:'down',fmt:v=>Math.round(v).toLocaleString()+'/十万'},
@@ -6743,7 +6183,6 @@ function _genAutoInsights(m){
     {zh:'GP12不良率',en:'GP12 defect rate',s:window._gp12M.def,n:window._gp12M.insp,good:'down',fmt:v=>v+'%'},
     {zh:'终检不良率',en:'Final defect rate',s:window._finM.def,n:window._finM.insp,good:'down',fmt:v=>v+'%'},
     {zh:'品监不良率',en:'QSD defect rate',s:window._qsdM.def,n:window._qsdM.insp,good:'down',fmt:v=>v+'%'},
-    {zh:'销售额',en:'Sales value',s:salesV,n:null,good:'up',fmt:v=>'¥'+(v/1e6).toFixed(2)+'M'},
     {zh:'考勤异常',en:'Attendance issues',s:attIss,n:null,good:'down',fmt:v=>v+'次'},
   ];
   const changes=[];
@@ -6796,7 +6235,6 @@ function _renderExecMonth(m){
   const setS=(k,v)=>{const el=document.querySelector(`[data-exec-stat="${k}"]`); if(el) el.textContent=v;};
   const G=window._grinderMonthData[String(m)], Gp=window._grinderMonthData[String(m-1)];
   const A=window._asmMonthData[String(m)],     Ap=window._asmMonthData[String(m-1)];
-  const S=window._salesData[String(m)],        Sp=window._salesData[String(m-1)];
   const T=window._attData[String(m)],          Tp=window._attData[String(m-1)];
   const P=window._prodMonthData[String(m)];
 
@@ -6816,13 +6254,7 @@ function _renderExecMonth(m){
   setV('gp12Def', gDef!=null ? gDef+'%' : '—');
   _momKpi('[data-exec-kpi="gp12Def"]', gDef, window._gp12M.def[m-2], 'down');
 
-  // sales / attendance: data starts in May — say so instead of pretending
-  const subS=document.querySelector('[data-exec-sub="salesVal"]');
-  if (S){ setV('salesVal','¥'+(S.kpi.totalVal/1000000).toFixed(2)+'M');
-    if(subS) subS.innerHTML='<span data-zh>当月发货金额</span><span data-en>Monthly shipment value</span>';
-  } else { setV('salesVal','—');
-    if(subS) subS.innerHTML='<span data-zh>该月无数据（5月起有）</span><span data-en>No data (starts May)</span>'; }
-  _momKpi('[data-exec-kpi="salesVal"]', S?S.kpi.totalVal:null, Sp?Sp.kpi.totalVal:null, 'up');
+  // attendance: data starts in May — say so instead of pretending
   const subT=document.querySelector('[data-exec-sub="attIssues"]');
   if (T){ setV('attIssues', _attIssues(T));
     if(subT) subT.innerHTML='<span data-zh>请假+迟到早退+未打卡</span><span data-en>Leave + late + missing</span>';
@@ -6837,7 +6269,6 @@ function _renderExecMonth(m){
   setS('fin',     window._finM.def[m-1]!=null ? window._finM.def[m-1]+'%' : '—');
   setS('qsd',     window._qsdM.def[m-1]!=null ? window._qsdM.def[m-1]+'%' : '—');
   setS('prod',    P ? ((P.sfMor||0)+(P.sfNgt||0)).toLocaleString() : '—');
-  setS('sales',   S ? '¥'+(S.kpi.totalVal/1000000).toFixed(2)+'M' : '—');
   setS('att',     T ? _attIssues(T) : '—');
   const pd=window._precData && window._precData.months ? window._precData.months[m] : null;
   setS('prec',    pd ? pd.total.toLocaleString() : '—');
