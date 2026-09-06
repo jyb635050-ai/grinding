@@ -1243,7 +1243,8 @@
         boxDeleted: "已删除选中箱子",
         noSpaceRow: "当前尺寸下没有足够空间补一排",
         centeredToast: "箱组已整体居中",
-        exported3d: "已导出 3D 图片",
+        exported3d: "已导出高清 3D 图片",
+        export3dFailed: "高清 3D 图片导出失败",
         scaleReadout: "比例 1 mm ≈ {scale} px",
         legendPallet: "木托盘：木纹顶板 + 九块支撑 + 三条底板，四向均可进叉",
         legendBox: "箱子：C&U 牛皮瓦楞纸纹、折盖、胶带与提手孔",
@@ -1352,7 +1353,8 @@
         boxDeleted: "Selected carton deleted",
         noSpaceRow: "No available space for another row at the current size",
         centeredToast: "Carton group centered",
-        exported3d: "3D image exported",
+        exported3d: "High-resolution 3D image exported",
+        export3dFailed: "High-resolution 3D image export failed",
         scaleReadout: "Scale 1 mm ≈ {scale} px",
         legendPallet: "Wood pallet: textured top deck, nine support blocks and three bottom runners for four-way entry",
         legendBox: "Carton: C&U kraft corrugated texture, flaps, tape and hand holes",
@@ -3368,27 +3370,28 @@
     }
 
     function makeDimensionLabel(text) {
+      const resolutionScale = 3;
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      ctx.font = "800 28px Arial, 'Microsoft YaHei', sans-serif";
+      ctx.font = `800 ${28 * resolutionScale}px Arial, 'Microsoft YaHei', sans-serif`;
       const textWidth = Math.ceil(ctx.measureText(text).width);
-      canvas.width = Math.max(190, textWidth + 44);
-      canvas.height = 64;
-      ctx.font = "800 28px Arial, 'Microsoft YaHei', sans-serif";
+      canvas.width = Math.max(190 * resolutionScale, textWidth + 44 * resolutionScale);
+      canvas.height = 64 * resolutionScale;
+      ctx.font = `800 ${28 * resolutionScale}px Arial, 'Microsoft YaHei', sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      drawRoundedRect(ctx, 3, 3, canvas.width - 6, canvas.height - 6, 14);
+      drawRoundedRect(ctx, 3 * resolutionScale, 3 * resolutionScale, canvas.width - 6 * resolutionScale, canvas.height - 6 * resolutionScale, 14 * resolutionScale);
       ctx.fillStyle = "rgba(255, 255, 255, .94)";
       ctx.fill();
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 4 * resolutionScale;
       ctx.strokeStyle = "#1d2633";
       ctx.stroke();
       ctx.fillStyle = "#1d2633";
-      ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2 + resolutionScale);
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
-      const spriteWidth = Math.max(0.9, canvas.width / 245);
+      const spriteWidth = Math.max(0.9, canvas.width / resolutionScale / 245);
       sprite.scale.set(spriteWidth, spriteWidth * (canvas.height / canvas.width), 1);
       sprite.renderOrder = 30;
       return sprite;
@@ -3599,13 +3602,63 @@
       });
     }
 
-    function export3D() {
+    async function export3D() {
       if (!renderer || !scene || !camera) return;
-      renderer.render(scene, camera);
+
+      const exportButton = document.querySelector("#export3d");
+      if (exportButton.disabled) return;
+      exportButton.disabled = true;
+
+      const rect = els.scene3d.getBoundingClientRect();
+      const displayWidth = Math.max(200, Math.round(rect.width));
+      const displayHeight = Math.max(260, Math.round(rect.height));
+      const previousPixelRatio = renderer.getPixelRatio();
+      const previousAspect = camera.aspect;
+      const aspect = displayWidth / displayHeight;
+      const gl = renderer.getContext();
+      const viewportLimit = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+      const maxRenderSize = Math.min(
+        3840,
+        gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+        viewportLimit[0],
+        viewportLimit[1]
+      );
+      const exportWidth = aspect >= 1 ? maxRenderSize : Math.round(maxRenderSize * aspect);
+      const exportHeight = aspect >= 1 ? Math.round(maxRenderSize / aspect) : maxRenderSize;
+      let blob = null;
+
+      try {
+        renderer.setPixelRatio(1);
+        renderer.setSize(exportWidth, exportHeight, false);
+        camera.aspect = exportWidth / exportHeight;
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+        blob = await new Promise(resolve => renderer.domElement.toBlob(resolve, "image/png"));
+      } catch (error) {
+        console.warn("High-resolution 3D export failed.", error);
+      } finally {
+        renderer.setPixelRatio(previousPixelRatio);
+        renderer.setSize(displayWidth, displayHeight, false);
+        camera.aspect = previousAspect;
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+        exportButton.disabled = false;
+      }
+
+      if (!blob) {
+        showToast(t("export3dFailed"));
+        return;
+      }
+
       const link = document.createElement("a");
-      link.download = "pallet-3d-view.png";
-      link.href = renderer.domElement.toDataURL("image/png");
+      const objectUrl = URL.createObjectURL(blob);
+      link.download = `PHJY-pallet-3d-${exportWidth}x${exportHeight}.png`;
+      link.href = objectUrl;
       link.click();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      els.scene3d.dataset.lastExportWidth = String(exportWidth);
+      els.scene3d.dataset.lastExportHeight = String(exportHeight);
+      els.scene3d.dataset.lastExportBytes = String(blob.size);
       showToast(t("exported3d"));
     }
 
