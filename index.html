@@ -3104,49 +3104,48 @@
       }
     }
 
-    function drawCartonTopFace(ctx, canvas, longAlongX) {
-      const { width, height } = canvas;
+    function drawCartonTopArtwork(ctx, width, height) {
       ctx.save();
       ctx.strokeStyle = "rgba(69, 43, 26, .82)";
       ctx.lineWidth = Math.max(3, Math.min(width, height) * 0.012);
       ctx.setLineDash([12, 6]);
       ctx.beginPath();
-      if (longAlongX) {
-        ctx.moveTo(0, height / 2);
-        ctx.lineTo(width, height / 2);
-      } else {
-        ctx.moveTo(width / 2, 0);
-        ctx.lineTo(width / 2, height);
-      }
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.globalAlpha = 0.42;
       ctx.beginPath();
-      if (longAlongX) {
-        ctx.moveTo(width * 0.08, 0);
-        ctx.lineTo(width * 0.08, height);
-        ctx.moveTo(width * 0.92, 0);
-        ctx.lineTo(width * 0.92, height);
-      } else {
-        ctx.moveTo(0, height * 0.08);
-        ctx.lineTo(width, height * 0.08);
-        ctx.moveTo(0, height * 0.92);
-        ctx.lineTo(width, height * 0.92);
-      }
+      ctx.moveTo(width * 0.08, 0);
+      ctx.lineTo(width * 0.08, height);
+      ctx.moveTo(width * 0.92, 0);
+      ctx.lineTo(width * 0.92, height);
       ctx.stroke();
       ctx.restore();
 
-      const titleX = longAlongX ? width * 0.35 : width * 0.3;
-      const titleY = longAlongX ? height * 0.28 : height * 0.33;
-      drawCuMark(ctx, titleX, titleY, width * 0.48, Math.max(42, Math.min(width, height) * 0.22));
-      drawCartonText(ctx, "C&U Bearings", longAlongX ? width * 0.68 : width * 0.68, longAlongX ? height * 0.7 : height * 0.68, width * 0.5, Math.max(22, Math.min(width, height) * 0.1), {
+      drawCuMark(ctx, width * 0.33, height * 0.28, width * 0.46, Math.max(42, Math.min(width, height) * 0.22));
+      drawCartonText(ctx, "C&U Bearings", width * 0.68, height * 0.7, width * 0.5, Math.max(22, Math.min(width, height) * 0.1), {
         color: "#202329",
       });
-      drawCartonText(ctx, "More quiet when rotating", longAlongX ? width * 0.63 : width * 0.66, longAlongX ? height * 0.82 : height * 0.78, width * 0.56, Math.max(14, Math.min(width, height) * 0.055), {
+      drawCartonText(ctx, "More quiet when rotating", width * 0.63, height * 0.82, width * 0.56, Math.max(14, Math.min(width, height) * 0.055), {
         weight: 700,
         color: "#29231e",
       });
       drawHandlingMarks(ctx, width * 0.72, height * 0.12, Math.max(24, Math.min(width, height) * 0.09));
+    }
+
+    function drawCartonTopFace(ctx, canvas, longAlongX) {
+      const { width, height } = canvas;
+      ctx.save();
+      if (longAlongX) {
+        drawCartonTopArtwork(ctx, width, height);
+      } else {
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(-height / 2, -width / 2);
+        drawCartonTopArtwork(ctx, height, width);
+      }
+      ctx.restore();
     }
 
     function createCartonFaceTexture(kind, faceWidth, faceHeight, tint, longAlongX = true) {
@@ -3199,48 +3198,92 @@
       return new THREE.MeshPhysicalMaterial({
         color: 0xf8e4bc,
         transparent: true,
-        opacity: 0.34,
+        opacity: 0.42,
         roughness: 0.18,
         metalness: 0,
         clearcoat: 0.75,
         clearcoatRoughness: 0.12,
-        depthWrite: false,
-        side: THREE.DoubleSide,
+        depthWrite: true,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+        side: THREE.FrontSide,
       });
     }
 
-    function addCartonTape(group, x, y, z, width, height, depth, tapeMaterial) {
+    function addCartonTape(group, x, y, z, width, height, depth, tapeMaterial, showTop = true) {
       const longAlongX = width >= depth;
       const tapeWidth = Math.max(18, Math.min(54, Math.min(width, depth) * 0.16));
       const tapeThickness = 1.4;
+      const tapeGap = 0.7;
       const endDrop = Math.max(12, height * 0.3);
       const endY = y + height / 2 - endDrop / 2;
+      const tapeOptions = {
+        materials: tapeMaterial,
+        edges: false,
+        castShadow: false,
+        receiveShadow: false,
+        renderOrder: 10,
+        role: "carton-tape",
+      };
 
       if (longAlongX) {
-        addCuboid(group, x, y + height / 2 + tapeThickness / 2, z, width * 0.985, tapeThickness, tapeWidth, "#ffffff", "carton top tape", {
-          materials: tapeMaterial,
-          edges: false,
-          role: "carton-tape",
-        });
+        if (showTop) {
+          addCuboid(
+            group,
+            x,
+            y + height / 2 + tapeGap + tapeThickness / 2,
+            z,
+            width * 0.985,
+            tapeThickness,
+            tapeWidth,
+            "#ffffff",
+            "carton top tape",
+            tapeOptions
+          );
+        }
         [-1, 1].forEach(direction => {
-          addCuboid(group, x + direction * (width / 2 + tapeThickness / 2), endY, z, tapeThickness, endDrop, tapeWidth, "#ffffff", "carton end tape", {
-            materials: tapeMaterial,
-            edges: false,
-            role: "carton-tape",
-          });
+          addCuboid(
+            group,
+            x + direction * (width / 2 + tapeGap + tapeThickness / 2),
+            endY,
+            z,
+            tapeThickness,
+            endDrop,
+            tapeWidth,
+            "#ffffff",
+            "carton end tape",
+            tapeOptions
+          );
         });
       } else {
-        addCuboid(group, x, y + height / 2 + tapeThickness / 2, z, tapeWidth, tapeThickness, depth * 0.985, "#ffffff", "carton top tape", {
-          materials: tapeMaterial,
-          edges: false,
-          role: "carton-tape",
-        });
+        if (showTop) {
+          addCuboid(
+            group,
+            x,
+            y + height / 2 + tapeGap + tapeThickness / 2,
+            z,
+            tapeWidth,
+            tapeThickness,
+            depth * 0.985,
+            "#ffffff",
+            "carton top tape",
+            tapeOptions
+          );
+        }
         [-1, 1].forEach(direction => {
-          addCuboid(group, x, endY, z + direction * (depth / 2 + tapeThickness / 2), tapeWidth, endDrop, tapeThickness, "#ffffff", "carton end tape", {
-            materials: tapeMaterial,
-            edges: false,
-            role: "carton-tape",
-          });
+          addCuboid(
+            group,
+            x,
+            endY,
+            z + direction * (depth / 2 + tapeGap + tapeThickness / 2),
+            tapeWidth,
+            endDrop,
+            tapeThickness,
+            "#ffffff",
+            "carton end tape",
+            tapeOptions
+          );
         });
       }
     }
@@ -3278,6 +3321,7 @@
       mesh.position.set(x * UNIT, y * UNIT, z * UNIT);
       mesh.castShadow = options.castShadow !== false;
       mesh.receiveShadow = options.receiveShadow !== false;
+      mesh.renderOrder = options.renderOrder || 0;
       mesh.name = name;
       mesh.userData.role = options.role || "";
       group.add(mesh);
@@ -3486,6 +3530,8 @@
 
       const showCartons = !document.querySelector("#palletOnly3d")?.checked;
       let cartonCount = 0;
+      let printAxisXCount = 0;
+      let printAxisZCount = 0;
       if (showCartons) {
         const tapeMaterial = createTapeMaterial();
         state.layout.forEach(box => {
@@ -3499,14 +3545,29 @@
               edgeColor: 0x604028,
               role: "carton",
             });
-            addCartonTape(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, tapeMaterial);
+            addCartonTape(
+              modelGroup,
+              cx,
+              cy,
+              cz,
+              box.w,
+              state.box.h,
+              box.d,
+              tapeMaterial,
+              layer === state.layers - 1
+            );
             cartonCount += 1;
+            if (box.w >= box.d) printAxisXCount += 1;
+            else printAxisZCount += 1;
           }
         });
       }
       els.scene3d.dataset.cartonStructure = "rsc-taped-handle";
       els.scene3d.dataset.cartonBrand = "C&U";
       els.scene3d.dataset.cartonCount = String(cartonCount);
+      els.scene3d.dataset.cartonPrintAlignment = "long-axis-locked";
+      els.scene3d.dataset.printAxisXCount = String(printAxisXCount);
+      els.scene3d.dataset.printAxisZCount = String(printAxisZCount);
 
       const dims = visibleOuterDimensions();
       updateDimensionReadout();
