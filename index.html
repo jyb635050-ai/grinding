@@ -2802,8 +2802,8 @@
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.08;
+      renderer.toneMapping = THREE.NoToneMapping;
+      renderer.toneMappingExposure = 1;
       els.scene3d.appendChild(renderer.domElement);
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -2818,11 +2818,11 @@
       scene.add(sun);
       floorMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(18, 18),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
       );
       floorMesh.rotation.x = -Math.PI / 2;
       floorMesh.position.y = -0.02;
-      floorMesh.receiveShadow = true;
+      floorMesh.receiveShadow = false;
       scene.add(floorMesh);
 
       modelGroup = new THREE.Group();
