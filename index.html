@@ -1010,7 +1010,7 @@
         <div class="view-head">
           <div>
             <h2>3D 视角</h2>
-            <p>鼠标拖动旋转，滚轮缩放；托盘按两孔木托盘结构建模，整体同色、外形尺寸一致。</p>
+            <p>鼠标拖动旋转，滚轮缩放；托盘采用九块支撑的四向进叉结构，表面使用真实木纹。</p>
           </div>
           <button class="small blue" id="export3d">导出3D图</button>
         </div>
@@ -1022,7 +1022,7 @@
           </div>
           <label class="toggle"><input type="checkbox" id="palletOnly3d"> 只看托盘结构</label>
           <div class="legend">
-            <div class="legend-item"><span class="swatch" id="legendPallet"></span>木托盘：同色顶板 + 三条纵向支撑，形成 2 个叉车孔</div>
+            <div class="legend-item"><span class="swatch" id="legendPallet"></span>木托盘：木纹顶板 + 九块支撑 + 三条底板，四向均可进叉</div>
             <div class="legend-item"><span class="swatch" id="legendBox"></span>箱子：统一颜色，方向用箱内尺寸文字区分</div>
           </div>
         </div>
@@ -1201,7 +1201,7 @@
         outOfBounds: "越界",
         view3d: "3D 视角",
         scene3dLabel: "3D 预览",
-        view3dHelp: "鼠标拖动旋转，滚轮缩放；托盘按两孔木托盘结构建模，整体同色、外形尺寸一致。",
+        view3dHelp: "鼠标拖动旋转，滚轮缩放；托盘采用九块支撑的四向进叉结构，表面使用真实木纹。",
         export3d: "导出3D图",
         showDimensions: "显示外形尺寸",
         outerSize: "外形尺寸：{l} × {w} × {h} mm",
@@ -1245,7 +1245,7 @@
         centeredToast: "箱组已整体居中",
         exported3d: "已导出 3D 图片",
         scaleReadout: "比例 1 mm ≈ {scale} px",
-        legendPallet: "木托盘：同色顶板 + 三条纵向支撑，形成 2 个叉车孔",
+        legendPallet: "木托盘：木纹顶板 + 九块支撑 + 三条底板，四向均可进叉",
         legendBox: "箱子：统一颜色，方向用箱内尺寸文字区分",
         resizeLeftPane: "拖动调整参数区和 2D 区宽度，双击恢复默认",
         resizeRightPane: "拖动调整 2D 区和 3D 区宽度，双击恢复默认",
@@ -1310,7 +1310,7 @@
         outOfBounds: "Out of Bounds",
         view3d: "3D View",
         scene3dLabel: "3D preview",
-        view3dHelp: "Drag to rotate, scroll to zoom. The pallet uses a two-opening wooden pallet model with one color and consistent outer size.",
+        view3dHelp: "Drag to rotate and scroll to zoom. The pallet uses a nine-block, four-way entry structure with a realistic wood surface.",
         export3d: "Export 3D",
         showDimensions: "Show Outer Size",
         outerSize: "Outer size: {l} × {w} × {h} mm",
@@ -1354,7 +1354,7 @@
         centeredToast: "Carton group centered",
         exported3d: "3D image exported",
         scaleReadout: "Scale 1 mm ≈ {scale} px",
-        legendPallet: "Wood pallet: one-color top deck plus three lengthwise supports, forming two fork openings",
+        legendPallet: "Wood pallet: textured top deck, nine support blocks and three bottom runners for four-way entry",
         legendBox: "Carton: one color; orientation is shown by the size text",
         resizeLeftPane: "Drag to resize the controls and 2D panes. Double-click to reset.",
         resizeRightPane: "Drag to resize the 2D and 3D panes. Double-click to reset.",
@@ -2767,8 +2767,30 @@
       showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1700);
     }
 
-    let scene, camera, renderer, controls, modelGroup, floorMesh;
+    let scene, camera, renderer, controls, modelGroup, floorMesh, woodTexture;
     const UNIT = 0.004;
+    const WOOD_TEXTURE_URL = new URL("./assets/pallet-wood-texture.png", window.location.href).href;
+
+    function loadWoodTexture() {
+      els.scene3d.dataset.woodTexture = "loading";
+      new THREE.TextureLoader().load(
+        WOOD_TEXTURE_URL,
+        texture => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+          woodTexture = texture;
+          els.scene3d.dataset.woodTexture = "loaded";
+          schedule3D();
+        },
+        undefined,
+        error => {
+          els.scene3d.dataset.woodTexture = "fallback";
+          console.warn("Wood texture could not be loaded; using the selected pallet color.", error);
+        }
+      );
+    }
 
     function init3D() {
       scene = new THREE.Scene();
@@ -2778,6 +2800,10 @@
       renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
       els.scene3d.appendChild(renderer.domElement);
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -2801,6 +2827,7 @@
 
       modelGroup = new THREE.Group();
       scene.add(modelGroup);
+      loadWoodTexture();
 
       const resize = () => {
         const rect = els.scene3d.getBoundingClientRect();
@@ -2823,35 +2850,69 @@
       return new THREE.MeshStandardMaterial({ color, roughness, metalness: 0.02 });
     }
 
-    function addCuboid(group, x, y, z, w, h, d, color, name = "") {
+    function createWoodMaterial(color, width, depth, grainAxis = "x") {
+      if (!woodTexture) return material(color, 0.78);
+
+      const map = woodTexture.clone();
+      map.colorSpace = THREE.SRGBColorSpace;
+      map.wrapS = THREE.RepeatWrapping;
+      map.wrapT = THREE.RepeatWrapping;
+      map.center.set(0.5, 0.5);
+      map.rotation = grainAxis === "z" ? Math.PI / 2 : 0;
+      map.repeat.set(Math.max(1, width / 420), Math.max(1, depth / 280));
+      map.anisotropy = woodTexture.anisotropy;
+      map.needsUpdate = true;
+
+      const tint = new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.38);
+      return new THREE.MeshStandardMaterial({
+        color: tint,
+        map,
+        bumpMap: map,
+        bumpScale: 0.012,
+        roughness: 0.8,
+        metalness: 0,
+      });
+    }
+
+    function clearModelGroup() {
+      if (!modelGroup) return;
+      const textures = new Set();
+      modelGroup.traverse(object => {
+        object.geometry?.dispose();
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.filter(Boolean).forEach(current => {
+          Object.values(current).forEach(value => {
+            if (value?.isTexture && value !== woodTexture && !textures.has(value)) {
+              textures.add(value);
+              value.dispose();
+            }
+          });
+          current.dispose();
+        });
+      });
+      modelGroup.clear();
+    }
+
+    function addCuboid(group, x, y, z, w, h, d, color, name = "", options = {}) {
       const geo = new THREE.BoxGeometry(w * UNIT, h * UNIT, d * UNIT);
-      const mesh = new THREE.Mesh(geo, material(color));
+      const surface = options.wood
+        ? createWoodMaterial(color, w, d, options.grainAxis)
+        : material(color);
+      const mesh = new THREE.Mesh(geo, surface);
       mesh.position.set(x * UNIT, y * UNIT, z * UNIT);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.name = name;
+      mesh.userData.role = options.role || "";
       group.add(mesh);
 
       const edge = new THREE.LineSegments(
         new THREE.EdgesGeometry(geo),
-        new THREE.LineBasicMaterial({ color: 0x263241, linewidth: 1 })
+        new THREE.LineBasicMaterial({ color: options.wood ? 0x4b3a27 : 0x263241, linewidth: 1 })
       );
       edge.position.copy(mesh.position);
       group.add(edge);
       return mesh;
-    }
-
-    function addTopLine(group, x1, z1, x2, z2, y, color, opacity = 0.45) {
-      const geometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x1 * UNIT, y * UNIT, z1 * UNIT),
-        new THREE.Vector3(x2 * UNIT, y * UNIT, z2 * UNIT),
-      ]);
-      const line = new THREE.Line(
-        geometry,
-        new THREE.LineBasicMaterial({ color, transparent: true, opacity })
-      );
-      group.add(line);
-      return line;
     }
 
     function addDimensionLine(group, points, color = 0x1d2633, opacity = 0.9) {
@@ -2967,36 +3028,80 @@
 
     function redraw3D() {
       if (!modelGroup) return;
-      modelGroup.clear();
+      clearModelGroup();
 
       const p = state.pallet;
-      const deckH = Math.min(42, Math.max(28, p.h * 0.32));
-      const supportH = Math.max(44, p.h - deckH);
       const w = p.w;
       const dpth = p.d;
       const x0 = -w / 2;
       const z0 = -dpth / 2;
       const wood = state.colors.pallet;
 
-      addCuboid(modelGroup, 0, p.h - deckH / 2, 0, w, deckH, dpth, wood, "single plywood deck");
+      const topDeckH = Math.min(26, Math.max(4, p.h * 0.17));
+      const bottomDeckH = Math.min(20, Math.max(3, p.h * 0.13));
+      const supportH = Math.max(2, p.h - topDeckH - bottomDeckH);
+      const blockW = Math.min(150, Math.max(22, w * 0.13));
+      const blockD = Math.min(135, Math.max(22, dpth * 0.17));
+      const supportY = bottomDeckH + supportH / 2;
+      const supportXs = [x0 + blockW / 2, 0, -x0 - blockW / 2];
+      const supportZs = [z0 + blockD / 2, 0, -z0 - blockD / 2];
 
-      const sideStringerW = Math.max(130, w * 0.16);
-      const centerStringerW = Math.max(120, w * 0.14);
-      const supportY = supportH / 2;
-      addCuboid(modelGroup, x0 + sideStringerW / 2, supportY, 0, sideStringerW, supportH, dpth, wood, "left stringer");
-      addCuboid(modelGroup, 0, supportY, 0, centerStringerW, supportH, dpth, wood, "center stringer");
-      addCuboid(modelGroup, -x0 - sideStringerW / 2, supportY, 0, sideStringerW, supportH, dpth, wood, "right stringer");
+      supportXs.forEach((x, index) => {
+        addCuboid(
+          modelGroup,
+          x,
+          bottomDeckH / 2,
+          0,
+          blockW,
+          bottomDeckH,
+          dpth,
+          wood,
+          "bottom runner " + (index + 1),
+          { wood: true, grainAxis: "z", role: "bottom-runner" }
+        );
+      });
 
-      const grainY = p.h + 1.2;
-      for (let i = 1; i <= 9; i++) {
-        const z = z0 + (dpth * i) / 10;
-        addTopLine(modelGroup, x0 + 38, z, x0 + w - 38, z + (i % 2 ? 8 : -6), grainY, 0x8f683a, 0.28);
-      }
-      [-w * 0.43, -w * 0.18, w * 0.18, w * 0.43].forEach(x => {
-        [-dpth * 0.42, -dpth * 0.18, dpth * 0.18, dpth * 0.42].forEach(z => {
-          addNail(modelGroup, x, z, grainY + 0.4, Math.max(3.5, Math.min(w, dpth) * 0.004));
+      supportXs.forEach((x, row) => {
+        supportZs.forEach((z, column) => {
+          addCuboid(
+            modelGroup,
+            x,
+            supportY,
+            z,
+            blockW,
+            supportH,
+            blockD,
+            wood,
+            "support block " + (row + 1) + "-" + (column + 1),
+            { wood: true, grainAxis: "z", role: "support-block" }
+          );
         });
       });
+
+      addCuboid(
+        modelGroup,
+        0,
+        p.h - topDeckH / 2,
+        0,
+        w,
+        topDeckH,
+        dpth,
+        wood,
+        "top plywood deck",
+        { wood: true, grainAxis: "x", role: "top-deck" }
+      );
+
+      const nailY = p.h + 0.8;
+      const nailRadius = Math.max(3.2, Math.min(w, dpth) * 0.004);
+      supportXs.forEach(x => {
+        supportZs.forEach(z => addNail(modelGroup, x, z, nailY, nailRadius));
+      });
+
+      els.scene3d.dataset.palletStructure = "four-way-block";
+      els.scene3d.dataset.forkDirections = "4";
+      els.scene3d.dataset.supportCount = "9";
+      els.scene3d.dataset.forkOpeningX = ((w - blockW * 3) / 2).toFixed(1);
+      els.scene3d.dataset.forkOpeningZ = ((dpth - blockD * 3) / 2).toFixed(1);
 
       if (!document.querySelector("#palletOnly3d")?.checked) {
         state.layout.forEach(box => {
