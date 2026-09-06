@@ -26,7 +26,7 @@
       --good: #28a66a;
       --bad: #d64b42;
       --pallet: #d8ad6a;
-      --box: #4f8df6;
+      --box: #b9824f;
       --shadow: 0 14px 34px rgba(24, 35, 48, .12);
       --radius: 8px;
       font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
@@ -931,7 +931,7 @@
           </div>
           <div class="grid-2">
             <label>托盘 <input type="color" id="palletColor" value="#d8ad6a"></label>
-            <label>箱子 <input type="color" id="boxColor" value="#4f8df6"></label>
+            <label>箱子 <input type="color" id="boxColor" value="#b9824f"></label>
           </div>
         </section>
 
@@ -1010,7 +1010,7 @@
         <div class="view-head">
           <div>
             <h2>3D 视角</h2>
-            <p>鼠标拖动旋转，滚轮缩放；托盘采用九块支撑的四向进叉结构，表面使用真实木纹。</p>
+            <p>鼠标拖动旋转，滚轮缩放；四向木托盘与 C&U 瓦楞纸箱按实物结构和材质建模。</p>
           </div>
           <button class="small blue" id="export3d">导出3D图</button>
         </div>
@@ -1023,7 +1023,7 @@
           <label class="toggle"><input type="checkbox" id="palletOnly3d"> 只看托盘结构</label>
           <div class="legend">
             <div class="legend-item"><span class="swatch" id="legendPallet"></span>木托盘：木纹顶板 + 九块支撑 + 三条底板，四向均可进叉</div>
-            <div class="legend-item"><span class="swatch" id="legendBox"></span>箱子：统一颜色，方向用箱内尺寸文字区分</div>
+            <div class="legend-item"><span class="swatch" id="legendBox"></span>箱子：C&U 牛皮瓦楞纸纹、折盖、胶带与提手孔</div>
           </div>
         </div>
       </aside>
@@ -1120,7 +1120,7 @@
       boxWeight: 0,
       layers: 3,
       perBox: 880,
-      colors: { pallet: "#d8ad6a", box: "#4f8df6" },
+      colors: { pallet: "#d8ad6a", box: "#b9824f" },
       layout: [],
       plans: [],
       planMessageKey: null,
@@ -1201,7 +1201,7 @@
         outOfBounds: "越界",
         view3d: "3D 视角",
         scene3dLabel: "3D 预览",
-        view3dHelp: "鼠标拖动旋转，滚轮缩放；托盘采用九块支撑的四向进叉结构，表面使用真实木纹。",
+        view3dHelp: "鼠标拖动旋转，滚轮缩放；四向木托盘与 C&U 瓦楞纸箱按实物结构和材质建模。",
         export3d: "导出3D图",
         showDimensions: "显示外形尺寸",
         outerSize: "外形尺寸：{l} × {w} × {h} mm",
@@ -1246,7 +1246,7 @@
         exported3d: "已导出 3D 图片",
         scaleReadout: "比例 1 mm ≈ {scale} px",
         legendPallet: "木托盘：木纹顶板 + 九块支撑 + 三条底板，四向均可进叉",
-        legendBox: "箱子：统一颜色，方向用箱内尺寸文字区分",
+        legendBox: "箱子：C&U 牛皮瓦楞纸纹、折盖、胶带与提手孔",
         resizeLeftPane: "拖动调整参数区和 2D 区宽度，双击恢复默认",
         resizeRightPane: "拖动调整 2D 区和 3D 区宽度，双击恢复默认",
         paneLayoutReset: "三个窗口宽度已恢复默认",
@@ -1310,7 +1310,7 @@
         outOfBounds: "Out of Bounds",
         view3d: "3D View",
         scene3dLabel: "3D preview",
-        view3dHelp: "Drag to rotate and scroll to zoom. The pallet uses a nine-block, four-way entry structure with a realistic wood surface.",
+        view3dHelp: "Drag to rotate and scroll to zoom. The four-way wooden pallet and C&U corrugated cartons use realistic structures and materials.",
         export3d: "Export 3D",
         showDimensions: "Show Outer Size",
         outerSize: "Outer size: {l} × {w} × {h} mm",
@@ -1355,7 +1355,7 @@
         exported3d: "3D image exported",
         scaleReadout: "Scale 1 mm ≈ {scale} px",
         legendPallet: "Wood pallet: textured top deck, nine support blocks and three bottom runners for four-way entry",
-        legendBox: "Carton: one color; orientation is shown by the size text",
+        legendBox: "Carton: C&U kraft corrugated texture, flaps, tape and hand holes",
         resizeLeftPane: "Drag to resize the controls and 2D panes. Double-click to reset.",
         resizeRightPane: "Drag to resize the 2D and 3D panes. Double-click to reset.",
         paneLayoutReset: "The three pane widths were reset",
@@ -2767,9 +2767,10 @@
       showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1700);
     }
 
-    let scene, camera, renderer, controls, modelGroup, floorMesh, woodTexture;
+    let scene, camera, renderer, controls, modelGroup, floorMesh, woodTexture, cartonTexture;
     const UNIT = 0.004;
     const WOOD_TEXTURE_URL = new URL("./assets/pallet-wood-texture.png", window.location.href).href;
+    const CARTON_TEXTURE_URL = new URL("./assets/carton-kraft-texture.png", window.location.href).href;
 
     function loadWoodTexture() {
       els.scene3d.dataset.woodTexture = "loading";
@@ -2788,6 +2789,27 @@
         error => {
           els.scene3d.dataset.woodTexture = "fallback";
           console.warn("Wood texture could not be loaded; using the selected pallet color.", error);
+        }
+      );
+    }
+
+    function loadCartonTexture() {
+      els.scene3d.dataset.cartonTexture = "loading";
+      new THREE.TextureLoader().load(
+        CARTON_TEXTURE_URL,
+        texture => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+          cartonTexture = texture;
+          els.scene3d.dataset.cartonTexture = "loaded";
+          schedule3D();
+        },
+        undefined,
+        error => {
+          els.scene3d.dataset.cartonTexture = "fallback";
+          console.warn("Carton texture could not be loaded; using the procedural kraft surface.", error);
         }
       );
     }
@@ -2828,6 +2850,7 @@
       modelGroup = new THREE.Group();
       scene.add(modelGroup);
       loadWoodTexture();
+      loadCartonTexture();
 
       const resize = () => {
         const rect = els.scene3d.getBoundingClientRect();
@@ -2836,6 +2859,7 @@
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
+        if (modelGroup?.children.length) schedule3D();
       };
       new ResizeObserver(resize).observe(els.scene3d);
       resize();
@@ -2874,15 +2898,364 @@
       });
     }
 
+    function createCartonCanvas(faceWidth, faceHeight) {
+      const ratio = Math.max(0.35, Math.min(3.2, faceWidth / Math.max(1, faceHeight)));
+      const canvas = document.createElement("canvas");
+      if (ratio >= 1) {
+        canvas.width = 1024;
+        canvas.height = Math.max(320, Math.round(1024 / ratio));
+      } else {
+        canvas.height = 768;
+        canvas.width = Math.max(360, Math.round(768 * ratio));
+      }
+      return canvas;
+    }
+
+    function drawCartonSurface(ctx, canvas, tint) {
+      const { width, height } = canvas;
+      ctx.fillStyle = "#b98a58";
+      ctx.fillRect(0, 0, width, height);
+
+      const image = cartonTexture?.image;
+      if (image?.width && image?.height) {
+        ctx.save();
+        ctx.globalAlpha = 0.82;
+        ctx.drawImage(image, 0, 0, width, height);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        for (let y = 0; y < height; y += 7) {
+          ctx.fillStyle = y % 21 === 0 ? "#704b2d" : "#efd0a0";
+          ctx.fillRect(0, y, width, 1);
+        }
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = tint;
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalAlpha = 0.12;
+      for (let i = 0; i < 120; i++) {
+        const y = (i * 47 + 19) % height;
+        const x = (i * 83 + 31) % width;
+        const length = 24 + (i * 29) % Math.max(25, Math.round(width * 0.18));
+        ctx.strokeStyle = i % 4 === 0 ? "#5f3e25" : "#f5ddb8";
+        ctx.lineWidth = i % 5 === 0 ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.bezierCurveTo(x + length * 0.3, y - 2, x + length * 0.72, y + 2, Math.min(width, x + length), y);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.strokeStyle = "rgba(70, 45, 27, .72)";
+      ctx.lineWidth = Math.max(3, Math.round(Math.min(width, height) * 0.009));
+      ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, width - ctx.lineWidth, height - ctx.lineWidth);
+    }
+
+    function drawCartonText(ctx, text, x, y, maxWidth, fontSize, options = {}) {
+      const family = options.family || "Arial, sans-serif";
+      const weight = options.weight || 700;
+      let size = fontSize;
+      ctx.textAlign = options.align || "center";
+      ctx.textBaseline = options.baseline || "middle";
+      ctx.fillStyle = options.color || "#241f1a";
+      do {
+        ctx.font = weight + " " + size + "px " + family;
+        if (ctx.measureText(text).width <= maxWidth || size <= 11) break;
+        size -= 2;
+      } while (size > 10);
+      ctx.fillText(text, x, y);
+    }
+
+    function drawCuMark(ctx, x, y, maxWidth, size, align = "center") {
+      drawCartonText(ctx, "C&U", x, y, maxWidth, size, {
+        family: "Georgia, 'Times New Roman', serif",
+        weight: 700,
+        color: "#a21f32",
+        align,
+      });
+    }
+
+    function drawHandlingMarks(ctx, x, y, size) {
+      const symbols = ["↑↑", "◈", "☂"];
+      ctx.save();
+      symbols.forEach((symbol, index) => {
+        const left = x + index * size * 1.14;
+        ctx.fillStyle = "#20242a";
+        ctx.fillRect(left, y, size, size);
+        drawCartonText(ctx, symbol, left + size / 2, y + size / 2 + 1, size * 0.82, size * 0.48, {
+          color: "#f4e7cd",
+        });
+      });
+      ctx.restore();
+    }
+
+    function drawQrPattern(ctx, x, y, size) {
+      const cells = 11;
+      const cell = size / cells;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(x, y, size, size);
+      ctx.fillStyle = "#202020";
+      for (let row = 0; row < cells; row++) {
+        for (let col = 0; col < cells; col++) {
+          const finder = (
+            (row < 4 && col < 4) ||
+            (row < 4 && col >= cells - 4) ||
+            (row >= cells - 4 && col < 4)
+          );
+          const data = ((row * 7 + col * 11 + row * col) % 5) < 2;
+          if (finder || data) ctx.fillRect(x + col * cell, y + row * cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    }
+
+    function drawCartonLongFace(ctx, canvas) {
+      const { width, height } = canvas;
+      const logoSize = Math.max(54, height * 0.34);
+      drawCuMark(ctx, width * 0.34, height * 0.48, width * 0.45, logoSize);
+      drawCartonText(ctx, "BEARINGS", width * 0.72, height * 0.49, width * 0.35, Math.max(24, height * 0.14), {
+        color: "#202329",
+      });
+      drawCartonText(ctx, "www.cugroup.com", width * 0.78, height * 0.82, width * 0.34, Math.max(14, height * 0.065), {
+        weight: 600,
+        color: "#302a23",
+      });
+      ctx.strokeStyle = "rgba(83, 50, 28, .38)";
+      ctx.lineWidth = Math.max(2, height * 0.012);
+      ctx.beginPath();
+      ctx.moveTo(width * 0.03, height * 0.08);
+      ctx.lineTo(width * 0.03, height * 0.92);
+      ctx.moveTo(width * 0.97, height * 0.08);
+      ctx.lineTo(width * 0.97, height * 0.92);
+      ctx.stroke();
+    }
+
+    function drawCartonEndFace(ctx, canvas, withLabel) {
+      const { width, height } = canvas;
+      drawCuMark(ctx, width * 0.16, height * 0.16, width * 0.28, Math.max(36, height * 0.12), "left");
+
+      const holeW = width * 0.38;
+      const holeH = Math.max(34, height * 0.105);
+      const holeX = (width - holeW) / 2;
+      const holeY = height * 0.2;
+      ctx.save();
+      ctx.shadowColor = "rgba(44, 28, 17, .45)";
+      ctx.shadowBlur = 9;
+      drawRoundedRect(ctx, holeX - 7, holeY - 7, holeW + 14, holeH + 14, holeH * 0.42);
+      ctx.fillStyle = "#6f482c";
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      drawRoundedRect(ctx, holeX, holeY, holeW, holeH, holeH * 0.38);
+      ctx.fillStyle = "#251e19";
+      ctx.fill();
+      ctx.strokeStyle = "#c9975f";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.globalAlpha = 0.48;
+      for (let x = holeX + 10; x < holeX + holeW - 8; x += 8) {
+        ctx.fillStyle = x % 16 === 0 ? "#17120f" : "#704a30";
+        ctx.fillRect(x, holeY + holeH - 7, 4, 4);
+      }
+      ctx.restore();
+
+      drawHandlingMarks(ctx, width * 0.68, height * 0.13, Math.max(28, width * 0.075));
+      drawCartonText(ctx, "C AND U PHILIPPINES INC.", width / 2, height * 0.51, width * 0.78, Math.max(17, height * 0.06), {
+        weight: 700,
+      });
+      drawCartonText(ctx, "INDUSTRIAL BEARINGS", width / 2, height * 0.59, width * 0.68, Math.max(13, height * 0.044), {
+        weight: 600,
+        color: "#3b3028",
+      });
+      drawCartonText(ctx, "HANDLE WITH CARE · KEEP DRY", width / 2, height * 0.67, width * 0.7, Math.max(12, height * 0.038), {
+        weight: 600,
+        color: "#3b3028",
+      });
+
+      if (withLabel) {
+        const labelW = width * 0.43;
+        const labelH = height * 0.22;
+        const labelX = width * 0.49;
+        const labelY = height * 0.72;
+        ctx.fillStyle = "rgba(250, 250, 247, .96)";
+        ctx.fillRect(labelX, labelY, labelW, labelH);
+        ctx.strokeStyle = "#7e7469";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(labelX, labelY, labelW, labelH);
+        drawCartonText(ctx, "C&U PRODUCT LABEL", labelX + labelW * 0.35, labelY + labelH * 0.23, labelW * 0.6, Math.max(11, labelH * 0.18), {
+          color: "#9f2031",
+        });
+        drawCartonText(ctx, "TYPE / QTY / DATE", labelX + labelW * 0.34, labelY + labelH * 0.52, labelW * 0.58, Math.max(10, labelH * 0.14), {
+          weight: 600,
+          color: "#272727",
+        });
+        drawQrPattern(ctx, labelX + labelW * 0.76, labelY + labelH * 0.14, labelH * 0.68);
+      } else {
+        drawCartonText(ctx, "Made for industrial handling", width / 2, height * 0.82, width * 0.65, Math.max(12, height * 0.038), {
+          weight: 600,
+          color: "#42352a",
+        });
+      }
+    }
+
+    function drawCartonTopFace(ctx, canvas, longAlongX) {
+      const { width, height } = canvas;
+      ctx.save();
+      ctx.strokeStyle = "rgba(69, 43, 26, .82)";
+      ctx.lineWidth = Math.max(3, Math.min(width, height) * 0.012);
+      ctx.setLineDash([12, 6]);
+      ctx.beginPath();
+      if (longAlongX) {
+        ctx.moveTo(0, height / 2);
+        ctx.lineTo(width, height / 2);
+      } else {
+        ctx.moveTo(width / 2, 0);
+        ctx.lineTo(width / 2, height);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.42;
+      ctx.beginPath();
+      if (longAlongX) {
+        ctx.moveTo(width * 0.08, 0);
+        ctx.lineTo(width * 0.08, height);
+        ctx.moveTo(width * 0.92, 0);
+        ctx.lineTo(width * 0.92, height);
+      } else {
+        ctx.moveTo(0, height * 0.08);
+        ctx.lineTo(width, height * 0.08);
+        ctx.moveTo(0, height * 0.92);
+        ctx.lineTo(width, height * 0.92);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      const titleX = longAlongX ? width * 0.35 : width * 0.3;
+      const titleY = longAlongX ? height * 0.28 : height * 0.33;
+      drawCuMark(ctx, titleX, titleY, width * 0.48, Math.max(42, Math.min(width, height) * 0.22));
+      drawCartonText(ctx, "C&U Bearings", longAlongX ? width * 0.68 : width * 0.68, longAlongX ? height * 0.7 : height * 0.68, width * 0.5, Math.max(22, Math.min(width, height) * 0.1), {
+        color: "#202329",
+      });
+      drawCartonText(ctx, "More quiet when rotating", longAlongX ? width * 0.63 : width * 0.66, longAlongX ? height * 0.82 : height * 0.78, width * 0.56, Math.max(14, Math.min(width, height) * 0.055), {
+        weight: 700,
+        color: "#29231e",
+      });
+      drawHandlingMarks(ctx, width * 0.72, height * 0.12, Math.max(24, Math.min(width, height) * 0.09));
+    }
+
+    function createCartonFaceTexture(kind, faceWidth, faceHeight, tint, longAlongX = true) {
+      const canvas = createCartonCanvas(faceWidth, faceHeight);
+      const ctx = canvas.getContext("2d");
+      drawCartonSurface(ctx, canvas, tint);
+      if (kind === "side") drawCartonLongFace(ctx, canvas);
+      if (kind === "end-label") drawCartonEndFace(ctx, canvas, true);
+      if (kind === "end-info") drawCartonEndFace(ctx, canvas, false);
+      if (kind === "top") drawCartonTopFace(ctx, canvas, longAlongX);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      texture.needsUpdate = true;
+      return texture;
+    }
+
+    function createCartonMaterial(texture, roughness = 0.86) {
+      return new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: texture,
+        roughness,
+        metalness: 0,
+      });
+    }
+
+    let cartonMaterialCache = new Map();
+
+    function createCartonMaterials(width, height, depth, tint) {
+      const key = [Math.round(width), Math.round(height), Math.round(depth), tint].join("|");
+      if (cartonMaterialCache.has(key)) return cartonMaterialCache.get(key);
+
+      const longAlongX = width >= depth;
+      const longLength = Math.max(width, depth);
+      const shortLength = Math.min(width, depth);
+      const side = createCartonMaterial(createCartonFaceTexture("side", longLength, height, tint));
+      const endLabel = createCartonMaterial(createCartonFaceTexture("end-label", shortLength, height, tint));
+      const endInfo = createCartonMaterial(createCartonFaceTexture("end-info", shortLength, height, tint));
+      const top = createCartonMaterial(createCartonFaceTexture("top", width, depth, tint, longAlongX), 0.8);
+      const bottom = createCartonMaterial(createCartonFaceTexture("plain", width, depth, tint), 0.9);
+      const materials = longAlongX
+        ? [endLabel, endInfo, top, bottom, side, side]
+        : [side, side, top, bottom, endLabel, endInfo];
+      cartonMaterialCache.set(key, materials);
+      return materials;
+    }
+
+    function createTapeMaterial() {
+      return new THREE.MeshPhysicalMaterial({
+        color: 0xf8e4bc,
+        transparent: true,
+        opacity: 0.34,
+        roughness: 0.18,
+        metalness: 0,
+        clearcoat: 0.75,
+        clearcoatRoughness: 0.12,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+    }
+
+    function addCartonTape(group, x, y, z, width, height, depth, tapeMaterial) {
+      const longAlongX = width >= depth;
+      const tapeWidth = Math.max(18, Math.min(54, Math.min(width, depth) * 0.16));
+      const tapeThickness = 1.4;
+      const endDrop = Math.max(12, height * 0.3);
+      const endY = y + height / 2 - endDrop / 2;
+
+      if (longAlongX) {
+        addCuboid(group, x, y + height / 2 + tapeThickness / 2, z, width * 0.985, tapeThickness, tapeWidth, "#ffffff", "carton top tape", {
+          materials: tapeMaterial,
+          edges: false,
+          role: "carton-tape",
+        });
+        [-1, 1].forEach(direction => {
+          addCuboid(group, x + direction * (width / 2 + tapeThickness / 2), endY, z, tapeThickness, endDrop, tapeWidth, "#ffffff", "carton end tape", {
+            materials: tapeMaterial,
+            edges: false,
+            role: "carton-tape",
+          });
+        });
+      } else {
+        addCuboid(group, x, y + height / 2 + tapeThickness / 2, z, tapeWidth, tapeThickness, depth * 0.985, "#ffffff", "carton top tape", {
+          materials: tapeMaterial,
+          edges: false,
+          role: "carton-tape",
+        });
+        [-1, 1].forEach(direction => {
+          addCuboid(group, x, endY, z + direction * (depth / 2 + tapeThickness / 2), tapeWidth, endDrop, tapeThickness, "#ffffff", "carton end tape", {
+            materials: tapeMaterial,
+            edges: false,
+            role: "carton-tape",
+          });
+        });
+      }
+    }
     function clearModelGroup() {
       if (!modelGroup) return;
       const textures = new Set();
+      const materialsToDispose = new Set();
       modelGroup.traverse(object => {
         object.geometry?.dispose();
         const materials = Array.isArray(object.material) ? object.material : [object.material];
         materials.filter(Boolean).forEach(current => {
+          if (materialsToDispose.has(current)) return;
+          materialsToDispose.add(current);
           Object.values(current).forEach(value => {
-            if (value?.isTexture && value !== woodTexture && !textures.has(value)) {
+            if (value?.isTexture && value !== woodTexture && value !== cartonTexture && !textures.has(value)) {
               textures.add(value);
               value.dispose();
             }
@@ -2891,27 +3264,35 @@
         });
       });
       modelGroup.clear();
+      cartonMaterialCache = new Map();
     }
 
     function addCuboid(group, x, y, z, w, h, d, color, name = "", options = {}) {
       const geo = new THREE.BoxGeometry(w * UNIT, h * UNIT, d * UNIT);
-      const surface = options.wood
-        ? createWoodMaterial(color, w, d, options.grainAxis)
-        : material(color);
+      const surface = options.materials || (
+        options.wood
+          ? createWoodMaterial(color, w, d, options.grainAxis)
+          : material(color)
+      );
       const mesh = new THREE.Mesh(geo, surface);
       mesh.position.set(x * UNIT, y * UNIT, z * UNIT);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+      mesh.castShadow = options.castShadow !== false;
+      mesh.receiveShadow = options.receiveShadow !== false;
       mesh.name = name;
       mesh.userData.role = options.role || "";
       group.add(mesh);
 
-      const edge = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geo),
-        new THREE.LineBasicMaterial({ color: options.wood ? 0x4b3a27 : 0x263241, linewidth: 1 })
-      );
-      edge.position.copy(mesh.position);
-      group.add(edge);
+      if (options.edges !== false) {
+        const edge = new THREE.LineSegments(
+          new THREE.EdgesGeometry(geo),
+          new THREE.LineBasicMaterial({
+            color: options.edgeColor || (options.wood ? 0x4b3a27 : 0x5f4029),
+            linewidth: 1,
+          })
+        );
+        edge.position.copy(mesh.position);
+        group.add(edge);
+      }
       return mesh;
     }
 
@@ -3103,16 +3484,29 @@
       els.scene3d.dataset.forkOpeningX = ((w - blockW * 3) / 2).toFixed(1);
       els.scene3d.dataset.forkOpeningZ = ((dpth - blockD * 3) / 2).toFixed(1);
 
-      if (!document.querySelector("#palletOnly3d")?.checked) {
+      const showCartons = !document.querySelector("#palletOnly3d")?.checked;
+      let cartonCount = 0;
+      if (showCartons) {
+        const tapeMaterial = createTapeMaterial();
         state.layout.forEach(box => {
           for (let layer = 0; layer < state.layers; layer++) {
             const cx = x0 + box.x + box.w / 2;
             const cz = z0 + box.y + box.d / 2;
             const cy = p.h + layer * state.box.h + state.box.h / 2;
-            addCuboid(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, boxColor(box), "carton");
+            const color = boxColor(box);
+            addCuboid(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, color, "C&U corrugated carton", {
+              materials: createCartonMaterials(box.w, state.box.h, box.d, color),
+              edgeColor: 0x604028,
+              role: "carton",
+            });
+            addCartonTape(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, tapeMaterial);
+            cartonCount += 1;
           }
         });
       }
+      els.scene3d.dataset.cartonStructure = "rsc-taped-handle";
+      els.scene3d.dataset.cartonBrand = "C&U";
+      els.scene3d.dataset.cartonCount = String(cartonCount);
 
       const dims = visibleOuterDimensions();
       updateDimensionReadout();
@@ -3121,7 +3515,8 @@
       modelGroup.rotation.y = -0.25;
       const annotationPad = state.showDimensions ? Math.max(220, Math.min(dims.l, dims.w) * 0.3) : 0;
       const maxDim = Math.max(dims.l + annotationPad * 2, dims.w + annotationPad * 2, dims.h + annotationPad) * UNIT;
-      camera.position.set(maxDim * 1.4, maxDim * 1.05, maxDim * 1.55);
+      const aspectFit = Math.max(1.16, Math.sqrt(0.62 / Math.max(camera.aspect, 0.4)));
+      camera.position.set(maxDim * 1.4 * aspectFit, maxDim * 1.05 * aspectFit, maxDim * 1.55 * aspectFit);
       controls.target.set(0, dims.h * UNIT * 0.45, 0);
       camera.updateProjectionMatrix();
     }
