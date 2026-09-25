@@ -821,9 +821,40 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
 
 <section>
   <div class="section-label"><span data-zh>第五节</span><span data-en>SECTION 05</span></div>
+  <div class="section-title"><span data-zh>🚦 出货检验流程与覆盖范围</span><span data-en>🚦 Outbound Inspection Flow &amp; Coverage</span></div>
+  <div class="insight-card" style="--ic-color:#0891b2;margin-bottom:16px;">
+    <div class="insight-body"><span data-zh>成品出货依次经过 <b>终检 → GP-12 → 品监(QSD)</b> 三道检验。<b>三者覆盖范围不同，批次数不可直接横向比较</b>：终检与品监每批必检，GP-12 只针对特定批次启动。下方各模块的"批次合格率"只在同一道检验内部跨月比较才有意义。</span><span data-en>Finished goods pass through <b>Final Inspection → GP-12 → QSD</b> in that order. <b>Their coverage differs, so batch counts are not directly comparable</b>: Final and QSD inspect every lot, while GP-12 is triggered only for specific lots. A module's "batch pass rate" is meaningful only when compared month-to-month within that same gate.</span></div>
+  </div>
+  <div class="insights">
+    <div class="insight-card" style="--ic-color:#d97706;">
+      <div class="insight-head"><span data-zh>① 成品终检 Final Inspection</span><span data-en>① Final Inspection</span></div>
+      <div class="insight-body">
+        <span data-zh><b>每批次必检</b>（厂内抽样检验）。1-8月累计 <strong>1,007 批</strong>、检验 3,447,016 件，批次通过率 81.83%。这是产品离开生产线后的第一道把关。</span>
+        <span data-en><b>Every lot</b> (in-house sampling inspection). Jan-Aug: <strong>1,007 lots</strong>, 3,447,016 pcs inspected, 81.83% batch pass rate. The first gate after the product leaves the line.</span>
+      </div>
+    </div>
+    <div class="insight-card" style="--ic-color:#dc2626;">
+      <div class="insight-head"><span data-zh>② GP-12 加严检验（按条件启动）</span><span data-en>② GP-12 Enhanced (conditional)</span></div>
+      <div class="insight-body">
+        <span data-zh><b>并非所有批次都需要</b>，仅以下三种情况启动：<b>样品</b>、<b>新产品量产</b>、<b>客户端发生质量事故</b>的相关批次。1-8月累计仅 <strong>142 批</strong>——数量少是覆盖规则所致，不代表检验量不足；其 27.5% 的批次合格率也因加严判定标准而天然偏低。</span>
+        <span data-en><b>Not every lot</b> — triggered only for: <b>samples</b>, <b>new-product mass production</b>, and lots tied to a <b>customer-side quality incident</b>. Jan-Aug: just <strong>142 lots</strong>. The small count reflects the trigger rule, not thin coverage; its 27.5% batch pass rate is also inherently low because the screening criteria are stricter.</span>
+      </div>
+    </div>
+    <div class="insight-card" style="--ic-color:#7c3aed;">
+      <div class="insight-head"><span data-zh>③ 品监 QSD（第三方检测）</span><span data-en>③ QSD (third-party)</span></div>
+      <div class="insight-body">
+        <span data-zh><b>第三方检测，每批次必检</b>，是入库出货前的最后一道关。1-8月累计 <strong>1,210 批</strong>、入库 4,100,458 件，批次合格率 96.78%。作为独立第三方，其判定结果可用于校验厂内终检的有效性。</span>
+        <span data-en><b>Third-party inspection, every lot</b> — the last gate before inbound/shipment. Jan-Aug: <strong>1,210 lots</strong>, 4,100,458 pcs, 96.78% batch pass rate. Being independent, its verdicts can be used to validate how well in-house final inspection is working.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label"><span data-zh>第六节</span><span data-en>SECTION 06</span></div>
   <div class="section-title"><span data-zh>🔗 TOP缺陷全链路追踪 · 锈蚀 Rust</span><span data-en>🔗 Top-Defect Chain Tracking · Rust</span></div>
   <div class="insight-card" style="--ic-color:#0891b2;margin-bottom:16px;">
-    <div class="insight-body"><span data-zh>同一缺陷（锈蚀）在<b>磨削 → 装配 → 终检 → GP12</b>四个环节各自的月度出现情况，用于定位问题在链路哪一环失控。<b>注意口径不同</b>：磨削/装配为缺陷<b>件数</b>，终检/GP12 为出现<b>批次数</b>，故各图独立纵轴、不可横向比数值大小，只看各自趋势。</span><span data-en>The same defect (Rust) across <b>Grinding → Assembly → Final → GP12</b>, to locate where in the chain it goes out of control. <b>Units differ</b>: Grinding/Assembly are defect <b>pieces</b>; Final/GP12 are <b>batch</b> occurrences — each chart has its own axis; compare trends, not absolute magnitudes.</span></div>
+    <div class="insight-body"><span data-zh>同一缺陷（锈蚀）在<b>磨削 → 装配 → 终检 → GP12 → 品监</b>五个环节各自的月度出现情况，用于定位问题在链路哪一环失控。<b>注意口径不同</b>：磨削/装配为缺陷<b>件数</b>，终检/GP12/品监为出现<b>批次数</b>，故各图独立纵轴、不可横向比数值大小，只看各自趋势。<b>覆盖面也不同</b>：终检与品监每批必检，GP12 只覆盖样品、新产品量产和客户端质量事故批次，其批次数天然远少于前后两道。</span><span data-en>The same defect (Rust) across <b>Grinding → Assembly → Final → GP12 → QSD</b>, to locate where in the chain it goes out of control. <b>Units differ</b>: Grinding/Assembly are defect <b>pieces</b>; Final/GP12/QSD are <b>batch</b> occurrences — each chart has its own axis; compare trends, not absolute magnitudes. <b>Coverage differs too</b>: Final and QSD inspect every lot, while GP12 covers only samples, new-product mass production and lots tied to a customer quality incident — so its batch counts are inherently far smaller.</span></div>
   </div>
   <div class="charts-grid three">
     <div class="chart-card">
@@ -835,12 +866,16 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="chart-wrap short"><canvas id="chainAsm"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>③ 终检环节（出现批次）</span><span data-en>③ Final Insp. (batches)</span></div>
+      <div class="chart-title" style="--ct-color:#d97706;"><span data-zh>③ 终检环节（出现批次·全检）</span><span data-en>③ Final Insp. (batches · all lots)</span></div>
       <div class="chart-wrap short"><canvas id="chainFin"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>④ GP12环节（出现批次）</span><span data-en>④ GP12 (batches)</span></div>
+      <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>④ GP12环节（出现批次·仅特定批次）</span><span data-en>④ GP12 (batches · selected lots only)</span></div>
       <div class="chart-wrap short"><canvas id="chainGp12"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" style="--ct-color:#7c3aed;"><span data-zh>⑤ 品监环节（出现批次·第三方全检）</span><span data-en>⑤ QSD (batches · third-party, all lots)</span></div>
+      <div class="chart-wrap short"><canvas id="chainQsd"></canvas></div>
     </div>
   </div>
   <div class="spc-note" id="chain-insight" style="border-left-color:#0891b2;"></div>
@@ -1476,7 +1511,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
   <div class="header-meta">
     <div class="meta-pill"><span class="dot"></span><span data-zh>2026年1-8月</span><span data-en>JAN-AUG 2026</span></div>
     <div class="meta-pill">FINAL.xlsx (UPDATED 8月)</div>
-    <div class="meta-pill"><span data-zh>成品终检记录</span><span data-en>Finished Product Inspection</span></div>
+    <div class="meta-pill"><span data-zh>成品终检 · 每批必检</span><span data-en>Final Inspection · Every Lot</span></div>
     <div class="meta-pill"><span data-zh>抽样检验</span><span data-en>Sampling Inspection</span></div>
   </div>
 </header>
@@ -1769,7 +1804,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
   <div class="header-meta">
     <div class="meta-pill"><span class="dot"></span><span data-zh>2026年1-8月</span><span data-en>JAN-AUG 2026</span></div>
     <div class="meta-pill">QSD.xlsx + 台账列表(6-8月)</div>
-    <div class="meta-pill"><span data-zh>成品入库品监</span><span data-en>Finished Goods QSD</span></div>
+    <div class="meta-pill"><span data-zh>第三方检测 · 每批必检</span><span data-en>Third-Party · Every Lot</span></div>
     <div class="meta-pill"><span data-zh>菲常队</span><span data-en>PH Team</span></div>
   </div>
 </header>
@@ -1865,8 +1900,8 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="insight-card" style="--ic-color:#059669;">
         <div class="insight-head"><span data-zh>✅ 亮点 — 整体合格率优秀</span><span data-en>✅ Highlight — Excellent Overall Pass Rate</span></div>
         <div class="insight-body">
-          <span data-zh>品监整体批次合格率 <strong>96.78%</strong>（1,171/1,210批），抽检不良率仅 <strong>0.085%</strong>（116件/136,973件抽检），远低于千分之一，品监把关效果优异，成品出库质量稳定可靠。</span>
-          <span data-en>QSD overall batch pass rate is <strong>96.78%</strong> (1,171/1,210 batches) with a sampling defect rate of just <strong>0.085%</strong> (116 NG / 136,973 sampled), well below 0.1%. QSD gate-keeping is highly effective and outbound product quality is stable.</span>
+          <span data-zh>品监(QSD)是 <b>终检 → GP-12 → 品监</b> 三道检验的最后一道，属<b>第三方检测且每批必检</b>。整体批次合格率 <strong>96.78%</strong>（1,171/1,210批），抽检不良率仅 <strong>0.085%</strong>（116件/136,973件抽检），远低于千分之一。作为独立第三方，这个结果同时说明厂内终检的把关是有效的——流到最后一道的不良已经很少。</span>
+          <span data-en>QSD is the last of the three gates — <b>Final Inspection → GP-12 → QSD</b> — and is a <b>third-party inspection applied to every lot</b>. Its overall batch pass rate is <strong>96.78%</strong> (1,171/1,210 batches) with a sampling defect rate of just <strong>0.085%</strong> (116 NG / 136,973 sampled), well under 0.1%. Coming from an independent party, that also says in-house final inspection is working: little escapes to the last gate.</span>
         </div>
       </div>
       <div class="insight-card" style="--ic-color:#dc2626;">
@@ -2512,6 +2547,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <div class="meta-pill">GP-12_inspection_schedule.xlsx</div>
     <div class="meta-pill"><span data-zh>仅PHJY分厂</span><span data-en>PHJY Plant Only</span></div>
     <div class="meta-pill"><span data-zh>加严监控检验</span><span data-en>Enhanced Monitoring</span></div>
+    <div class="meta-pill"><span data-zh>仅样品/新品量产/客户质量事故</span><span data-en>Samples / New-Product MP / Incident Lots</span></div>
   </div>
 </header>
 
@@ -2597,10 +2633,10 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <div class="section-title"><span data-zh>关键洞察</span><span data-en>Key Insights</span></div>
     <div class="insights">
       <div class="insight-card" style="--ic-color:#0891b2;">
-        <div class="insight-head"><span data-zh>📌 GP12为加严监控检验</span><span data-en>📌 GP12 — Enhanced Monitoring</span></div>
+        <div class="insight-head"><span data-zh>📌 GP12 按条件启动，不是全检</span><span data-en>📌 GP12 Is Conditional, Not Universal</span></div>
         <div class="insight-body">
-          <span data-zh>GP-12针对新品/初期量产的高风险批次实施加严抽检。1-8月142批中103批判定不合格(走反应计划)，批次合格率27.5%——这反映加严筛查的严格性，而非整体质量差。需结合单件合格率综合判断。</span>
-          <span data-en>GP-12 applies enhanced sampling to high-risk new-product/initial-mass-production batches. Across Jan-Aug, 103 of 142 batches were judged unqualified (triggering response plans), giving a 27.5% batch pass rate — reflecting screening strictness, not overall poor quality. Unit pass rate gives the fuller picture.</span>
+          <span data-zh>出货检验的顺序是 <b>终检 → GP-12 → 品监(QSD)</b>，其中终检与品监每批必检，<b>GP-12 只在三种情况下启动：样品、新产品量产、客户端发生质量事故</b>。所以本模块 1-8月仅 142 批，远少于终检的 1,007 批和品监的 1,210 批，是覆盖规则所致而非漏检。142批中103批判定不合格(走反应计划)，批次合格率27.5%——这反映加严判定标准的严格性，而非整体质量差，需结合单件合格率综合判断。</span>
+          <span data-en>The outbound sequence is <b>Final Inspection → GP-12 → QSD</b>. Final and QSD cover every lot, while <b>GP-12 is triggered only in three cases: samples, new-product mass production, and a customer-side quality incident</b>. That is why this module holds just 142 lots for Jan-Aug versus 1,007 at Final and 1,210 at QSD — a coverage rule, not a gap. Of those 142, 103 were judged unqualified (triggering response plans), giving a 27.5% batch pass rate: that reflects strict screening criteria rather than poor quality, so read it alongside the unit pass rate.</span>
         </div>
       </div>
       <div class="insight-card" style="--ic-color:#059669;">
@@ -2734,9 +2770,9 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <div class="chart-card">
         <div class="chart-title" style="--ct-color:#0891b2;"><span data-zh>检查分类 — 说明</span><span data-en>Classification Notes</span></div>
         <div style="padding:10px 4px;font-size:12.5px;color:var(--text-sub);line-height:1.85;">
-          <p style="margin-bottom:10px;"><strong style="color:var(--text);">Mass Production (48)</strong><br><span data-zh>量产批次，常规加严监控</span><span data-en>Mass production batches under routine enhanced monitoring</span></p>
-          <p style="margin-bottom:10px;"><strong style="color:var(--text);">Initial Mass Production (43)</strong><br><span data-zh>初期量产，工艺稳定性验证阶段</span><span data-en>Initial mass production, process stability validation</span></p>
-          <p><strong style="color:var(--text);">New Product Sample (21)</strong><br><span data-zh>新品样品，首次送样加严确认</span><span data-en>New product samples, first-submission enhanced verification</span></p>
+          <p style="margin-bottom:10px;"><strong style="color:var(--text);">Mass Production (67)</strong><br><span data-zh>新产品转入量产后的加严监控批次</span><span data-en>Enhanced monitoring after a new product enters mass production</span></p>
+          <p style="margin-bottom:10px;"><strong style="color:var(--text);">Initial Mass Production (48)</strong><br><span data-zh>初期量产，工艺稳定性验证阶段</span><span data-en>Initial mass production, process stability validation</span></p>
+          <p style="margin-bottom:10px;"><strong style="color:var(--text);">New Product Sample (27)</strong><br><span data-zh>新品样品，首次送样加严确认</span><span data-en>New product samples, first-submission enhanced verification</span></p><p style="border-top:1px solid var(--border);padding-top:9px;margin-top:2px;"><span data-zh><b>启动条件</b>：GP-12 并非所有批次都做，仅<b>样品</b>、<b>新产品量产</b>、<b>客户端发生质量事故</b>三种情况启动。因此其批次数远少于终检与品监，属正常。</span><span data-en><b>Trigger rule</b>: GP-12 is not applied to every lot — only to <b>samples</b>, <b>new-product mass production</b>, and lots tied to a <b>customer-side quality incident</b>. Its batch count is therefore far below Final and QSD by design.</span></p>
         </div>
       </div>
     </div>
@@ -6115,7 +6151,8 @@ function _renderRustChain(){
   // 四个环节都有数据的月份数 —— 加月份时只改 fin/gp12 两个数组，其余自动跟随
   const fin=[8,3,6,5,1,7,4,3];    // final-inspection Rust batch occurrences (finDefectHeatmap source)
   const gp12=[0,5,10,13,15,2,3,2];// GP12 Rust batch occurrences (gp12DefectHeatmap source)
-  const NM=Math.min(fin.length, gp12.length);
+  const qsd=[0,0,1,0,2,2,3,4];    // QSD Rust batch occurrences (qsdDefectHeatmap source)
+  const NM=Math.min(fin.length, gp12.length, qsd.length);
   const mL=_MLABELS_FULL.slice(0,NM).map(x=>x.split(' ')[0]);
   const MS=Array.from({length:NM},(_,i)=>i+1);
   const gpd=window._grinderProcDetail;
@@ -6128,10 +6165,13 @@ function _renderRustChain(){
   const gridC=_mode==='dark'?'#2a2f48':'#e8ecf5';
   const mini=(id,data,color)=>mk(id,'bar',{labels:mL,datasets:[{data,backgroundColor:color+'c0',borderColor:color,borderWidth:1,borderRadius:4}]},
     {plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:gridC},beginAtZero:true,ticks:{font:{size:9},maxTicksLimit:4}}}});
-  mini('chainGrinder',grinder,'#2563eb'); mini('chainAsm',asm,'#7c3aed'); mini('chainFin',fin,'#d97706'); mini('chainGp12',gp12,'#dc2626');
+  mini('chainGrinder',grinder,'#2563eb'); mini('chainAsm',asm,'#7c3aed'); mini('chainFin',fin,'#d97706'); mini('chainGp12',gp12,'#dc2626'); mini('chainQsd',qsd,'#7c3aed');
   // auto conclusion: which stage's June is most anomalous vs its OWN history (z-score,
   // unit-free — avoids the small-base %-spike trap when comparing pcs vs batches)
-  const stages=[{zh:'磨削',en:'Grinding',s:grinder,unit:'件'},{zh:'装配',en:'Assembly',s:asm,unit:'件'},{zh:'终检',en:'Final',s:fin,unit:'批'},{zh:'GP12',en:'GP12',s:gp12,unit:'批'}];
+  // kind: produce=锈蚀在此产生(件数)；detect=检验环节，只是发现地(批次)
+  const stages=[{zh:'磨削',en:'Grinding',s:grinder,unit:'件',kind:'produce'},{zh:'装配',en:'Assembly',s:asm,unit:'件',kind:'produce'},
+                {zh:'终检',en:'Final',s:fin,unit:'批',kind:'detect'},{zh:'GP12',en:'GP12',s:gp12,unit:'批',kind:'detect'},
+                {zh:'品监',en:'QSD',s:qsd,unit:'批',kind:'detect'}];
   let worst=null;
   stages.forEach(st=>{const prior=st.s.slice(0,NM-1); const jun=st.s[NM-1];
     const mean=prior.reduce((a,b)=>a+b,0)/prior.length;
@@ -6141,7 +6181,9 @@ function _renderRustChain(){
   const el=document.getElementById('chain-insight');
   if(el){
     el.innerHTML = (worst && worst.z>2)
-      ? `<span data-zh><b>自动判读：</b>${NM}月锈蚀在<b style="color:#dc2626;">${worst.st.zh}环节</b>异常突出——当月 ${worst.jun}${worst.st.unit}，远超该环节前6月均值(约${worst.mean}${worst.st.unit}，+${worst.z.toFixed(1)}σ)，是链路上游的失控点，应优先排查该环节防锈/清洗/存储。下游环节锈蚀多为上游流入。<i>（跨环节按各自历史波动比较，非直接比数值，因单位不同）</i></span><span data-en><b>Auto-reading:</b> ${_MLABELS_EN3[NM-1]} Rust is a clear outlier at the <b style="color:#dc2626;">${worst.st.en}</b> stage — ${worst.jun} ${worst.st.unit==='件'?'pcs':'batches'} vs a ~${worst.mean} prior-6-month average (+${worst.z.toFixed(1)}σ), the upstream loss-of-control point; prioritise anti-rust/cleaning/storage there.</span>`
+      ? (worst.st.kind==='produce'
+          ? `<span data-zh><b>自动判读：</b>${NM}月锈蚀在<b style="color:#dc2626;">${worst.st.zh}环节</b>异常突出——当月 ${worst.jun}${worst.st.unit}，远超该环节前${NM-1}个月均值(约${worst.mean}${worst.st.unit}，+${worst.z.toFixed(1)}σ)。这是<b>锈蚀产生的环节</b>，属链路上游失控，应优先排查该环节的防锈/清洗/存储。下游检验环节的锈蚀多为此处流入。<i>（跨环节按各自历史波动比较，非直接比数值，因单位不同）</i></span><span data-en><b>Auto-reading:</b> ${_MLABELS_EN3[NM-1]} Rust is a clear outlier at the <b style="color:#dc2626;">${worst.st.en}</b> stage — ${worst.jun} ${worst.st.unit==='件'?'pcs':'batches'} vs a ~${worst.mean} average over the prior ${NM-1} months (+${worst.z.toFixed(1)}σ). This is a stage where rust is <b>created</b>, so it is an upstream loss of control: check anti-rust, cleaning and storage there first. Rust seen at the downstream gates mostly flows in from here.</span>`
+          : `<span data-zh><b>自动判读：</b>${NM}月锈蚀在<b style="color:#dc2626;">${worst.st.zh}环节</b>被集中拦截——当月 ${worst.jun}${worst.st.unit}，远超该环节前${NM-1}个月均值(约${worst.mean}${worst.st.unit}，+${worst.z.toFixed(1)}σ)。<b>检验环节只是发现地，不是产生地</b>：锈蚀形成于磨削/装配，或在其后的存储与运输中。${worst.st.zh}是出货链路上${worst.st.zh==='品监'?'最后':'靠后'}的一道，在这里才集中暴露，说明上游各道未能拦住，应回溯该批次在磨削后的防锈与存放条件，而非加强检验本身。<i>（跨环节按各自历史波动比较，非直接比数值，因单位不同）</i></span><span data-en><b>Auto-reading:</b> ${_MLABELS_EN3[NM-1]} Rust was caught in volume at the <b style="color:#dc2626;">${worst.st.en}</b> gate — ${worst.jun} ${worst.st.unit==='件'?'pcs':'batches'} vs a ~${worst.mean} average over the prior ${NM-1} months (+${worst.z.toFixed(1)}σ). <b>A gate is where rust is found, not where it is made</b>: it forms during grinding/assembly or in storage and transit afterwards. Surfacing this late means the earlier gates did not catch it — trace the post-grinding rust prevention and storage conditions for those lots rather than tightening the inspection itself.</span>`)
       : `<span data-zh><b>自动判读：</b>${NM}月锈蚀在各环节相对自身历史均无显著异常（无环节超 2σ），未见单一环节失控。</span><span data-en><b>Auto-reading:</b> No stage shows ${_MLABELS_EN3[NM-1]} Rust beyond 2σ of its own history; no single loss-of-control point.</span>`;
   }
 }
