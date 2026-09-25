@@ -492,6 +492,55 @@
     }
     .toggle input { width: 16px; height: 16px; accent-color: var(--accent); }
 
+    .limit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .limit-control {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 7px 8px;
+      min-width: 0;
+      padding: 8px;
+      border: 2px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+    }
+
+    .limit-control > input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    .limit-control > span {
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .limit-control > input[type="number"] {
+      grid-column: 1 / -1;
+    }
+
+    .limit-control > input[type="number"]:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .limit-summary {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
     .workspace-panel {
       display: grid;
       grid-template-rows: auto 1fr auto;
@@ -935,6 +984,25 @@
           </div>
         </section>
 
+        <section class="section" id="loadLimitsSection">
+          <div class="section-title">
+            <h2>装载限制</h2>
+          </div>
+          <div class="limit-grid">
+            <label class="limit-control">
+              <input type="checkbox" id="boxLimitEnabled">
+              <span id="boxLimitText">箱子数量限制</span>
+              <input type="number" id="maxBoxes" min="1" step="1" value="36" disabled>
+            </label>
+            <label class="limit-control">
+              <input type="checkbox" id="weightLimitEnabled">
+              <span id="weightLimitText">总重量限制 kg</span>
+              <input type="number" id="maxTotalWeight" min="0" step="0.01" value="1000" disabled>
+            </label>
+          </div>
+          <p class="limit-summary" id="limitSummary">当前不限制箱子数量和总重量。</p>
+        </section>
+
         <section class="section">
           <div class="section-title">
             <h2>自动规划</h2>
@@ -1085,6 +1153,11 @@
       perBox: document.querySelector("#perBox"),
       palletColor: document.querySelector("#palletColor"),
       boxColor: document.querySelector("#boxColor"),
+      boxLimitEnabled: document.querySelector("#boxLimitEnabled"),
+      maxBoxes: document.querySelector("#maxBoxes"),
+      weightLimitEnabled: document.querySelector("#weightLimitEnabled"),
+      maxTotalWeight: document.querySelector("#maxTotalWeight"),
+      limitSummary: document.querySelector("#limitSummary"),
       board: document.querySelector("#palletBoard"),
       wrap: document.querySelector("#canvasWrap"),
       planList: document.querySelector("#planList"),
@@ -1120,6 +1193,12 @@
       boxWeight: 0,
       layers: 3,
       perBox: 880,
+      loadLimits: {
+        boxEnabled: false,
+        maxBoxes: 36,
+        weightEnabled: false,
+        maxWeight: 1000,
+      },
       colors: { pallet: "#d8ad6a", box: "#b9824f" },
       layout: [],
       plans: [],
@@ -1161,6 +1240,13 @@
         cartonMatches: "找到 {count} 个箱型，可输入关键词缩小范围",
         cartonNoMatches: "没有匹配的箱型",
         colorCustom: "颜色自定义",
+        loadLimits: "装载限制",
+        boxLimit: "箱子数量限制",
+        weightLimit: "总重量限制 kg",
+        limitsNone: "当前不限制箱子数量和总重量。",
+        limitsActive: "当前限制：{limits}。",
+        limitBoxesValue: "最多 {value} 箱",
+        limitWeightValue: "整托不超过 {value} kg",
         autoPlan: "自动规划",
         manualAssist: "手动辅助",
         generatePallet: "生成托盘",
@@ -1217,7 +1303,8 @@
         noFitPlan: "当前箱子尺寸无法放入托盘。",
         noEfficientPlan: "未找到利用率达到 70% 的方案，请调整托盘或箱子尺寸。",
         apply: "应用",
-        planMeta: "单层 {count} 箱，三层 {total} 箱，利用率约 {util}%。",
+        planMeta: "单层 {count} 箱，整托 {total} 箱 / {layers} 层，利用率约 {util}%。",
+        noLoadWithinLimits: "当前限制条件下无法装入箱子，请提高数量或重量上限。",
         optimalProof: "已验证最优",
         planOptimized: "空间搜索优化",
         planRing: "回字形环绕摆",
@@ -1271,6 +1358,13 @@
         cartonMatches: "{count} carton presets found. Type to narrow the list.",
         cartonNoMatches: "No matching carton presets",
         colorCustom: "Colors",
+        loadLimits: "Load Limits",
+        boxLimit: "Carton Count Limit",
+        weightLimit: "Gross Weight Limit kg",
+        limitsNone: "Carton count and gross weight are currently unlimited.",
+        limitsActive: "Active limits: {limits}.",
+        limitBoxesValue: "up to {value} cartons",
+        limitWeightValue: "gross weight up to {value} kg",
         autoPlan: "Auto Planning",
         manualAssist: "Manual Tools",
         generatePallet: "Build Pallet",
@@ -1327,7 +1421,8 @@
         noFitPlan: "The current carton size does not fit on the pallet.",
         noEfficientPlan: "No layout reaches 70% utilization. Adjust the pallet or carton size.",
         apply: "Apply",
-        planMeta: "{count} / layer, {total} total, about {util}% utilization.",
+        planMeta: "{count} / layer, {total} total across {layers} layers, about {util}% utilization.",
+        noLoadWithinLimits: "No carton can be loaded under the current limits. Increase the count or weight limit.",
         optimalProof: "Proven optimal",
         planOptimized: "Spatial Search",
         planRing: "Perimeter Ring",
@@ -1379,6 +1474,62 @@
       return text;
     }
 
+    function loadSummary(layerCount = state.layout.length) {
+      const boxesPerLayer = Math.max(0, Math.floor(layerCount));
+      const capacity = boxesPerLayer * state.layers;
+      let allowedBoxes = capacity;
+
+      if (state.loadLimits.boxEnabled) {
+        allowedBoxes = Math.min(allowedBoxes, state.loadLimits.maxBoxes);
+      }
+
+      if (state.loadLimits.weightEnabled) {
+        const availableWeight = state.loadLimits.maxWeight - state.palletWeight;
+        const weightCapacity = availableWeight < 0
+          ? 0
+          : state.boxWeight > 0
+            ? Math.floor((availableWeight + 1e-9) / state.boxWeight)
+            : capacity;
+        allowedBoxes = Math.min(allowedBoxes, weightCapacity);
+      }
+
+      const totalBoxes = clamp(Math.floor(allowedBoxes), 0, capacity);
+      const fullLayers = boxesPerLayer ? Math.floor(totalBoxes / boxesPerLayer) : 0;
+      const partialLayerBoxes = boxesPerLayer ? totalBoxes % boxesPerLayer : 0;
+      const usedLayers = fullLayers + (partialLayerBoxes > 0 ? 1 : 0);
+      return {
+        boxesPerLayer,
+        capacity,
+        totalBoxes,
+        fullLayers,
+        partialLayerBoxes,
+        usedLayers,
+        totalWeight: state.palletWeight + totalBoxes * state.boxWeight,
+        limited: totalBoxes < capacity,
+      };
+    }
+
+    function updateLoadLimitUi() {
+      els.maxBoxes.disabled = !state.loadLimits.boxEnabled;
+      els.maxTotalWeight.disabled = !state.loadLimits.weightEnabled;
+      els.maxBoxes.setAttribute("aria-disabled", String(els.maxBoxes.disabled));
+      els.maxTotalWeight.setAttribute("aria-disabled", String(els.maxTotalWeight.disabled));
+
+      const limits = [];
+      if (state.loadLimits.boxEnabled) {
+        limits.push(t("limitBoxesValue", { value: fmt(state.loadLimits.maxBoxes) }));
+      }
+      if (state.loadLimits.weightEnabled) {
+        limits.push(t("limitWeightValue", {
+          value: Number(state.loadLimits.maxWeight).toLocaleString("zh-CN", { maximumFractionDigits: 2 }),
+        }));
+      }
+      els.limitSummary.textContent = limits.length
+        ? t("limitsActive", { limits: limits.join(state.lang === "zh" ? "，" : ", ") })
+        : t("limitsNone");
+      els.limitSummary.dataset.activeLimitCount = String(limits.length);
+    }
+
     function setText(selector, key, vars) {
       const node = document.querySelector(selector);
       if (node) node.textContent = t(key, vars);
@@ -1426,8 +1577,11 @@
       setText(".side .section:nth-of-type(1) h2", "palletSize");
       setText(".side .section:nth-of-type(2) h2", "boxSize");
       setText(".side .section:nth-of-type(3) h2", "colorCustom");
-      setText(".side .section:nth-of-type(4) h2", "autoPlan");
-      setText(".side .section:nth-of-type(5) h2", "manualAssist");
+      setText("#loadLimitsSection h2", "loadLimits");
+      setText("#boxLimitText", "boxLimit");
+      setText("#weightLimitText", "weightLimit");
+      setText(".side .section:nth-of-type(5) h2", "autoPlan");
+      setText(".side .section:nth-of-type(6) h2", "manualAssist");
       setText("#generatePallet", "generatePallet");
       setText("#addBox", "generateBox");
       setText("#autoPlan", "calculatePlans");
@@ -1447,6 +1601,7 @@
       setInputLabel("gridSize", "gridMm");
       setInputLabel("snapRange", "snapRangeMm");
       setInputLabel("palletOnly3d", "palletOnly");
+      updateLoadLimitUi();
       setText('[data-align="left"]', "alignLeft");
       setText('[data-align="hcenter"]', "alignHCenter");
       setText('[data-align="right"]', "alignRight");
@@ -1887,6 +2042,10 @@
       state.boxWeight = Math.max(0, Number(els.boxWeight.value) || 0);
       state.layers = clamp(Number(els.layers.value) || 1, 1, 12);
       state.perBox = Math.max(0, Number(els.perBox.value) || 0);
+      state.loadLimits.boxEnabled = els.boxLimitEnabled.checked;
+      state.loadLimits.maxBoxes = Math.max(0, Math.floor(Number(els.maxBoxes.value) || 0));
+      state.loadLimits.weightEnabled = els.weightLimitEnabled.checked;
+      state.loadLimits.maxWeight = Math.max(0, Number(els.maxTotalWeight.value) || 0);
       state.colors.pallet = els.palletColor.value;
       state.colors.box = els.boxColor.value;
       state.showDimensions = els.showDimensions3d.checked;
@@ -1894,15 +2053,17 @@
       document.documentElement.style.setProperty("--box", state.colors.box);
       els.legendPallet.style.background = state.colors.pallet;
       els.legendBox.style.background = state.colors.box;
+      updateLoadLimitUi();
       updateDimensionReadout();
     }
 
     function visibleOuterDimensions() {
       const showLoad = !document.querySelector("#palletOnly3d")?.checked && state.layout.length > 0;
+      const summary = loadSummary();
       return {
         l: state.pallet.w,
         w: state.pallet.d,
-        h: state.pallet.h + (showLoad ? state.layers * state.box.h : 0),
+        h: state.pallet.h + (showLoad ? summary.usedLayers * state.box.h : 0),
       };
     }
 
@@ -2103,12 +2264,14 @@
 
     function updateMetrics(overlaps) {
       const layerCount = state.layout.length;
-      const totalBoxes = layerCount * state.layers;
-      const totalWeight = state.palletWeight + totalBoxes * state.boxWeight;
+      const summary = loadSummary(layerCount);
       els.boxCount.textContent = fmt(layerCount);
-      els.totalBoxes.textContent = fmt(totalBoxes);
-      els.totalQty.textContent = fmt(totalBoxes * state.perBox);
-      els.totalWeight.textContent = fmtWeight(totalWeight);
+      els.totalBoxes.textContent = fmt(summary.totalBoxes);
+      els.totalQty.textContent = fmt(summary.totalBoxes * state.perBox);
+      els.totalWeight.textContent = fmtWeight(summary.totalWeight);
+      els.totalBoxes.dataset.capacity = String(summary.capacity);
+      els.totalBoxes.dataset.limited = String(summary.limited);
+      els.totalWeight.dataset.limitActive = String(state.loadLimits.weightEnabled);
 
       const outside = state.layout.some(box => box.x < -0.01 || box.y < -0.01 || box.x + box.w > state.pallet.w + 0.01 || box.y + box.d > state.pallet.d + 0.01);
       if (overlaps.size || outside) {
@@ -2640,11 +2803,20 @@
         seedPlan.provenOptimal = true;
       }
 
-      const eligiblePlans = plans.filter(plan => plan.util >= MIN_PLAN_UTILIZATION - 1e-9);
+      const eligiblePlans = plans.filter(plan =>
+        plan.util >= MIN_PLAN_UTILIZATION - 1e-9 &&
+        loadSummary(plan.count).totalBoxes > 0
+      );
       eligiblePlans.sort((a, b) => b.count - a.count || Number(b.provenOptimal) - Number(a.provenOptimal) || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
       state.plans = eligiblePlans.slice(0, 7);
       state.activePlan = state.plans[0]?.id ?? null;
-      state.planMessageKey = state.plans.length ? null : (plans.length ? "noEfficientPlan" : "noFitPlan");
+      const blockedByLimits = plans.some(plan => plan.util >= MIN_PLAN_UTILIZATION - 1e-9) &&
+        plans.every(plan => loadSummary(plan.count).totalBoxes === 0);
+      state.planMessageKey = state.plans.length
+        ? null
+        : blockedByLimits
+          ? "noLoadWithinLimits"
+          : (plans.length ? "noEfficientPlan" : "noFitPlan");
       renderPlans();
       if (state.plans[0]) {
         applyPlan(state.plans[0].id);
@@ -2705,6 +2877,7 @@
       }
 
       state.plans.forEach((plan, index) => {
+        const summary = loadSummary(plan.count);
         const card = document.createElement("div");
         card.className = `plan-card ${plan.id === state.activePlan ? "active" : ""}`;
         card.innerHTML = `
@@ -2712,7 +2885,7 @@
             <strong>${index + 1}. ${t(plan.nameKey, plan.vars)}</strong>
             <button class="small" data-plan="${plan.id}">${t("apply")}</button>
           </div>
-          <p>${t("planMeta", { count: plan.count, total: plan.count * state.layers, util: (plan.util * 100).toFixed(1) })}${plan.provenOptimal ? `<span class="plan-proof">${t("optimalProof")}</span>` : ""}</p>
+          <p>${t("planMeta", { count: plan.count, total: summary.totalBoxes, layers: summary.usedLayers, util: (plan.util * 100).toFixed(1) })}${plan.provenOptimal ? `<span class="plan-proof">${t("optimalProof")}</span>` : ""}</p>
           <div class="plan-mini" aria-hidden="true"></div>
         `;
         drawMini(card.querySelector(".plan-mini"), plan.rects);
@@ -2767,6 +2940,11 @@
       els.toast.classList.add("show");
       window.clearTimeout(showToast.timer);
       showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1700);
+    }
+
+    function scheduleLimitRecalculation() {
+      window.clearTimeout(scheduleLimitRecalculation.timer);
+      scheduleLimitRecalculation.timer = window.setTimeout(calculatePlans, 140);
     }
 
     let scene, camera, renderer, controls, modelGroup, floorMesh, woodTexture, cartonTexture;
@@ -3454,6 +3632,34 @@
       return nail;
     }
 
+    function centeredLayerSubset(count) {
+      if (count >= state.layout.length) return state.layout;
+      if (count <= 0) return [];
+
+      const centerX = state.pallet.w / 2;
+      const centerY = state.pallet.d / 2;
+      const selected = state.layout
+        .map((box, index) => ({
+          box,
+          index,
+          distance: Math.hypot(box.x + box.w / 2 - centerX, box.y + box.d / 2 - centerY),
+        }))
+        .sort((a, b) => a.distance - b.distance || a.index - b.index)
+        .slice(0, count)
+        .sort((a, b) => a.index - b.index)
+        .map(item => ({ ...item.box }));
+
+      const minX = Math.min(...selected.map(box => box.x));
+      const minY = Math.min(...selected.map(box => box.y));
+      const maxX = Math.max(...selected.map(box => box.x + box.w));
+      const maxY = Math.max(...selected.map(box => box.y + box.d));
+      const desiredX = centerX - (minX + maxX) / 2;
+      const desiredY = centerY - (minY + maxY) / 2;
+      const offsetX = clamp(desiredX, -minX, state.pallet.w - maxX);
+      const offsetY = clamp(desiredY, -minY, state.pallet.d - maxY);
+      return selected.map(box => ({ ...box, x: box.x + offsetX, y: box.y + offsetY }));
+    }
+
     function redraw3D() {
       if (!modelGroup) return;
       clearModelGroup();
@@ -3535,10 +3741,14 @@
       let cartonCount = 0;
       let printAxisXCount = 0;
       let printAxisZCount = 0;
+      const summary = loadSummary();
       if (showCartons) {
         const tapeMaterial = createTapeMaterial();
-        state.layout.forEach(box => {
-          for (let layer = 0; layer < state.layers; layer++) {
+        for (let layer = 0; layer < summary.usedLayers; layer++) {
+          const boxesThisLayer = layer < summary.fullLayers
+            ? state.layout
+            : centeredLayerSubset(summary.partialLayerBoxes);
+          boxesThisLayer.forEach(box => {
             const cx = x0 + box.x + box.w / 2;
             const cz = z0 + box.y + box.d / 2;
             const cy = p.h + layer * state.box.h + state.box.h / 2;
@@ -3557,17 +3767,20 @@
               state.box.h,
               box.d,
               tapeMaterial,
-              layer === state.layers - 1
+              layer === summary.usedLayers - 1
             );
             cartonCount += 1;
             if (box.w >= box.d) printAxisXCount += 1;
             else printAxisZCount += 1;
-          }
-        });
+          });
+        }
       }
       els.scene3d.dataset.cartonStructure = "rsc-taped-handle";
       els.scene3d.dataset.cartonBrand = "C&U";
       els.scene3d.dataset.cartonCount = String(cartonCount);
+      els.scene3d.dataset.cartonCapacity = String(summary.capacity);
+      els.scene3d.dataset.loadLimited = String(summary.limited);
+      els.scene3d.dataset.usedLayers = String(summary.usedLayers);
       els.scene3d.dataset.cartonPrintAlignment = "long-axis-locked";
       els.scene3d.dataset.printAxisXCount = String(printAxisXCount);
       els.scene3d.dataset.printAxisZCount = String(printAxisZCount);
@@ -3705,10 +3918,32 @@
           closeCartonPresetList();
         }
       });
-      ["palletWeight","boxWeight","perBox"].forEach(id => {
+      ["palletWeight","boxWeight"].forEach(id => {
         document.querySelector(`#${id}`).addEventListener("input", () => {
           readForm();
-          updateMetrics(collectOverlaps());
+          if (state.loadLimits.weightEnabled) scheduleLimitRecalculation();
+          else {
+            renderPlans();
+            render2D();
+          }
+        });
+      });
+      document.querySelector("#perBox").addEventListener("input", () => {
+        readForm();
+        updateMetrics(collectOverlaps());
+      });
+      [els.boxLimitEnabled, els.weightLimitEnabled].forEach(control => {
+        control.addEventListener("change", () => {
+          readForm();
+          calculatePlans();
+        });
+      });
+      [els.maxBoxes, els.maxTotalWeight].forEach(control => {
+        control.addEventListener("input", () => {
+          readForm();
+          renderPlans();
+          render2D();
+          scheduleLimitRecalculation();
         });
       });
       document.querySelector("#generatePallet").addEventListener("click", rebuildForNewSize);
