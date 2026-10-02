@@ -3723,9 +3723,13 @@
       }
       if (mesh) {
         modelGroup.updateMatrixWorld(true);
-        cartonHighlight = new THREE.BoxHelper(mesh, 0xffb300);
-        cartonHighlight.material.depthTest = false;
-        cartonHighlight.material.transparent = true;
+        // Preserve the carton's orientation instead of outlining its world-axis bounding box.
+        cartonHighlight = new THREE.LineSegments(
+          new THREE.EdgesGeometry(mesh.geometry),
+          new THREE.LineBasicMaterial({ color: 0xffb300, depthTest: false, depthWrite: false })
+        );
+        cartonHighlight.matrixAutoUpdate = false;
+        cartonHighlight.matrix.copy(mesh.matrixWorld);
         cartonHighlight.renderOrder = 100;
         scene.add(cartonHighlight);
       }
