@@ -1084,6 +1084,10 @@
         </div>
         <div id="scene3d" role="img" aria-label="3D 预览"></div>
         <div class="view-foot">
+          <div class="row" id="cartonSelection3d">
+            <span id="selectedCarton3d" style="flex:1;min-width:0;font-size:13px;font-weight:700">未选中箱子</span>
+            <button class="small danger" id="deleteCarton3d" type="button" disabled>删除选中</button>
+          </div>
           <div class="dimension-control">
             <label class="toggle"><input type="checkbox" id="showDimensions3d" checked> 显示外形尺寸</label>
             <div class="dimension-readout" id="dimensionReadout">外形尺寸：1200 × 800 × 410 mm</div>
@@ -1205,6 +1209,8 @@
       planMessageKey: null,
       activePlan: null,
       selectedId: null,
+      selectedCarton3d: null,
+      deletedCartons: new Set(),
       copiedBox: null,
       pasteCount: 0,
       scale: 0.5,
@@ -1328,6 +1334,9 @@
         boxPasted: "已粘贴箱子",
         boxPastedOverlap: "已粘贴箱子，请调整重叠位置",
         boxDeleted: "已删除选中箱子",
+        selectedCartonNone: "未选中箱子",
+        selectedCartonLayer: "第 {layer} 层 · 箱子 #{index}",
+        deleteCarton: "删除选中",
         noSpaceRow: "当前尺寸下没有足够空间补一排",
         centeredToast: "箱组已整体居中",
         exported3d: "已导出高清 3D 图片",
@@ -1446,6 +1455,9 @@
         boxPasted: "Carton pasted",
         boxPastedOverlap: "Carton pasted; adjust the overlap",
         boxDeleted: "Selected carton deleted",
+        selectedCartonNone: "No carton selected",
+        selectedCartonLayer: "Layer {layer} · Carton #{index}",
+        deleteCarton: "Delete Selected",
         noSpaceRow: "No available space for another row at the current size",
         centeredToast: "Carton group centered",
         exported3d: "High-resolution 3D image exported",
@@ -1474,7 +1486,7 @@
       return text;
     }
 
-    function loadSummary(layerCount = state.layout.length) {
+    function loadSummary(layerCount = state.layout.length, includeEdits = true) {
       const boxesPerLayer = Math.max(0, Math.floor(layerCount));
       const capacity = boxesPerLayer * state.layers;
       let allowedBoxes = capacity;
@@ -1493,10 +1505,15 @@
         allowedBoxes = Math.min(allowedBoxes, weightCapacity);
       }
 
-      const totalBoxes = clamp(Math.floor(allowedBoxes), 0, capacity);
+      let totalBoxes = clamp(Math.floor(allowedBoxes), 0, capacity);
       const fullLayers = boxesPerLayer ? Math.floor(totalBoxes / boxesPerLayer) : 0;
       const partialLayerBoxes = boxesPerLayer ? totalBoxes % boxesPerLayer : 0;
-      const usedLayers = fullLayers + (partialLayerBoxes > 0 ? 1 : 0);
+      let usedLayers = fullLayers + (partialLayerBoxes > 0 ? 1 : 0);
+      if (includeEdits) {
+        const cartons = loadedCartons({ fullLayers, partialLayerBoxes, usedLayers });
+        totalBoxes = cartons.length;
+        usedLayers = cartons.reduce((height, carton) => Math.max(height, carton.layer + 1), 0);
+      }
       return {
         boxesPerLayer,
         capacity,
@@ -1624,6 +1641,8 @@
       setText(".view-head p", "view3dHelp");
       els.scene3d.setAttribute("aria-label", t("scene3dLabel"));
       setText("#export3d", "export3d");
+      setText("#deleteCarton3d", "deleteCarton");
+      updateCartonSelection3d();
       setInputLabel("showDimensions3d", "showDimensions");
       const legendItems = document.querySelectorAll(".legend-item");
       if (legendItems[0]) legendItems[0].lastChild.textContent = t("legendPallet");
@@ -2092,7 +2111,7 @@
       return state.colors.box;
     }
 
-    function render2D() {
+    function render2D({ preserveView = false } = {}) {
       fitScale();
       els.board.querySelectorAll(".box-item,.snap-line").forEach(node => node.remove());
       const overlaps = collectOverlaps();
@@ -2114,7 +2133,7 @@
 
       updateMetrics(overlaps);
       updateSelectedInfo();
-      schedule3D();
+      schedule3D(preserveView);
     }
 
     function showSnapLines(lines) {
@@ -2133,6 +2152,7 @@
       const box = state.layout.find(item => item.id === id);
       if (!box) return;
       state.selectedId = id;
+      state.selectedCarton3d = null;
       const rect = els.board.getBoundingClientRect();
       state.dragging = {
         id,
@@ -2311,6 +2331,7 @@
       };
       state.layout.push(box);
       state.selectedId = box.id;
+      state.selectedCarton3d = null;
       state.activePlan = null;
       renderPlans();
       render2D();
@@ -2389,6 +2410,7 @@
       state.layout.push(box);
       state.selectedId = box.id;
       state.pasteCount += 1;
+      state.selectedCarton3d = null;
       state.activePlan = null;
       renderPlans();
       render2D();
@@ -2397,9 +2419,14 @@
     }
 
     function deleteSelectedBox() {
+      if (state.selectedCarton3d) return deleteSelectedCarton3d();
       const index = state.layout.findIndex(item => item.id === state.selectedId);
       if (index < 0) return false;
       state.layout.splice(index, 1);
+      const removedId = state.selectedId;
+      state.deletedCartons.forEach(key => {
+        if (key.startsWith(`${removedId}:`)) state.deletedCartons.delete(key);
+      });
       state.selectedId = null;
       state.activePlan = null;
       renderPlans();
@@ -2417,7 +2444,7 @@
       const key = event.key.toLowerCase();
       const modifier = event.ctrlKey || event.metaKey;
 
-      if (event.key === "Delete" && !modifier && !event.altKey && state.selectedId) {
+      if (event.key === "Delete" && !modifier && !event.altKey && (state.selectedId || state.selectedCarton3d)) {
         event.preventDefault();
         deleteSelectedBox();
         return;
@@ -2805,13 +2832,13 @@
 
       const eligiblePlans = plans.filter(plan =>
         plan.util >= MIN_PLAN_UTILIZATION - 1e-9 &&
-        loadSummary(plan.count).totalBoxes > 0
+        loadSummary(plan.count, false).totalBoxes > 0
       );
       eligiblePlans.sort((a, b) => b.count - a.count || Number(b.provenOptimal) - Number(a.provenOptimal) || b.util - a.util || t(a.nameKey, a.vars).localeCompare(t(b.nameKey, b.vars), state.lang === "zh" ? "zh-CN" : "en"));
       state.plans = eligiblePlans.slice(0, 7);
       state.activePlan = state.plans[0]?.id ?? null;
       const blockedByLimits = plans.some(plan => plan.util >= MIN_PLAN_UTILIZATION - 1e-9) &&
-        plans.every(plan => loadSummary(plan.count).totalBoxes === 0);
+        plans.every(plan => loadSummary(plan.count, false).totalBoxes === 0);
       state.planMessageKey = state.plans.length
         ? null
         : blockedByLimits
@@ -2877,7 +2904,7 @@
       }
 
       state.plans.forEach((plan, index) => {
-        const summary = loadSummary(plan.count);
+        const summary = loadSummary(plan.count, false);
         const card = document.createElement("div");
         card.className = `plan-card ${plan.id === state.activePlan ? "active" : ""}`;
         card.innerHTML = `
@@ -2913,6 +2940,8 @@
       const plan = state.plans.find(item => item.id === id);
       if (!plan) return;
       state.layout = plan.rects.map(rect => ({ id: uid(), ...rect }));
+      state.deletedCartons.clear();
+      state.selectedCarton3d = null;
       state.selectedId = state.layout[0]?.id ?? null;
       state.activePlan = id;
       renderPlans();
@@ -2948,6 +2977,8 @@
     }
 
     let scene, camera, renderer, controls, modelGroup, floorMesh, woodTexture, cartonTexture;
+    let cartonMeshes = [], cartonHighlight = null;
+    let preserveQueuedView = false;
     const UNIT = 0.004;
     const WOOD_TEXTURE_URL = new URL("./assets/pallet-wood-texture.png", window.location.href).href;
     const CARTON_TEXTURE_URL = new URL("./assets/carton-kraft-texture.png", window.location.href).href;
@@ -3011,6 +3042,7 @@
       controls.enableDamping = true;
       controls.target.set(0, 0.55, 0);
       controls.maxPolarAngle = Math.PI * 0.48;
+      attachCartonPicking();
 
       const hemi = new THREE.HemisphereLight(0xffffff, 0x7d8a94, 2.1);
       scene.add(hemi);
@@ -3660,8 +3692,107 @@
       return selected.map(box => ({ ...box, x: box.x + offsetX, y: box.y + offsetY }));
     }
 
-    function redraw3D() {
+    function loadedCartons(summary) {
+      const cartons = [];
+      for (let layer = 0; layer < summary.usedLayers; layer++) {
+        const boxes = layer < summary.fullLayers
+          ? state.layout
+          : centeredLayerSubset(summary.partialLayerBoxes);
+        boxes.forEach(box => {
+          const key = `${box.id}:${layer}`;
+          if (!state.deletedCartons.has(key)) cartons.push({ ...box, key, layer });
+        });
+      }
+      return cartons;
+    }
+
+    function updateCartonSelection3d() {
+      const selected = state.selectedCarton3d;
+      const mesh = cartonMeshes.find(item => item.userData.cartonKey === selected);
+      const button = document.querySelector("#deleteCarton3d");
+      button.disabled = !mesh || document.querySelector("#palletOnly3d").checked;
+      document.querySelector("#selectedCarton3d").textContent = mesh
+        ? t("selectedCartonLayer", { layer: mesh.userData.layer + 1, index: mesh.userData.boxIndex + 1 })
+        : t("selectedCartonNone");
+      els.scene3d.dataset.selectedCarton = mesh?.userData.cartonKey || "";
+      if (cartonHighlight) {
+        scene.remove(cartonHighlight);
+        cartonHighlight.geometry.dispose();
+        cartonHighlight.material.dispose();
+        cartonHighlight = null;
+      }
+      if (mesh) {
+        modelGroup.updateMatrixWorld(true);
+        cartonHighlight = new THREE.BoxHelper(mesh, 0xffb300);
+        cartonHighlight.material.depthTest = false;
+        cartonHighlight.material.transparent = true;
+        cartonHighlight.renderOrder = 100;
+        scene.add(cartonHighlight);
+      }
+    }
+
+    function deleteSelectedCarton3d() {
+      const key = state.selectedCarton3d;
+      if (!key || !cartonMeshes.some(mesh => mesh.userData.cartonKey === key)) return false;
+      state.deletedCartons.add(key);
+      state.selectedCarton3d = null;
+      state.selectedId = null;
+      state.activePlan = null;
+      renderPlans();
+      render2D({ preserveView: true });
+      showToast(t("boxDeleted"));
+      return true;
+    }
+
+    function attachCartonPicking() {
+      const canvas = renderer.domElement;
+      canvas.tabIndex = 0;
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+      const pointers = new Set();
+      let gesture = null;
+      canvas.addEventListener("pointerdown", event => {
+        pointers.add(event.pointerId);
+        if (pointers.size > 1) {
+          if (gesture) gesture.moved = true;
+          return;
+        }
+        if (event.button !== 0) return;
+        gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+      });
+      canvas.addEventListener("pointermove", event => {
+        if (gesture && event.pointerId === gesture.id &&
+            Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 5) gesture.moved = true;
+      });
+      canvas.addEventListener("pointercancel", event => {
+        pointers.delete(event.pointerId);
+        gesture = null;
+      });
+      canvas.addEventListener("pointerup", event => {
+        pointers.delete(event.pointerId);
+        const click = gesture;
+        if (!click || click.id !== event.pointerId) return;
+        gesture = null;
+        if (click.moved || Math.hypot(event.clientX - click.x, event.clientY - click.y) > 5) return;
+        canvas.focus({ preventScroll: true });
+        const rect = canvas.getBoundingClientRect();
+        pointer.set((event.clientX - rect.left) / rect.width * 2 - 1,
+          -(event.clientY - rect.top) / rect.height * 2 + 1);
+        scene.updateMatrixWorld(true);
+        raycaster.setFromCamera(pointer, camera);
+        const hit = raycaster.intersectObjects(modelGroup.children, false)
+          .find(result => result.object.isMesh && result.object.userData.role !== "dimension-label");
+        state.selectedCarton3d = hit?.object.userData.cartonKey || null;
+        state.selectedId = null;
+        els.board.querySelectorAll(".box-item.selected").forEach(node => node.classList.remove("selected"));
+        updateSelectedInfo();
+        updateCartonSelection3d();
+      });
+    }
+
+    function redraw3D({ preserveView = false } = {}) {
       if (!modelGroup) return;
+      cartonMeshes = [];
       clearModelGroup();
 
       const p = state.pallet;
@@ -3744,20 +3875,22 @@
       const summary = loadSummary();
       if (showCartons) {
         const tapeMaterial = createTapeMaterial();
-        for (let layer = 0; layer < summary.usedLayers; layer++) {
-          const boxesThisLayer = layer < summary.fullLayers
-            ? state.layout
-            : centeredLayerSubset(summary.partialLayerBoxes);
-          boxesThisLayer.forEach(box => {
+        const cartons = loadedCartons({ ...summary, usedLayers: summary.fullLayers + (summary.partialLayerBoxes > 0 ? 1 : 0) });
+        cartons.forEach(box => {
+            const layer = box.layer;
             const cx = x0 + box.x + box.w / 2;
             const cz = z0 + box.y + box.d / 2;
             const cy = p.h + layer * state.box.h + state.box.h / 2;
             const color = boxColor(box);
-            addCuboid(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, color, "C&U corrugated carton", {
+            const mesh = addCuboid(modelGroup, cx, cy, cz, box.w, state.box.h, box.d, color, "C&U corrugated carton", {
               materials: createCartonMaterials(box.w, state.box.h, box.d, color),
               edgeColor: 0x604028,
               role: "carton",
             });
+            Object.assign(mesh.userData, { cartonKey: box.key, layer, boxId: box.id,
+              boxIndex: state.layout.findIndex(item => item.id === box.id) });
+            cartonMeshes.push(mesh);
+            const tapeStart = modelGroup.children.length;
             addCartonTape(
               modelGroup,
               cx,
@@ -3767,13 +3900,15 @@
               state.box.h,
               box.d,
               tapeMaterial,
-              layer === summary.usedLayers - 1
+              !cartons.some(other => other.id === box.id && other.layer > layer)
             );
+            modelGroup.children.slice(tapeStart).filter(object => object.isMesh).forEach(object => {
+              Object.assign(object.userData, mesh.userData);
+            });
             cartonCount += 1;
             if (box.w >= box.d) printAxisXCount += 1;
             else printAxisZCount += 1;
-          });
-        }
+        });
       }
       els.scene3d.dataset.cartonStructure = "rsc-taped-handle";
       els.scene3d.dataset.cartonBrand = "C&U";
@@ -3790,11 +3925,14 @@
       if (state.showDimensions) addDimensionAnnotations(modelGroup, dims);
 
       modelGroup.rotation.y = -0.25;
+      updateCartonSelection3d();
       const annotationPad = state.showDimensions ? Math.max(220, Math.min(dims.l, dims.w) * 0.3) : 0;
       const maxDim = Math.max(dims.l + annotationPad * 2, dims.w + annotationPad * 2, dims.h + annotationPad) * UNIT;
       const aspectFit = Math.max(1.16, Math.sqrt(0.62 / Math.max(camera.aspect, 0.4)));
-      camera.position.set(maxDim * 1.4 * aspectFit, maxDim * 1.05 * aspectFit, maxDim * 1.55 * aspectFit);
-      controls.target.set(0, dims.h * UNIT * 0.45, 0);
+      if (!preserveView) {
+        camera.position.set(maxDim * 1.4 * aspectFit, maxDim * 1.05 * aspectFit, maxDim * 1.55 * aspectFit);
+        controls.target.set(0, dims.h * UNIT * 0.45, 0);
+      }
       camera.updateProjectionMatrix();
     }
 
@@ -3806,12 +3944,15 @@
       return `rgb(${clamp(r, 0, 255)}, ${clamp(g, 0, 255)}, ${clamp(b, 0, 255)})`;
     }
 
-    function schedule3D() {
+    function schedule3D(preserveView = false) {
+      preserveQueuedView ||= preserveView;
       if (state.renderQueued) return;
       state.renderQueued = true;
       requestAnimationFrame(() => {
         state.renderQueued = false;
-        redraw3D();
+        const preserveView = preserveQueuedView;
+        preserveQueuedView = false;
+        redraw3D({ preserveView });
       });
     }
 
@@ -3955,6 +4096,8 @@
       });
       document.querySelector("#clearBoxes").addEventListener("click", () => {
         state.layout = [];
+        state.deletedCartons.clear();
+        state.selectedCarton3d = null;
         state.selectedId = null;
         state.activePlan = null;
         renderPlans();
@@ -3966,6 +4109,7 @@
       document.querySelector("#rotateBoxToolbar").addEventListener("click", () => rotateBox());
       document.querySelector("#centerLayoutToolbar").addEventListener("click", centerLayout);
       document.querySelector("#export3d").addEventListener("click", export3D);
+      document.querySelector("#deleteCarton3d").addEventListener("click", deleteSelectedCarton3d);
       document.querySelector("#showDimensions3d").addEventListener("change", () => {
         state.showDimensions = els.showDimensions3d.checked;
         localStorage.setItem("palletPlannerShowDimensions", String(state.showDimensions));
@@ -3997,6 +4141,7 @@
       els.board.addEventListener("pointerdown", event => {
         if (event.target === els.board) {
           state.selectedId = null;
+          state.selectedCarton3d = null;
           render2D();
         }
       });
