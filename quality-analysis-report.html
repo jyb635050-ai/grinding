@@ -682,7 +682,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <span data-en>Executive <span>Overview</span></span>
   </h1>
   <div class="header-meta">
-    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年1-6月</span><span data-en>JAN-JUN 2026</span></div>
+    <div class="meta-pill" id="exec-pill-range"><span class="dot"></span><span data-zh>2026年</span><span data-en>2026</span></div>
     <div class="meta-pill"><span data-zh>9大模块汇总</span><span data-en>9 Modules Summarized</span></div>
     <div class="meta-pill"><span data-zh>点击卡片跳转详情</span><span data-en>Click cards for details</span></div>
   </div>
@@ -729,7 +729,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
 
 <section>
   <div class="section-label"><span data-zh>第二节</span><span data-en>SECTION 02</span></div>
-  <div class="section-title"><span data-zh>年度累计 (YTD, 1-6月)</span><span data-en>Year-to-Date (Jan–Jun)</span></div>
+  <div class="section-title" id="ytd-title"><span data-zh>年度累计 (YTD)</span><span data-en>Year-to-Date</span></div>
   <div class="kpi-grid">
     <div class="kpi-card" style="--kpi-color:#2563eb;">
       <span class="kpi-icon"><svg class="ic"><use href="#i-gear"/></svg></span>
@@ -753,7 +753,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
       <span class="kpi-icon"><svg class="ic"><use href="#i-box"/></svg></span>
       <div class="kpi-label"><span data-zh>YTD 装配产量</span><span data-en>YTD Assembly Output</span></div>
       <div class="kpi-value" data-ytd="asmOut">—</div>
-      <div class="kpi-sub"><span data-zh>1-6月累计成品 (pcs)</span><span data-en>Jan–Jun finished (pcs)</span></div>
+      <div class="kpi-sub" id="ytd-asmout-sub"><span data-zh>累计成品 (pcs)</span><span data-en>Cumulative finished (pcs)</span></div>
     </div>
   </div>
 </section>
@@ -1350,7 +1350,7 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <div class="section-title"><span data-zh>装配不良率 · 统计过程控制</span><span data-en>Assembly NG Rate · Statistical Process Control</span></div>
     <div class="charts-grid">
       <div class="chart-card full">
-        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>月度不良率控制图（1-6月，全厂装配）</span><span data-en>Monthly NG Rate Control Chart (Jan-Jun)</span></div>
+        <div class="chart-title" style="--ct-color:#dc2626;"><span data-zh>月度不良率控制图（全部月份，全厂装配）</span><span data-en>Monthly NG Rate Control Chart (All Months)</span></div>
         <div class="chart-wrap tall"><canvas id="asmSpcChart"></canvas></div>
         <div class="spc-note"><span data-zh>控制中线=各月加权均值不良率，±3σ 为控制限（σ 随当月产量变化）。<b style="color:#dc2626;">红点(超上限)=恶化特殊原因</b>需追查根因；<b style="color:#059669;">绿点(低于下限)=改善特殊原因</b>应固化经验；蓝点=共因波动属工艺常态，勿逐月过度反应。此图展示全年趋势，不随上方月份切换。</span><span data-en>Centre line = weighted-mean NG rate; ±3σ limits (σ varies with output). <b style="color:#dc2626;">Red = adverse special cause</b>, find root cause; <b style="color:#059669;">Green = favourable — lock in</b>; blue = common cause, don't over-react. Full-year trend; does not follow the month switcher.</span></div>
       </div>
@@ -3141,9 +3141,8 @@ document.getElementById('gate-pass').addEventListener('keydown',e=>{ if(e.key===
     <span data-en>Precision <span>Geometric Analysis</span></span>
   </h1>
   <div class="header-meta">
-    <div class="meta-pill"><span class="dot"></span><span data-zh>2026年5月</span><span data-en>MAY 2026</span></div>
-    <div class="meta-pill">PHJY_Precision_Test_Record.xlsx</div>
-    <div class="meta-pill"><span data-zh>8道磨工序</span><span data-en>8 Grinding Processes</span></div>
+    <div class="meta-pill" id="prec-pill-range"><span class="dot"></span><span data-zh>2026年</span><span data-en>2026</span></div>
+    <div class="meta-pill"><span data-zh>Precision Summary 月度汇总表</span><span data-en>Precision Summary workbook</span></div>
     <div class="meta-pill"><span data-zh>5项几何精度</span><span data-en>5 Geometric Metrics</span></div>
   </div>
 </header>
@@ -3571,6 +3570,19 @@ function _momChip(el, cur, prev, goodWhen){
   el.appendChild(s);
 }
 function _momKpi(sel, cur, prev, goodWhen){ _momChip(document.querySelector(sel), cur, prev, goodWhen); }
+
+// 标签页显示开关：map={tabId:是否显示}。数据源改版后没有数据的页直接隐藏；当前页被隐藏时回到第一页
+function _setTabsVisible(navSel, map){
+  const nav=document.querySelector(navSel); if(!nav) return;
+  let hideActive=false;
+  nav.querySelectorAll('.tab-btn').forEach(b=>{
+    const m=(b.getAttribute('onclick')||'').match(/\('([\w-]+)'/); if(!m||!(m[1] in map)) return;
+    const show=!!map[m[1]];
+    b.style.display=show?'':'none';
+    if(!show&&b.classList.contains('active')) hideActive=true;
+  });
+  if(hideActive){ const first=nav.querySelector('.tab-btn'); if(first) first.click(); }
+}
 
 // 不完整月份提示条：items=[{label, D}]，D 带 _partial/_note/_noteEn 才显示
 window._momSuppress=false;
@@ -4619,10 +4631,11 @@ function initAsmCharts() {
   if (asmChartsInited) return;
   asmChartsInited = true;
   _renderAsmMonth(_asmMonth);
-  // month-invariant plant-level NG-rate control chart (1-6月), built once
-  const MONTHS=['1月 Jan','2月 Feb','3月 Mar','4月 Apr','5月 May','6月 Jun'];
-  const asmRates=[1,2,3,4,5,6].map(m=>{const d=window._asmMonthData[String(m)];return d?d.ngRate:null;});
-  const asmN=[1,2,3,4,5,6].map(m=>{const d=window._asmMonthData[String(m)];return d?(d.output+d.ng):0;});
+  // month-invariant plant-level NG-rate control chart (all months), built once
+  const _am=Object.keys(window._asmMonthData).map(Number).sort((a,b)=>a-b);
+  const MONTHS=_am.map(m=>_MLABELS_FULL[m-1]);
+  const asmRates=_am.map(m=>window._asmMonthData[String(m)].ngRate);
+  const asmN=_am.map(m=>{const d=window._asmMonthData[String(m)];return d.output+d.ng;});
   mkSpc('asmSpcChart', asmRates, asmN, MONTHS, '装配不良率 NG %');
 }
 window._renderAsmMonth = _renderAsmMonth;
@@ -5021,6 +5034,7 @@ function _renderProdMonth(month){
   const D = window._prodMonthData[month];
   if (!D) return;
   window._momSuppress=!!D._partial; _partialBanner('#tab-prod-overview','prod-partial-note',[{D:D}]);
+  _setTabsVisible('#prod-tab-nav',{'prod-waste':!!(window._wasteRateData&&window._wasteRateData[String(month)])});
   _prodMonth = month;
   _destroyProdCharts();
   _updateProdKPIs(D);
@@ -5697,6 +5711,20 @@ function _renderPrecTables(D){
 function _renderPrecMonth(month){
   const PD=window._precData;
   const D=PD.months[month];
+  _setTabsVisible('#prec-tab-nav',{
+    'prec-process':!!(D&&D.proc&&Object.keys(D.proc).length),
+    'prec-model':!!(D&&D.model&&Object.keys(D.model).length),
+    'prec-detail':!!(D&&D.cons&&Object.values(D.cons).some(v=>v&&v.total>0))});
+  (function(){      // 没有分工序数据的月份，"最差工序"卡片直接去掉
+    const wk=document.querySelector('[data-prec-kpi="worstProc"]'); const c=wk&&wk.closest('.kpi-card');
+    if(c) c.style.display=(D&&D.proc&&Object.keys(D.proc).length)?'':'none';
+  })();
+  (function(){      // 头部月份范围按已有数据动态生成（连续月份合并：1-6月、8-9月）
+    const ms=Object.keys(PD.months).map(Number).sort((a,b)=>a-b), seg=[];
+    ms.forEach(m=>{const l=seg[seg.length-1]; if(l&&m===l[1]+1) l[1]=m; else seg.push([m,m]);});
+    const t=seg.map(s=>s[0]===s[1]?s[0]+'月':s[0]+'-'+s[1]+'月').join('、');
+    const e=document.getElementById('prec-pill-range'); if(e) e.innerHTML='<span class="dot"></span><span data-zh>2026年'+t+'</span><span data-en>2026 · months '+seg.map(s=>s[0]===s[1]?s[0]:s[0]+'-'+s[1]).join(', ')+'</span>';
+  })();
   (function(){                       // 数据源受限时给出显式提示，避免空图被误读为“无不良”
     var host=document.getElementById('tab-prec-overview');
     if(!host) return;
@@ -5840,7 +5868,20 @@ window._renderPrecMonth=_renderPrecMonth;
 
 
 // ════════ MONTH COMPARISON ════════
-function openCompare(){ document.getElementById('compare-overlay').classList.add('open'); renderCompare(); }
+function _fillCompareSelects(){      // 选项 = 磨工/装配/产量/精测四个模块都有数据的月份
+  const ms=Object.keys(window._asmMonthData).map(Number).filter(m=>window._grinderMonthData[String(m)]&&window._prodMonthData[String(m)]&&window._precData.months[String(m)]).sort((a,b)=>a-b);
+  const html=ms.map(m=>'<option value="'+m+'">'+_MLABELS_FULL[m-1]+'</option>').join('');
+  const A=document.getElementById('compare-monthA'), B=document.getElementById('compare-monthB');
+  if(!A||!B||!ms.length) return;
+  const first=!A.dataset.init;                    // 第一次打开默认对比最近两个月；之后保留用户的选择
+  const keepA=A.value, keepB=B.value;
+  A.innerHTML=html; B.innerHTML=html;
+  const pick=(el,want,fb)=>{ el.value=(!first&&ms.includes(+want))?want:String(fb); };
+  pick(A,keepA,ms[Math.max(0,ms.length-2)]); pick(B,keepB,ms[ms.length-1]);
+  A.dataset.init='1';
+  if(A.value===B.value&&ms.length>1) A.value=String(ms[Math.max(0,ms.length-2)]);
+}
+function openCompare(){ document.getElementById('compare-overlay').classList.add('open'); _fillCompareSelects(); renderCompare(); }
 function closeCompare(){ document.getElementById('compare-overlay').classList.remove('open'); }
 // close on overlay backdrop click
 document.addEventListener('DOMContentLoaded',function(){
@@ -5876,7 +5917,7 @@ function renderCompare(){
   var mB=document.getElementById('compare-monthB').value;
   var strip=document.getElementById('compare-kpi-strip');
   var charts=document.getElementById('compare-charts');
-  var mLabel={'1':'1月 Jan','2':'2月 Feb','3':'3月 Mar','4':'4月 Apr','5':'5月 May','6':'6月 Jun'};
+  var mLabel={}; _MLABELS_FULL.forEach(function(l,i){ mLabel[String(i+1)]=l; });
 
   // destroy any previous compare charts
   if(window._cmpCharts){ window._cmpCharts.forEach(function(ch){try{ch.destroy();}catch(e){}}); }
@@ -5955,7 +5996,9 @@ function renderCompare(){
   H+=section('📦','产量分析','Production','工段/班次 产量对比',
       card('cmpPrStage','三大工段产量 3 Stages')+
       card('cmpPrShift','超精/装配 班次产量 SF/AB by Shift'));
-  H+=section('📐','精测分析','Precision','8工序 不合格率/整改率 对比',
+  // 精测分工序图：两个月份都有分工序数据才显示（8月起汇总表没有分工序明细，直接去掉）
+  var _hasProc=pcA&&pcB&&pcA.proc&&pcB.proc&&Object.keys(pcA.proc).length>0&&Object.keys(pcB.proc).length>0;
+  if(_hasProc) H+=section('📐','精测分析','Precision','8工序 不合格率/整改率 对比',
       card('cmpPcNg','8工序不合格率 NG% by Process',true)+
       card('cmpPcCorr','8工序整改率 Correction% by Process',true));
   charts.innerHTML=H;
@@ -6024,6 +6067,7 @@ function renderCompare(){
   // ── Precision (8 processes) ──
   var pOrder=PD.procOrder, pLabel=PD.procLabel;
   var pcLabels=pOrder.map(function(p){return pLabel[p][0];});
+  if(!_hasProc) return;
   var pcNgA=pOrder.map(function(p){return (pcA.proc[p]&&pcA.proc[p].total>0)?pcA.proc[p].ngRate:0;});
   var pcNgB=pOrder.map(function(p){return (pcB.proc[p]&&pcB.proc[p].total>0)?pcB.proc[p].ngRate:0;});
   var pcCorrA=pOrder.map(function(p){return (pcA.proc[p]&&pcA.proc[p].ng>0)?pcA.proc[p].corrRate:0;});
@@ -6226,13 +6270,21 @@ function _renderRustChain(){
 
 function _renderYtd(){
   const sum=a=>a.reduce((s,x)=>s+(x||0),0);
-  const gMonths=[1,2,3,4,5,6].map(m=>window._grinderMonthData[String(m)]).filter(Boolean);
-  const sfMonths=[1,2,3,4,5,6,7,8,9].map(m=>window._prodMonthData[String(m)]).filter(Boolean);
+  // 三个模块都有数据的月份才进 YTD：分子分母必须是同一批月份（此前磨工废品只加到6月、超精产量却加到9月，比值偏低）
+  const _ym=Object.keys(window._asmMonthData).map(Number).filter(m=>window._grinderMonthData[String(m)]&&window._prodMonthData[String(m)]).sort((a,b)=>a-b);
+  const _yl=_ym.length?_ym[_ym.length-1]:0;
+  const gMonths=_ym.map(m=>window._grinderMonthData[String(m)]);
+  const sfMonths=_ym.map(m=>window._prodMonthData[String(m)]);
   const gWaste=sum(gMonths.map(d=>d.totalAll));
   const sfOut=sum(sfMonths.map(d=>(d.sfMor||0)+(d.sfNgt||0)));
-  const aMonths=[1,2,3,4,5,6,7,8,9].map(m=>window._asmMonthData[String(m)]).filter(Boolean);
+  const aMonths=_ym.map(m=>window._asmMonthData[String(m)]);
   const aNg=sum(aMonths.map(d=>d.ng)), aOut=sum(aMonths.map(d=>d.output));
-  const gp12Def=sum(window._gp12M.defQty), gp12Insp=sum(window._gp12M.insp);
+  const gp12Def=sum(window._gp12M.defQty.slice(0,_yl)), gp12Insp=sum(window._gp12M.insp.slice(0,_yl));
+  (function(){
+    const t=document.getElementById('ytd-title'); if(t) t.innerHTML='<span data-zh>年度累计 (YTD, 1-'+_yl+'月)</span><span data-en>Year-to-Date (Jan–'+_MLABELS_EN3[_yl-1]+')</span>';
+    const s=document.getElementById('ytd-asmout-sub'); if(s) s.innerHTML='<span data-zh>1-'+_yl+'月累计成品 (pcs)</span><span data-en>Jan–'+_MLABELS_EN3[_yl-1]+' finished (pcs)</span>';
+    const p=document.getElementById('exec-pill-range'); if(p) p.innerHTML='<span class="dot"></span><span data-zh>2026年1-'+_yl+'月</span><span data-en>JAN-'+_MLABELS_EN3[_yl-1].toUpperCase()+' 2026</span>';
+  })();
   const setY=(k,v)=>{const el=document.querySelector(`[data-ytd="${k}"]`); if(el) el.textContent=v;};
   setY('grinder', sfOut>0 ? Math.round(gWaste/sfOut*100000).toLocaleString() : '—');
   setY('asm', (aOut+aNg)>0 ? (aNg/(aOut+aNg)*100).toFixed(2)+'%' : '—');
