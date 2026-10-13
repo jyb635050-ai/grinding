@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="PHJY bearing mark">
+  <defs>
+    <linearGradient id="steel" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7fafc"/>
+      <stop offset="0.45" stop-color="#b9c4ce"/>
+      <stop offset="1" stop-color="#778695"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="29" fill="#1d2633"/>
+  <circle cx="32" cy="32" r="24" fill="url(#steel)"/>
+  <circle cx="32" cy="32" r="19" fill="#263241"/>
+  <g fill="#eef3f7" stroke="#1d2633" stroke-width="1.5">
+    <circle cx="32" cy="13" r="4"/>
+    <circle cx="48.5" cy="22.5" r="4"/>
+    <circle cx="48.5" cy="41.5" r="4"/>
+    <circle cx="32" cy="51" r="4"/>
+    <circle cx="15.5" cy="41.5" r="4"/>
+  </g>
+  <circle cx="15.5" cy="22.5" r="4.5" fill="#f59f0b" stroke="#1d2633" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="10" fill="#f8fafc" stroke="#1d2633" stroke-width="3"/>
+</svg>
